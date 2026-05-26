@@ -658,10 +658,11 @@ function drawCandleChart(containerId, trade, isDetail = false) {
     let pointAnnotations = [];
     
     if(isDetail) {
+        /* FIXED: ENTRY IS NOW ON THE LEFT SIDE OF THE CHART */
         yaxisAnnotations.push({
             y: trade.entry, borderColor: '#3b82f6', strokeDashArray: 4,
             label: { 
-                borderColor: 'transparent', position: 'right', offsetX: -5,
+                borderColor: 'transparent', position: 'left', offsetX: 5,
                 style: { color: '#3b82f6', background: 'transparent', fontWeight: 600, fontFamily: "'JetBrains Mono', monospace"}, 
                 text: 'ENTRY' 
             }
