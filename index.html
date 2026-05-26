@@ -602,7 +602,6 @@ function drawCandleChart(containerId, trade, isDetail = false) {
         delete chartInstances[containerId];
     }
     
-    // Format data for ApexCharts
     const seriesData = trade.dailyData.map(d => ({
         x: new Date(d.time).getTime(),
         y: [d.open, d.high, d.low, d.close]
@@ -611,35 +610,33 @@ function drawCandleChart(containerId, trade, isDetail = false) {
     let yaxisAnnotations = [];
     let pointAnnotations = [];
     
-    // Lines for Detail View
     if(isDetail) {
         yaxisAnnotations.push({
             y: trade.entry, borderColor: '#3b82f6', strokeDashArray: 4,
-            label: { borderColor: 'transparent', style: { color: '#fff', background: '#3b82f6', fontFamily: "'JetBrains Mono', monospace"}, text: 'ENTRY' }
+            label: { borderColor: 'transparent', style: { color: '#3b82f6', background: 'transparent', fontWeight: 600, fontFamily: "'JetBrains Mono', monospace"}, text: 'ENTRY' }
         });
         if(trade.sl) {
             yaxisAnnotations.push({
                 y: trade.sl, borderColor: '#ef4444', strokeDashArray: 4,
-                label: { borderColor: 'transparent', style: { color: '#fff', background: '#ef4444', fontFamily: "'JetBrains Mono', monospace"}, text: 'SL' }
+                label: { borderColor: 'transparent', style: { color: '#ef4444', background: 'transparent', fontWeight: 600, fontFamily: "'JetBrains Mono', monospace"}, text: 'SL' }
             });
         }
         if(trade.target) {
             yaxisAnnotations.push({
                 y: trade.target, borderColor: '#22c55e', strokeDashArray: 4,
-                label: { borderColor: 'transparent', style: { color: '#fff', background: '#22c55e', fontFamily: "'JetBrains Mono', monospace"}, text: 'TGT' }
+                label: { borderColor: 'transparent', style: { color: '#22c55e', background: 'transparent', fontWeight: 600, fontFamily: "'JetBrains Mono', monospace"}, text: 'TGT' }
             });
         }
     }
     
-    // Buy / Sell Points
     if(trade.date) {
         const entryData = trade.dailyData.find(d => d.time >= trade.date);
         if(entryData) {
             pointAnnotations.push({
                 x: new Date(entryData.time).getTime(),
                 y: entryData.low,
-                marker: { size: 5, fillColor: '#22c55e', strokeColor: '#0f1117', strokeWidth: 2, shape: 'circle' },
-                label: { borderColor: 'transparent', offsetY: 0, style: { color: '#fff', background: '#22c55e', fontSize: '10px' }, text: 'BUY' }
+                marker: { size: 0 },
+                label: { borderColor: 'transparent', offsetY: 12, style: { color: '#22c55e', background: 'transparent', fontSize: '16px', padding: 0 }, text: '▲' }
             });
         }
     }
@@ -649,8 +646,8 @@ function drawCandleChart(containerId, trade, isDetail = false) {
             pointAnnotations.push({
                 x: new Date(exitData.time).getTime(),
                 y: exitData.high,
-                marker: { size: 5, fillColor: '#ef4444', strokeColor: '#0f1117', strokeWidth: 2, shape: 'circle' },
-                label: { borderColor: 'transparent', offsetY: 0, style: { color: '#fff', background: '#ef4444', fontSize: '10px' }, text: 'SELL' }
+                marker: { size: 0 },
+                label: { borderColor: 'transparent', offsetY: -24, style: { color: '#ef4444', background: 'transparent', fontSize: '16px', padding: 0 }, text: '▼' }
             });
         }
     }
@@ -791,7 +788,7 @@ function renderCards(){
 /* ── DETAIL ── */
 function openDetail(id){
   const t=trades.find(x=>x.id===id); if(!t) return;
-  detailId=id; // IMPORTANT: Store the ID in memory
+  detailId=id; 
   
   const isClosed = t.status === 'closed';
   const evalPrice = isClosed ? (t.exitPrice || t.cmp) : t.cmp;
@@ -830,12 +827,11 @@ function closeDetail(){
         chartInstances['detailChart'].destroy();
         delete chartInstances['detailChart'];
     }
-    detailId=null; // Wipes the memory for the next open
+    detailId=null;
 }
 
 function closeDetailBackdrop(e){ if(e.target.id==='detailOverlay') closeDetail(); }
 
-// FIXED: Capture the detailId before the closeDetail function wipes it!
 function editFromDetail(){ 
     const storedId = detailId; 
     closeDetail(); 
@@ -851,9 +847,8 @@ function closeTradeFromDetail(){
     return;
   }
   
-  // ADDED: Prompt you for a custom historical Exit Price
   const manualExit = prompt(`Close ${t.name}?\n\nEnter your precise Exit Price (or leave blank to use the live CMP of ₹${t.cmp}):`);
-  if (manualExit === null) return; // You hit cancel
+  if (manualExit === null) return; 
   
   let ePrice = parseFloat(manualExit);
   if (isNaN(ePrice) || ePrice <= 0) ePrice = t.cmp;
@@ -927,7 +922,6 @@ function saveTrade(){
   const status = document.getElementById('fStatus').value;
   const exitPrice = parseFloat(document.getElementById('fExitPrice').value)||null;
   
-  // ADDED: If you are saving a closed trade, it no longer yells at you for leaving CMP blank.
   if (status === 'closed' && exitPrice && isNaN(cmp)) {
       cmp = exitPrice; 
   }
