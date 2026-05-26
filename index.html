@@ -3,114 +3,113 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>ATM Journal – Analytics Engine</title>
+<title>ATM Journal – Final Engine</title>
 <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 <style>
-/* (All previous CSS remains the same - Add this extra section for the Dashboard Grid) */
-.analytics-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-top: 15px; }
-.dash-card { background: var(--bg3); border-radius: var(--radius); padding: 15px; }
-.dash-title { font-size: 11px; color: var(--text3); text-transform: uppercase; margin-bottom: 10px; }
-.dash-val { font-size: 18px; font-weight: 600; font-family: var(--mono); }
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+:root { --bg:#0f1117;--bg2:#161b27;--bg3:#1e2535;--border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);--text:#e8eaf0;--text2:#8b93a8;--text3:#555f74;--green:#22c55e;--red:#ef4444;--blue:#3b82f6;--amber:#f59e0b; }
+*{box-sizing:border-box;margin:0;padding:0;}
+html{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;}
+.topbar{display:flex;align-items:center;gap:12px;padding:14px 24px;background:var(--bg2);border-bottom:1px solid var(--border);}
+.main{padding:20px;}
+.cards-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:15px;margin-top:20px;}
+.btn{padding:8px 16px;border-radius:8px;border:1px solid var(--border2);background:var(--bg3);color:var(--text);cursor:pointer;font-size:13px;}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:999;align-items:center;justify-content:center;}
+.overlay.open{display:flex;}
+.modal{background:var(--bg2);padding:20px;border-radius:12px;width:90%;max-width:800px;max-height:90vh;overflow-y:auto;}
+.analytics-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:15px;}
 </style>
 </head>
 <body>
-<div class="overlay" id="analyticsOverlay" onclick="closeAnalyticsBackdrop(event)">
-  <div class="modal" style="width:900px; max-width:96vw;">
-    <div class="modal-title">
-      Advanced Analytics Engine
-      <button class="modal-close" onclick="closeAnalytics()">✕</button>
-    </div>
-    
+
+<div class="topbar">
+  <h3>ATM Journal</h3>
+  <div style="margin-left:auto; display:flex; gap:10px;">
+    <button class="btn" onclick="openAnalytics()">📊 Analytics</button>
+    <button class="btn" onclick="exportCSV()">⬆ Export CSV</button>
+    <button class="btn" onclick="document.getElementById('csvInput').click()">⬇ Import CSV</button>
+    <button class="btn" onclick="openAddModal()">+ Add Trade</button>
+  </div>
+</div>
+
+<input type="file" id="csvInput" style="display:none;" onchange="importCSV(event)" />
+
+<div class="main">
+  <div class="cards-grid" id="cardsGrid"></div>
+</div>
+
+<div class="overlay" id="analyticsOverlay" onclick="this.classList.remove('open')">
+  <div class="modal" onclick="event.stopPropagation()">
     <div class="analytics-grid">
-        <div class="dash-card"><div class="dash-title">Equity Curve (Drawdown)</div><div id="curveChart" style="height:200px;"></div></div>
-        <div class="dash-card"><div class="dash-title">Monthly Distribution</div><div id="monthlyChart" style="height:200px;"></div></div>
-        <div class="dash-card">
-            <div class="dash-title">Efficiency (Holding Time)</div>
-            <table class="help-table">
-                <tbody id="efficiencyBody"></tbody>
-            </table>
-        </div>
-        <div class="dash-card">
-            <div class="dash-title">Streak Counter</div>
-            <div class="dash-val" id="streakVal">--</div>
-            <div style="font-size:11px; color:var(--text3); margin-top:5px;" id="streakRecord"></div>
-        </div>
+      <div id="curveChart" style="height:200px;background:var(--bg3);"></div>
+      <div id="monthlyChart" style="height:200px;background:var(--bg3);"></div>
+      <div id="efficiencyBody" style="background:var(--bg3);padding:10px;"></div>
+      <div id="streakVal" style="background:var(--bg3);padding:10px;"></div>
     </div>
   </div>
 </div>
 
+<div class="overlay" id="addOverlay" onclick="this.classList.remove('open')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <input type="text" id="fName" placeholder="Stock Name" style="width:100%;padding:10px;margin-bottom:10px;background:var(--bg3);border:none;color:#fff;">
+    <input type="number" id="fEntry" placeholder="Entry" style="width:100%;padding:10px;margin-bottom:10px;background:var(--bg3);border:none;color:#fff;">
+    <input type="number" id="fQty" placeholder="Qty" style="width:100%;padding:10px;margin-bottom:10px;background:var(--bg3);border:none;color:#fff;">
+    <input type="text" id="fSetup" list="setups" placeholder="Setup">
+    <datalist id="setups"><option value="VCP Breakout"><option value="5MA Breakout"><option value="Pullback"></datalist>
+    <button class="btn" onclick="saveTrade()">Save Trade</button>
+  </div>
+</div>
+
 <script>
-/* ── ANALYTICS ENGINE ── */
-function renderAnalytics() {
-    renderEquityCurve();
-    renderMonthlyChart();
-    renderEfficiency();
-    renderStreaks();
-}
+let trades = JSON.parse(localStorage.getItem('trades')) || [];
 
-function renderEquityCurve() {
-    const closed = trades.filter(t => t.status === 'closed' && t.exitDate).sort((a,b) => new Date(a.exitDate) - new Date(b.exitDate));
-    let equity = 0; let series = []; let maxDrawdown = 0; let peak = 0;
-    
-    closed.forEach(t => {
-        equity += exitPnlVal(t);
-        if(equity > peak) peak = equity;
-        let dd = peak > 0 ? (peak - equity) : 0;
-        if(dd > maxDrawdown) maxDrawdown = dd;
-        series.push({ x: new Date(t.exitDate).getTime(), y: equity });
-    });
-
-    const options = {
-        series: [{ name: 'Equity', data: series }],
-        chart: { type: 'area', height: 200, toolbar: { show: false } },
-        theme: { mode: 'dark' },
-        fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.7, opacityTo: 0.3 } },
-        xaxis: { type: 'datetime', labels: { show: false } },
-        tooltip: { theme: 'dark' }
+function saveTrade(){
+    const t = {
+        id: Date.now(),
+        name: document.getElementById('fName').value,
+        entry: parseFloat(document.getElementById('fEntry').value),
+        qty: parseFloat(document.getElementById('fQty').value),
+        setup: document.getElementById('fSetup').value,
+        status: 'active',
+        date: new Date().toISOString().split('T')[0]
     };
-    new ApexCharts(document.querySelector("#curveChart"), options).render();
+    trades.push(t);
+    localStorage.setItem('trades', JSON.stringify(trades));
+    location.reload();
 }
 
-function renderMonthlyChart() {
-    const months = {};
-    trades.filter(t => t.status === 'closed').forEach(t => {
-        const m = t.exitDate.substring(0, 7);
-        if(!months[m]) months[m] = 0;
-        months[m] += exitPnlVal(t);
-    });
-    
-    const options = {
-        series: [{ name: 'P&L', data: Object.values(months) }],
-        chart: { type: 'bar', height: 200 },
-        xaxis: { categories: Object.keys(months) },
-        theme: { mode: 'dark' },
-        plotOptions: { bar: { borderRadius: 4 } }
+function openAddModal(){ document.getElementById('addOverlay').classList.add('open'); }
+function openAnalytics(){ document.getElementById('analyticsOverlay').classList.add('open'); renderAnalytics(); }
+
+function renderAnalytics(){
+    // Equity Curve Logic
+    const series = trades.map((t,i) => ({x: i, y: t.entry * t.qty}));
+    new ApexCharts(document.querySelector("#curveChart"), { series: [{data:series}], chart: {type:'area'} }).render();
+}
+
+function exportCSV(){
+    const csv = "Name,Entry,Qty,Setup\n" + trades.map(t => `${t.name},${t.entry},${t.qty},${t.setup}`).join('\n');
+    const a = document.createElement('a'); a.href = 'data:text/csv,'+encodeURIComponent(csv); a.download='trades.csv'; a.click();
+}
+
+function importCSV(e){
+    const reader = new FileReader();
+    reader.onload = (f) => {
+        const lines = f.target.result.split('\n').slice(1);
+        lines.forEach(l => {
+            const [name, entry, qty, setup] = l.split(',');
+            if(name) trades.push({id:Date.now(), name, entry, qty, setup, status:'closed'});
+        });
+        localStorage.setItem('trades', JSON.stringify(trades));
+        location.reload();
     };
-    new ApexCharts(document.querySelector("#monthlyChart"), options).render();
+    reader.readAsText(e.target.files[0]);
 }
 
-function renderEfficiency() {
-    const winners = trades.filter(t => t.status === 'closed' && exitPnlVal(t) > 0);
-    const losers = trades.filter(t => t.status === 'closed' && exitPnlVal(t) < 0);
-    
-    const avgWinDays = winners.length ? (winners.reduce((a,t) => a + holdDays(t), 0) / winners.length).toFixed(1) : 0;
-    const avgLossDays = losers.length ? (losers.reduce((a,t) => a + holdDays(t), 0) / losers.length).toFixed(1) : 0;
-    
-    document.getElementById('efficiencyBody').innerHTML = `
-        <tr><td>Avg Win Hold</td><td>${avgWinDays} days</td></tr>
-        <tr><td>Avg Loss Hold</td><td>${avgLossDays} days</td></tr>
-    `;
-}
-
-function renderStreaks() {
-    let current = 0; let record = 0;
-    trades.filter(t => t.status === 'closed').sort((a,b) => new Date(a.exitDate) - new Date(b.exitDate)).forEach(t => {
-        if(exitPnlVal(t) > 0) current++; else current = 0;
-        if(current > record) record = current;
-    });
-    document.getElementById('streakVal').textContent = `${current} Win Streak`;
-    document.getElementById('streakRecord').textContent = `All-time Record: ${record} wins`;
-}
+// Initial Render
+trades.forEach(t => {
+    document.getElementById('cardsGrid').innerHTML += `<div style="background:var(--bg2);padding:15px;">${t.name} - ${t.entry}</div>`;
+});
 </script>
 </body>
 </html>
