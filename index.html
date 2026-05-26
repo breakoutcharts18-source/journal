@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Trade Journal – Live Prices & Charts</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+<script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
 :root {
@@ -94,19 +94,14 @@ body{min-height:100vh;}
 .badge-safe{background:rgba(34,197,94,.12);color:var(--green);border:1px solid rgba(34,197,94,.2);}
 .badge-closed{background:rgba(245,158,11,.12);color:var(--amber);border:1px solid rgba(245,158,11,.2);}
 .badge-live{background:rgba(59,130,246,.1);color:var(--blue);border:1px solid rgba(59,130,246,.2);}
-.badge-stale{background:rgba(245,158,11,.1);color:var(--amber);border:1px solid rgba(245,158,11,.2);}
 .badge-no-ticker{background:rgba(139,147,168,.1);color:var(--text3);border:1px solid var(--border);}
 .card-pnl-inline{font-size:11px;font-family:var(--mono);margin-left:auto;}
-.chart-wrap{height:95px;margin:6px 0;position:relative;}
+.chart-wrap{height:105px;margin:10px 0;position:relative;}
 .card-footer{display:flex;justify-content:space-between;align-items:flex-end;border-top:1px solid var(--border);padding-top:10px;margin-top:4px;}
 .price-col{display:flex;flex-direction:column;gap:1px;}
 .price-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;}
 .price-val{font-size:13px;font-weight:500;font-family:var(--mono);}
 .price-change{font-size:10px;font-family:var(--mono);}
-
-/* SHIMMER */
-.shimmer{background:linear-gradient(90deg,var(--bg3) 25%,var(--bg2) 50%,var(--bg3) 75%);background-size:200% 100%;animation:shimmer 1.2s infinite;}
-@keyframes shimmer{0%{background-position:200% 0;}100%{background-position:-200% 0;}}
 
 /* MODAL */
 .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:200;align-items:center;justify-content:center;backdrop-filter:blur(3px);}
@@ -133,9 +128,9 @@ body{min-height:100vh;}
 /* DETAIL */
 .detail-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:200;align-items:center;justify-content:center;}
 .detail-overlay.open{display:flex;}
-.detail-panel{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius-lg);padding:26px;width:540px;max-width:96vw;max-height:92vh;overflow-y:auto;pointer-events:auto;}
-.detail-chart-wrap{height:320px;margin:14px 0;position:relative;}
-.detail-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px;}
+.detail-panel{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius-lg);padding:26px;width:650px;max-width:96vw;max-height:92vh;overflow-y:auto;pointer-events:auto;}
+.detail-chart-wrap{height:360px;margin:14px 0;position:relative;}
+.detail-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:12px;}
 .detail-stat{background:var(--bg3);border-radius:var(--radius);padding:10px 12px;}
 .detail-stat-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;}
 .detail-stat-val{font-size:15px;font-weight:500;font-family:var(--mono);}
@@ -160,13 +155,6 @@ body{min-height:100vh;}
 select option{background:var(--bg3);}
 ::-webkit-scrollbar{width:5px;}
 ::-webkit-scrollbar-thumb{background:var(--bg3);border-radius:3px;}
-
-/* CHART LEGEND */
-.chart-legend{display:flex;gap:12px;justify-content:center;margin-top:8px;font-size:11px;flex-wrap:wrap;}
-.legend-item{display:flex;align-items:center;gap:4px;}
-.legend-dot{width:6px;height:6px;border-radius:50%;}
-.legend-line{width:12px;height:1px;}
-.legend-dash{width:12px;height:1px;border-top:1px dashed currentColor;}
 </style>
 </head>
 <body>
@@ -320,8 +308,9 @@ select option{background:var(--bg3);}
       </div>
       <button class="modal-close" onclick="closeDetail()">✕</button>
     </div>
-    <div class="detail-chart-wrap"><canvas id="detailChart" role="img" aria-label="Trade price chart"></canvas></div>
-    <div class="chart-legend" id="detailLegend"></div>
+    
+    <div class="detail-chart-wrap" id="detailChart"></div>
+    
     <div class="detail-grid" id="detailGrid"></div>
     <div class="notes-box" id="detailNotes"></div>
     <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;">
@@ -385,6 +374,8 @@ let autoRefreshTimer = null;
 let progressTimer = null;
 let progressStart = null;
 let progressDuration = 0;
+
+// Store trading view chart instances to manage memory correctly
 let chartInstances = {};
 
 /* ── STORAGE ── */
@@ -397,9 +388,8 @@ function load(){
 function loadDefaults(){
   const d = (n) => { const x=new Date(); x.setDate(x.getDate()-n); return x.toISOString().split('T')[0]; };
   trades = [
-    {id:1,name:'EDELWEISS.NS',ticker:'EDELWEISS.NS',exchange:'NSE',type:'Equity',entry:113.2,cmp:114.55,qty:10,sl:112,target:130,status:'active',date:d(6),setup:'5MA Breakout',notes:'Strong momentum'},
-    {id:2,name:'EDELWEISS.NS',ticker:'EDELWEISS.NS',exchange:'NSE',type:'Equity',entry:110.64,cmp:114.55,qty:12,sl:112,target:125,status:'active',date:d(7),setup:'Momentum',notes:'Breakout play'},
-    {id:3,name:'TMPV.NS',ticker:'TMPV.NS',exchange:'NSE',type:'Equity',entry:363.45,cmp:381.6,qty:40,sl:364,target:420,status:'closed',date:d(4),exitDate:d(1),exitPrice:383.5,setup:'Cup & Handle',notes:'Sector momentum'},
+    {id:1,name:'EDELWEISS.NS',ticker:'EDELWEISS.NS',exchange:'NSE',type:'Equity',entry:113.2,cmp:114.55,qty:10,sl:112,target:130,status:'active',date:d(10),setup:'5MA Breakout',notes:'Strong momentum'},
+    {id:2,name:'NAZARA.NS',ticker:'NAZARA.NS',exchange:'NSE',type:'Equity',entry:275.0,cmp:290.55,qty:15,sl:260,target:310,status:'active',date:d(6),setup:'VCP Breakout',notes:'Volume picking up'},
   ];
   save();
 }
@@ -441,24 +431,47 @@ function computeSummary(){
 
 /* ── LIVE PRICES ── */
 async function fetchPrice(ticker){
-  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?interval=1d&range=30d`;
+  // Fetch a bit more history (60d) to ensure candlesticks look good
+  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?interval=1d&range=60d`;
   const proxied = PROXY + encodeURIComponent(url);
   const res = await fetch(proxied, {headers:{'x-requested-with':'XMLHttpRequest'}});
   const data = await res.json();
   const result = data?.chart?.result?.[0];
   if(!result) throw new Error('No data');
   const meta = result.meta;
+  
   const timestamps = result.timestamp || [];
-  const close = result.indicators?.quote?.[0]?.close || [];
+  const o = result.indicators?.quote?.[0]?.open || [];
+  const h = result.indicators?.quote?.[0]?.high || [];
+  const l = result.indicators?.quote?.[0]?.low || [];
+  const c = result.indicators?.quote?.[0]?.close || [];
+  
+  let dailyData = [];
+  let seenDates = new Set();
+  
+  // Build proper OHLC format for Lightweight Charts
+  for(let i=0; i<timestamps.length; i++){
+    if(c[i] != null && o[i] != null && h[i] != null && l[i] != null){
+      const dateStr = new Date(timestamps[i] * 1000).toISOString().split('T')[0];
+      if(!seenDates.has(dateStr)) {
+          seenDates.add(dateStr);
+          dailyData.push({
+            time: dateStr,
+            open: parseFloat(o[i].toFixed(2)),
+            high: parseFloat(h[i].toFixed(2)),
+            low: parseFloat(l[i].toFixed(2)),
+            close: parseFloat(c[i].toFixed(2))
+          });
+      }
+    }
+  }
+
   return {
     price: meta.regularMarketPrice,
     prevClose: meta.chartPreviousClose || meta.previousClose,
     currency: meta.currency,
     marketState: meta.marketState,
-    dailyData: timestamps.map((ts, i) => ({
-      date: new Date(ts * 1000).toISOString().split('T')[0],
-      close: close[i]
-    }))
+    dailyData: dailyData
   };
 }
 
@@ -467,21 +480,30 @@ async function fetchAllPrices(){
   const rbtn = document.getElementById('refreshBtn');
   const dot = document.getElementById('liveDot');
   const status = document.getElementById('liveStatus');
-  const tickers = trades.filter(t=>t.ticker&&t.status==='active');
+  
+  // We want to fetch for BOTH active and closed trades now to populate the candlestick charts
+  const tickers = trades.filter(t=>t.ticker);
   if(!tickers.length){
-    showToast('No active trades have ticker symbols. Add tickers via Edit.','info'); return;
+    showToast('No trades have ticker symbols. Add tickers via Edit.','info'); return;
   }
+  
   btn.disabled = true; rbtn.disabled = true;
   dot.className = 'dot fetching';
-  status.textContent = `Fetching ${tickers.length} prices from Yahoo Finance…`;
+  status.textContent = `Fetching data from Yahoo Finance…`;
+  
   let success=0, failed=0;
   for(const t of tickers){
     try{
       status.textContent = `Fetching ${t.ticker}…`;
       const r = await fetchPrice(t.ticker);
-      t.cmp = parseFloat(r.price.toFixed(2));
-      t.livePrice = t.cmp;
-      t.liveChange = r.prevClose ? ((r.price-r.prevClose)/r.prevClose*100) : null;
+      
+      // Only update live CMP for active trades
+      if(t.status === 'active') {
+          t.cmp = parseFloat(r.price.toFixed(2));
+          t.livePrice = t.cmp;
+          t.liveChange = r.prevClose ? ((r.price-r.prevClose)/r.prevClose*100) : null;
+      }
+      
       t.lastFetched = new Date().toISOString();
       t.dailyData = r.dailyData;
       success++;
@@ -492,12 +514,15 @@ async function fetchAllPrices(){
   }
   save();
   dot.className = failed&&!success ? 'dot error' : 'dot';
-  status.textContent = `Updated ${success} price${success!==1?'s':''}${failed?` · ${failed} failed (check ticker symbol)`:''} · ${new Date().toLocaleTimeString()}`;
+  status.textContent = `Updated ${success} charts ${failed?` · ${failed} failed (check ticker symbol)`:''} · ${new Date().toLocaleTimeString()}`;
   document.getElementById('lastFetchTime').textContent = 'Last: '+new Date().toLocaleTimeString();
   btn.disabled=false; rbtn.disabled=false;
-  renderSummary(); renderCards();
-  if(success) showToast(`${success} price${success>1?'s':''} updated ✓`,'success');
-  if(failed) showToast(`${failed} ticker${failed>1?'s':''} failed — check symbols`,'error');
+  
+  // Re-render
+  renderSummary(); 
+  renderCards();
+  if(success) showToast(`Data fetched ✓`,'success');
+  if(failed) showToast(`${failed} ticker(s) failed`,'error');
 }
 
 async function testTicker(){
@@ -571,212 +596,148 @@ function renderSummary(){
     </div>`;
 }
 
-/* ── RENDER BAR CHART WITH BUY/SELL MARKERS ── */
-function drawBarChart(canvasId, trade){
-  const canvas = document.getElementById(canvasId);
-  if(!canvas) return;
-  
-  if(chartInstances[canvasId]){
-    chartInstances[canvasId].destroy();
-  }
-  
-  const dailyData = trade.dailyData || [];
-  const prices = dailyData.map(d => d.close).filter(p => p != null);
-  const labels = dailyData.map(d => d.date.slice(5)).filter((_, i) => prices[i] != null);
-  
-  if(prices.length === 0) return;
-  
-  const entryDate = trade.date;
-  const exitDate = trade.status === 'closed' ? trade.exitDate : null;
-  const fullDates = dailyData.map(d => d.date).filter((_, i) => prices[i] != null);
-  const entryIdx = fullDates.findIndex(d => d === entryDate);
-  const exitIdx = exitDate ? fullDates.findIndex(d => d === exitDate) : -1;
-  
-  const ctx = canvas.getContext('2d');
-  
-  // Use exit price for closed trades to determine overall card color
-  const evalPrice = trade.status === 'closed' ? (trade.exitPrice || trade.cmp) : trade.cmp;
-  const isProfit = evalPrice >= trade.entry;
-  const barColor = isProfit ? '#22c55e' : '#ef4444';
-  
-  const markersPlugin = {
-    id: 'barMarkers',
-    afterDatasetsDraw(chart) {
-      const yScale = chart.scales.y;
-      const xScale = chart.scales.x;
-      const ctx = chart.ctx;
-      
-      if(entryIdx >= 0 && entryIdx < prices.length){
-        const x = xScale.getPixelForValue(entryIdx);
-        const y = yScale.getPixelForValue(prices[entryIdx]) - 12;
-        ctx.fillStyle = '#22c55e';
-        ctx.beginPath(); ctx.arc(x, y, 4, 0, 2*Math.PI); ctx.fill();
-        ctx.strokeStyle = '#0f1117'; ctx.lineWidth = 1.5; ctx.stroke();
-      }
-      
-      if(exitIdx >= 0 && exitIdx < prices.length && trade.status === 'closed'){
-        const x = xScale.getPixelForValue(exitIdx);
-        const y = yScale.getPixelForValue(prices[exitIdx]) - 12;
-        ctx.fillStyle = '#ef4444';
-        ctx.beginPath(); ctx.arc(x, y, 4, 0, 2*Math.PI); ctx.fill();
-        ctx.strokeStyle = '#0f1117'; ctx.lineWidth = 1.5; ctx.stroke();
-      }
+/* ── TRADINGVIEW LIGHTWEIGHT CHARTS ENGINE ── */
+function drawCandleChart(containerId, trade, isDetail = false) {
+    const container = document.getElementById(containerId);
+    if(!container || !trade.dailyData || trade.dailyData.length === 0) return;
+    
+    // Completely destroy old chart instance if it exists to prevent memory leak/button freeze
+    if(chartInstances[containerId]){
+        chartInstances[containerId].remove();
+        delete chartInstances[containerId];
     }
-  };
-  
-  chartInstances[canvasId] = new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: labels,
-      datasets: [{
-        label: 'Daily Close',
-        data: prices,
-        backgroundColor: barColor,
-        borderRadius: 4,
-        borderSkipped: false,
-      }],
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      indexAxis: undefined,
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          backgroundColor: 'rgba(0,0,0,0.7)', padding: 8,
-          titleFont: {family: "'JetBrains Mono', monospace", size: 11},
-          bodyFont: {family: "'JetBrains Mono', monospace", size: 11},
-          callbacks: { label: function(context){ return '₹' + context.raw.toFixed(2); } }
+    
+    // Initialize TradingView Chart
+    const chart = LightweightCharts.createChart(container, {
+        width: container.clientWidth,
+        height: container.clientHeight,
+        layout: { 
+            background: { type: 'solid', color: 'transparent' }, 
+            textColor: '#8b93a8' 
+        },
+        grid: { 
+            vertLines: { visible: false }, 
+            horzLines: { color: 'rgba(255,255,255,0.04)' } 
+        },
+        rightPriceScale: { 
+            borderVisible: false,
+            scaleMargins: { top: 0.1, bottom: 0.1 }
+        },
+        timeScale: { 
+            borderVisible: false, 
+            fixLeftEdge: true, 
+            fixRightEdge: true,
+            visible: isDetail // Only show timeline on detail view
+        },
+        handleScroll: isDetail, // Disable dragging on main cards
+        handleScale: isDetail,
+        crosshair: {
+            mode: LightweightCharts.CrosshairMode.Normal,
         }
-      },
-      scales: {
-        y: { beginAtZero: false, grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: 'rgba(255, 255, 255, 0.5)', font: { family: "'JetBrains Mono', monospace", size: 11 } } },
-        x: { grid: { display: false }, ticks: { color: 'rgba(255, 255, 255, 0.5)', font: { family: "'JetBrains Mono', monospace", size: 10 } } },
-      },
-    },
-    plugins: [markersPlugin]
-  });
+    });
+    
+    // Add Japanese Candlesticks
+    const candleSeries = chart.addCandlestickSeries({
+        upColor: '#22c55e', 
+        downColor: '#ef4444',
+        borderUpColor: '#22c55e', 
+        borderDownColor: '#ef4444',
+        wickUpColor: '#22c55e', 
+        wickDownColor: '#ef4444'
+    });
+    
+    // Sort and set data
+    const sortedData = [...trade.dailyData].sort((a, b) => a.time.localeCompare(b.time));
+    candleSeries.setData(sortedData);
+    
+    // Add BUY / SELL Markers
+    let markers = [];
+    
+    // Buy Marker
+    if(trade.date) {
+        // Find exact or closest date
+        const entryData = sortedData.find(d => d.time >= trade.date);
+        if(entryData) {
+            markers.push({ 
+                time: entryData.time, 
+                position: 'belowBar', 
+                color: '#22c55e', 
+                shape: 'arrowUp', 
+                text: 'BUY' 
+            });
+        }
+    }
+    
+    // Sell Marker
+    if(trade.status === 'closed' && trade.exitDate) {
+        const exitData = sortedData.find(d => d.time >= trade.exitDate);
+        if(exitData) {
+            markers.push({ 
+                time: exitData.time, 
+                position: 'aboveBar', 
+                color: '#ef4444', 
+                shape: 'arrowDown', 
+                text: 'SELL' 
+            });
+        }
+    }
+    
+    // Apply markers to chart
+    if (markers.length > 0) {
+        candleSeries.setMarkers(markers);
+    }
+    
+    // Only in Detail View: Add horizontal lines for Entry, SL, Target
+    if(isDetail) {
+        candleSeries.createPriceLine({
+            price: trade.entry,
+            color: '#3b82f6',
+            lineWidth: 2,
+            lineStyle: LightweightCharts.LineStyle.Dashed,
+            axisLabelVisible: true,
+            title: 'ENTRY',
+        });
+        
+        if(trade.sl) {
+            candleSeries.createPriceLine({
+                price: trade.sl,
+                color: '#ef4444',
+                lineWidth: 2,
+                lineStyle: LightweightCharts.LineStyle.Dashed,
+                axisLabelVisible: true,
+                title: 'SL',
+            });
+        }
+        
+        if(trade.target) {
+            candleSeries.createPriceLine({
+                price: trade.target,
+                color: '#22c55e',
+                lineWidth: 2,
+                lineStyle: LightweightCharts.LineStyle.Dashed,
+                axisLabelVisible: true,
+                title: 'TGT',
+            });
+        }
+    }
+    
+    chart.timeScale().fitContent();
+    
+    // Save instance for cleanup
+    chartInstances[containerId] = chart;
 }
 
-/* ── RENDER DETAIL BAR CHART WITH ENTRY/EXIT MARKERS ── */
-function drawDetailChart(canvasId, trade){
-  const canvas = document.getElementById(canvasId);
-  if(!canvas) return;
+/* ── FILTER ── */
+function setFilter(f,el){
+  currentFilter=f;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
   
-  if(chartInstances[canvasId]){
-    chartInstances[canvasId].destroy();
-  }
+  // FIX: Clear all active TradingView chart instances before removing their HTML containers
+  Object.values(chartInstances).forEach(chart => chart.remove());
+  chartInstances = {};
   
-  const dailyData = trade.dailyData || [];
-  const prices = dailyData.map(d => d.close).filter(p => p != null);
-  const labels = dailyData.map(d => d.date).filter((_, i) => prices[i] != null);
-  
-  if(prices.length === 0) return;
-  
-  const entryDate = trade.date;
-  const exitDate = trade.status === 'closed' ? trade.exitDate : null;
-  const entryIdx = labels.findIndex(d => d === entryDate);
-  const exitIdx = exitDate ? labels.findIndex(d => d === exitDate) : -1;
-  
-  const ctx = canvas.getContext('2d');
-  
-  // Use exit price for closed trades to determine overall card color
-  const evalPrice = trade.status === 'closed' ? (trade.exitPrice || trade.cmp) : trade.cmp;
-  const isProfit = evalPrice >= trade.entry;
-  const barColor = isProfit ? '#22c55e' : '#ef4444';
-  
-  const markersPlugin = {
-    id: 'detailMarkersPlugin',
-    afterDatasetsDraw(chart) {
-      const yScale = chart.scales.y;
-      const xScale = chart.scales.x;
-      
-      if(entryIdx >= 0 && entryIdx < prices.length){
-        const x = xScale.getPixelForValue(entryIdx);
-        const y = yScale.getPixelForValue(prices[entryIdx]) - 16;
-        const ctx = chart.ctx;
-        
-        ctx.fillStyle = '#22c55e';
-        ctx.beginPath(); ctx.arc(x, y, 6, 0, 2*Math.PI); ctx.fill();
-        ctx.strokeStyle = '#0f1117'; ctx.lineWidth = 2.5; ctx.stroke();
-        
-        ctx.fillStyle = '#22c55e';
-        ctx.font = "bold 11px 'JetBrains Mono', monospace";
-        ctx.textAlign = 'center';
-        ctx.fillText('BUY', x, y - 12);
-      }
-      
-      if(exitIdx >= 0 && exitIdx < prices.length && trade.status === 'closed'){
-        const x = xScale.getPixelForValue(exitIdx);
-        const y = yScale.getPixelForValue(prices[exitIdx]) - 16;
-        const ctx = chart.ctx;
-        
-        ctx.fillStyle = '#ef4444';
-        ctx.beginPath(); ctx.arc(x, y, 6, 0, 2*Math.PI); ctx.fill();
-        ctx.strokeStyle = '#0f1117'; ctx.lineWidth = 2.5; ctx.stroke();
-        
-        ctx.fillStyle = '#ef4444';
-        ctx.font = "bold 11px 'JetBrains Mono', monospace";
-        ctx.textAlign = 'center';
-        ctx.fillText('SELL', x, y - 12);
-      }
-    }
-  };
-  
-  chartInstances[canvasId] = new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: labels.map(d => d.slice(5)),
-      datasets: [
-        {
-          label: 'Daily Close',
-          data: prices,
-          backgroundColor: barColor,
-          borderRadius: 4
-        },
-        trade.sl ? {
-          type: 'line',
-          label: 'Stop Loss',
-          data: Array(prices.length).fill(trade.sl),
-          borderColor: 'rgba(239, 68, 68, 0.5)',
-          borderDash: [5, 5],
-          borderWidth: 1.5,
-          pointRadius: 0,
-          fill: false,
-        } : null,
-        trade.target ? {
-          type: 'line',
-          label: 'Target',
-          data: Array(prices.length).fill(trade.target),
-          borderColor: 'rgba(34, 197, 94, 0.5)',
-          borderDash: [5, 5],
-          borderWidth: 1.5,
-          pointRadius: 0,
-          fill: false,
-        } : null,
-      ].filter(Boolean),
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          backgroundColor: 'rgba(0,0,0,0.7)', padding: 10,
-          titleFont: {family: "'JetBrains Mono', monospace", size: 12},
-          bodyFont: {family: "'JetBrains Mono', monospace", size: 11},
-          callbacks: {
-            label: function(context){ return context.dataset.label + ': ₹' + (context.raw?.toFixed(2) || 'N/A'); }
-          }
-        }
-      },
-      scales: {
-        y: { beginAtZero: false, grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: 'rgba(255, 255, 255, 0.5)', font: { family: "'JetBrains Mono', monospace", size: 11 } } },
-        x: { grid: { display: false }, ticks: { color: 'rgba(255, 255, 255, 0.5)', font: { family: "'JetBrains Mono', monospace", size: 10 } } },
-      },
-    },
-    plugins: [markersPlugin]
-  });
+  renderCards();
 }
 
 /* ── RENDER CARDS ── */
@@ -793,10 +754,12 @@ function renderCards(){
     if(sort==='name') return a.name.localeCompare(b.name);
     return b.id-a.id;
   });
+  
   if(!visible.length){
-    grid.innerHTML=`<div class="empty-state"><div style="font-size:32px">📈</div><p>No trades. Add your first trade!</p></div>`;
+    grid.innerHTML=`<div class="empty-state"><div style="font-size:32px">📈</div><p>No trades found.</p></div>`;
     return;
   }
+  
   grid.innerHTML=visible.map(t=>{
     const isClosed = t.status === 'closed';
     const evalPrice = isClosed ? (t.exitPrice || t.cmp) : t.cmp;
@@ -827,7 +790,9 @@ function renderCards(){
         ${rr?`<span style="font-size:10px;color:var(--text3);">RR ${rr}x</span>`:''}
         <span class="card-pnl-inline ${bull?'green':'red'}">${t.status==='closed' ? '🔒 ' : ''}${pnl>=0?'+':''}${fmtINR(pnl)}</span>
       </div>
-      <div class="chart-wrap"><canvas id="cv${t.id}" style="width:100%;height:100%;display:block;"></canvas></div>
+      
+      <div class="chart-wrap" id="cv${t.id}"></div>
+      
       <div class="card-footer">
         <div class="price-col"><span class="price-label">Entry</span><span class="price-val">₹${t.entry.toLocaleString('en-IN')}</span></div>
         ${t.sl?`<div class="price-col" style="text-align:center;"><span class="price-label">SL</span><span class="price-val red">₹${t.sl.toLocaleString('en-IN')}</span></div>`:''}
@@ -839,10 +804,13 @@ function renderCards(){
       </div>
     </div>`;
   }).join('');
+  
+  // Render charts after DOM updates
   requestAnimationFrame(()=>{
     visible.forEach(t=>{
-      const cv=document.getElementById('cv'+t.id);
-      if(cv) drawBarChart('cv'+t.id, t);
+        if(t.dailyData) {
+            drawCandleChart('cv'+t.id, t, false);
+        }
     });
   });
 }
@@ -861,17 +829,9 @@ function openDetail(id){
   document.getElementById('detailName').innerHTML=`<span>${t.name}</span> <span class="${bull?'green':'red'}" style="font-size:14px;font-family:var(--mono)">${fmtPct(p)}</span>`;
   document.getElementById('detailTicker').textContent=t.ticker?`${t.ticker} · ${t.exchange} · ${t.type}`:`${t.exchange} · ${t.type}`;
   
-  // Legend
-  const legendHTML = `
-    <div class="legend-item"><div class="legend-dot" style="background:#22c55e;"></div>BUY Entry</div>
-    ${t.status === 'closed' ? '<div class="legend-item"><div class="legend-dot" style="background:#ef4444;"></div>SELL Exit</div>' : ''}
-    ${t.sl ? `<div class="legend-item"><div class="legend-line" style="border-top:1px solid rgba(239,68,68,0.5);border-bottom:1px dashed rgba(239,68,68,0.5);"></div>Stop Loss</div>` : ''}
-    ${t.target ? `<div class="legend-item"><div class="legend-line" style="border-top:1px solid rgba(34,197,94,0.5);border-bottom:1px dashed rgba(34,197,94,0.5);"></div>Target</div>` : ''}
-  `;
-  document.getElementById('detailLegend').innerHTML = legendHTML;
-  
   const rr=rrRatio(t);
   const dayChange=t.liveChange!=null?`<span class="${t.liveChange>=0?'green':'red'}">${t.liveChange>=0?'+':''}${t.liveChange.toFixed(2)}% today</span>`:'—';
+  
   document.getElementById('detailGrid').innerHTML=`
     <div class="detail-stat"><div class="detail-stat-label">Entry</div><div class="detail-stat-val">₹${t.entry.toLocaleString('en-IN')}</div></div>
     <div class="detail-stat"><div class="detail-stat-label">${isClosed ? 'Exit Price' : 'CMP'}</div><div class="detail-stat-val ${bull?'green':'red'}">₹${evalPrice.toLocaleString('en-IN')}</div></div>
@@ -883,15 +843,29 @@ function openDetail(id){
     <div class="detail-stat"><div class="detail-stat-label">R:R Ratio</div><div class="detail-stat-val">${rr?rr+'x':'—'}</div></div>
     <div class="detail-stat"><div class="detail-stat-label">Today Change</div><div class="detail-stat-val">${isClosed ? '—' : dayChange}</div></div>
     <div class="detail-stat"><div class="detail-stat-label">Holding</div><div class="detail-stat-val">${holdDays(t)}d</div></div>
-    <div class="detail-stat"><div class="detail-stat-label">Setup</div><div class="detail-stat-val" style="font-size:12px;">${t.setup||'—'}</div></div>
-    <div class="detail-stat"><div class="detail-stat-label">Status</div><div class="detail-stat-val">${isClosed ? '✓ Closed' : 'Active'}</div></div>`;
+    <div class="detail-stat" style="grid-column: span 2"><div class="detail-stat-label">Setup</div><div class="detail-stat-val" style="font-size:12px;">${t.setup||'—'}</div></div>`;
+    
   document.getElementById('detailNotes').textContent=t.notes||'No notes added.';
   document.getElementById('detailOverlay').classList.add('open');
-  setTimeout(()=>{ drawDetailChart('detailChart', t); }, 50);
+  
+  // Render full detail chart
+  setTimeout(()=>{ 
+      drawCandleChart('detailChart', t, true); 
+  }, 50);
 }
-function closeDetail(){ document.getElementById('detailOverlay').classList.remove('open'); detailId=null; }
+function closeDetail(){ 
+    document.getElementById('detailOverlay').classList.remove('open'); 
+    
+    // Important: Clean up detail chart instance when closing modal
+    if(chartInstances['detailChart']) {
+        chartInstances['detailChart'].remove();
+        delete chartInstances['detailChart'];
+    }
+    detailId=null; 
+}
 function closeDetailBackdrop(e){ if(e.target.id==='detailOverlay') closeDetail(); }
 function editFromDetail(){ closeDetail(); openEditModal(detailId); }
+
 function closeTradeFromDetail(){
   if(!detailId) return;
   const t = trades.find(x => x.id === detailId);
@@ -900,19 +874,31 @@ function closeTradeFromDetail(){
     showToast('Trade is already closed','info');
     return;
   }
+  
+  // Clean up main UI charts before update
+  Object.values(chartInstances).forEach(chart => chart.remove());
+  chartInstances = {};
+  
   t.status = 'closed';
   t.exitDate = new Date().toISOString().split('T')[0];
   t.exitPrice = t.cmp;
   const lockedPnl = exitPnlVal(t);
+  
   save();
   closeDetail();
   renderSummary();
   renderCards();
   showToast(`✓ Position closed! 🔒 Profit locked: ${fmtINR(lockedPnl)}`,'success');
 }
+
 function deleteFromDetail(){
   if(!confirm('Delete this trade permanently?')) return;
   trades=trades.filter(t=>t.id!==detailId);
+  
+  // Clean up charts before re-render
+  Object.values(chartInstances).forEach(chart => chart.remove());
+  chartInstances = {};
+  
   save(); 
   closeDetail(); 
   renderSummary(); 
@@ -980,6 +966,10 @@ function saveTrade(){
     notes:document.getElementById('fNotes').value||'',
   };
   
+  // Clean up all charts before UI refresh to prevent overlaps
+  Object.values(chartInstances).forEach(chart => chart.remove());
+  chartInstances = {};
+  
   if(editingId){
     const t=trades.find(x=>x.id===editingId);
     if(t) Object.assign(t,trade);
@@ -987,8 +977,14 @@ function saveTrade(){
     trade.id=Math.max(...trades.map(t=>t.id||0),0)+1;
     trades.push(trade);
   }
+  
   save(); closeModal(); renderSummary(); renderCards();
   showToast(editingId?'Trade updated ✓':'Trade added ✓','success');
+  
+  // Automatically pull historical data for the new chart if there is a ticker
+  if(trade.ticker) {
+      setTimeout(() => fetchAllPrices(), 500);
+  }
 }
 
 /* ── EXPORT CSV ── */
