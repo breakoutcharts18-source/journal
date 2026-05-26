@@ -136,7 +136,7 @@ body{min-height:100vh;}
 .detail-stat-val{font-size:15px;font-weight:500;font-family:var(--mono);}
 .notes-box{background:var(--bg3);border-radius:var(--radius);padding:12px;font-size:12px;color:var(--text2);line-height:1.6;margin-top:12px;min-height:40px;}
 
-/* HELP MODAL */
+/* HELP TABLE */
 .help-section{margin-bottom:16px;}
 .help-section h4{font-size:13px;font-weight:500;margin-bottom:8px;color:var(--text);}
 .help-table{width:100%;border-collapse:collapse;font-size:12px;}
@@ -171,6 +171,7 @@ select option{background:var(--bg3);}
   </div>
   <div class="topbar-right">
     <button class="btn" onclick="openHelp()">? Ticker Help</button>
+    <button class="btn" onclick="openAnalytics()">📊 Analytics</button>
     <button class="btn btn-amber" id="fetchBtn" onclick="fetchAllPrices()">⬇ Fetch Live Prices</button>
     <button class="btn btn-green" onclick="exportCSV()">⬆ Export CSV</button>
     <button class="btn btn-primary" onclick="openAddModal()">+ Add Trade</button>
@@ -217,6 +218,39 @@ select option{background:var(--bg3);}
   </div>
 
   <div class="cards-grid" id="cardsGrid"></div>
+</div>
+
+<div class="overlay" id="analyticsOverlay" onclick="closeAnalyticsBackdrop(event)">
+  <div class="modal" style="width:700px; max-width:96vw;">
+    <div class="modal-title">
+      Performance Dashboard
+      <button class="modal-close" onclick="closeAnalytics()">✕</button>
+    </div>
+    <div class="tabs" style="margin-bottom: 20px; display: inline-flex;">
+        <button class="tab active" id="tabCurve" onclick="switchAnalyticsTab('curve')">Equity Curve</button>
+        <button class="tab" id="tabSetups" onclick="switchAnalyticsTab('setups')">Setup Analytics</button>
+    </div>
+
+    <div id="viewCurve">
+        <div style="font-size:12px; color:var(--text2); margin-bottom: 8px;">Cumulative P&L over time (based on Closed trades)</div>
+        <div style="height: 300px; position:relative;" id="equityChart"></div>
+    </div>
+
+    <div id="viewSetups" style="display: none;">
+        <div style="font-size:12px; color:var(--text2); margin-bottom: 12px;">Aggregated metrics grouped by your Strategy/Setup input.</div>
+        <table class="help-table" style="width:100%;">
+            <thead>
+                <tr>
+                    <th style="color:var(--text); font-family:var(--font);">Strategy / Setup</th>
+                    <th>Total Trades</th>
+                    <th>Win Rate</th>
+                    <th>Net P&L</th>
+                </tr>
+            </thead>
+            <tbody id="setupTableBody"></tbody>
+        </table>
+    </div>
+  </div>
 </div>
 
 <div class="overlay" id="tradeOverlay" onclick="closeModalBackdrop(event)">
@@ -289,7 +323,7 @@ select option{background:var(--bg3);}
       </div>
       <div class="form-group">
         <label>Strategy / Setup</label>
-        <input id="fSetup" type="text" placeholder="e.g. 5MA Breakout" />
+        <input id="fSetup" type="text" placeholder="e.g. VCP Breakout" />
       </div>
       <div class="form-group form-full">
         <label>Notes / Rationale</label>
@@ -379,6 +413,7 @@ let progressStart = null;
 let progressDuration = 0;
 
 let chartInstances = {};
+let equityChartInstance = null;
 
 /* ── STORAGE ── */
 function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(trades)); }
@@ -390,7 +425,7 @@ function load(){
 function loadDefaults(){
   const d = (n) => { const x=new Date(); x.setDate(x.getDate()-n); return x.toISOString().split('T')[0]; };
   trades = [
-    {id:1,name:'EDELWEISS.NS',ticker:'EDELWEISS.NS',exchange:'NSE',type:'Equity',entry:113.2,cmp:114.55,qty:10,sl:112,target:130,status:'active',date:d(10),setup:'5MA Breakout',notes:'Strong momentum'},
+    {id:1,name:'EDELWEISS.NS',ticker:'EDELWEISS.NS',exchange:'NSE',type:'Equity',entry:113.2,cmp:114.55,qty:10,sl:112,target:130,status:'active',date:d(10),setup:'Volume Breakout',notes:'Strong momentum'},
     {id:2,name:'NAZARA.NS',ticker:'NAZARA.NS',exchange:'NSE',type:'Equity',entry:275.0,cmp:290.55,qty:15,sl:260,target:310,status:'active',date:d(6),setup:'VCP Breakout',notes:'Volume picking up'},
   ];
   save();
@@ -611,20 +646,38 @@ function drawCandleChart(containerId, trade, isDetail = false) {
     let pointAnnotations = [];
     
     if(isDetail) {
+        // Entry Line
         yaxisAnnotations.push({
             y: trade.entry, borderColor: '#3b82f6', strokeDashArray: 4,
-            label: { borderColor: 'transparent', style: { color: '#3b82f6', background: 'transparent', fontWeight: 600, fontFamily: "'JetBrains Mono', monospace"}, text: 'ENTRY' }
+            label: { 
+                borderColor: 'transparent',
+                position: 'right', offsetX: -5,
+                style: { color: '#3b82f6', background: 'transparent', fontWeight: 600, fontFamily: "'JetBrains Mono', monospace"}, 
+                text: 'ENTRY' 
+            }
         });
+        // SL Line
         if(trade.sl) {
             yaxisAnnotations.push({
                 y: trade.sl, borderColor: '#ef4444', strokeDashArray: 4,
-                label: { borderColor: 'transparent', style: { color: '#ef4444', background: 'transparent', fontWeight: 600, fontFamily: "'JetBrains Mono', monospace"}, text: 'SL' }
+                label: { 
+                    borderColor: 'transparent',
+                    position: 'right', offsetX: -5,
+                    style: { color: '#ef4444', background: 'transparent', fontWeight: 600, fontFamily: "'JetBrains Mono', monospace"}, 
+                    text: 'SL' 
+                }
             });
         }
+        // Target Line
         if(trade.target) {
             yaxisAnnotations.push({
                 y: trade.target, borderColor: '#22c55e', strokeDashArray: 4,
-                label: { borderColor: 'transparent', style: { color: '#22c55e', background: 'transparent', fontWeight: 600, fontFamily: "'JetBrains Mono', monospace"}, text: 'TGT' }
+                label: { 
+                    borderColor: 'transparent', 
+                    position: 'right', offsetX: -5,
+                    style: { color: '#22c55e', background: 'transparent', fontWeight: 600, fontFamily: "'JetBrains Mono', monospace"}, 
+                    text: 'TGT' 
+                }
             });
         }
     }
@@ -874,6 +927,132 @@ function deleteFromDetail(){
   save(); closeDetail(); renderSummary(); renderCards();
   showToast('Trade deleted','error');
 }
+
+/* ── ANALYTICS DASHBOARD ── */
+function openAnalytics(){
+  document.getElementById('analyticsOverlay').classList.add('open');
+  switchAnalyticsTab('curve');
+}
+
+function closeAnalytics(){
+  document.getElementById('analyticsOverlay').classList.remove('open');
+  if(equityChartInstance) {
+      equityChartInstance.destroy();
+      equityChartInstance = null;
+  }
+}
+
+function closeAnalyticsBackdrop(e){ if(e.target.id==='analyticsOverlay') closeAnalytics(); }
+
+function switchAnalyticsTab(tab){
+  document.getElementById('tabCurve').classList.toggle('active', tab === 'curve');
+  document.getElementById('tabSetups').classList.toggle('active', tab === 'setups');
+  document.getElementById('viewCurve').style.display = tab === 'curve' ? 'block' : 'none';
+  document.getElementById('viewSetups').style.display = tab === 'setups' ? 'block' : 'none';
+
+  if(tab === 'curve') {
+      renderEquityCurve();
+  } else {
+      renderSetupAnalytics();
+  }
+}
+
+function renderEquityCurve(){
+  if(equityChartInstance) equityChartInstance.destroy();
+
+  const closedTrades = trades.filter(t => t.status === 'closed' && t.exitDate)
+                             .sort((a,b) => new Date(a.exitDate) - new Date(b.exitDate));
+
+  let currentEquity = 0;
+  let seriesData = [];
+  let dailyPnl = {};
+
+  // Aggregate P&L by day in case of multiple trades closing on the same date
+  closedTrades.forEach(t => {
+      if(!dailyPnl[t.exitDate]) dailyPnl[t.exitDate] = 0;
+      dailyPnl[t.exitDate] += exitPnlVal(t);
+  });
+
+  const sortedDates = Object.keys(dailyPnl).sort((a,b) => new Date(a) - new Date(b));
+
+  sortedDates.forEach(date => {
+      currentEquity += dailyPnl[date];
+      seriesData.push({ x: new Date(date).getTime(), y: parseFloat(currentEquity.toFixed(2)) });
+  });
+
+  // Ensure there is a baseline starting at 0 for visual clarity
+  if(seriesData.length === 0) {
+      seriesData.push({ x: new Date().getTime(), y: 0 });
+  } else {
+      const firstDate = new Date(sortedDates[0]);
+      firstDate.setDate(firstDate.getDate() - 1);
+      seriesData.unshift({ x: firstDate.getTime(), y: 0 });
+  }
+
+  const options = {
+      series: [{ name: 'Cumulative P&L', data: seriesData }],
+      chart: {
+          type: 'area', height: 300, background: 'transparent',
+          toolbar: { show: false }, animations: { enabled: false }
+      },
+      theme: { mode: 'dark' },
+      colors: ['#3b82f6'],
+      fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.4, opacityTo: 0.0, stops: [0, 100] } },
+      dataLabels: { enabled: false },
+      stroke: { curve: 'straight', width: 2 },
+      xaxis: { 
+          type: 'datetime', 
+          labels: { style: { colors: '#8b93a8', fontFamily: "'JetBrains Mono', monospace" } },
+          axisBorder: {show: false}, axisTicks: {show: false}, tooltip: {enabled: false}
+      },
+      yaxis: {
+          labels: {
+              style: { colors: '#8b93a8', fontFamily: "'JetBrains Mono', monospace" },
+              formatter: (value) => { return '₹' + value.toFixed(0) }
+          }
+      },
+      grid: { borderColor: 'rgba(255,255,255,0.04)', strokeDashArray: 4 },
+      tooltip: { theme: 'dark', x: { format: 'dd MMM yyyy' }, y: { formatter: function(val) { return "₹" + val.toFixed(2) } } }
+  };
+
+  equityChartInstance = new ApexCharts(document.querySelector("#equityChart"), options);
+  equityChartInstance.render();
+}
+
+function renderSetupAnalytics(){
+  const setups = {};
+  
+  trades.forEach(t => {
+      const s = (t.setup || 'Uncategorized').trim();
+      if(!setups[s]) setups[s] = { count: 0, wins: 0, pnl: 0 };
+      setups[s].count++;
+      
+      const p = t.status === 'closed' ? exitPnlVal(t) : pnlVal(t);
+      setups[s].pnl += p;
+      if(p > 0) setups[s].wins++;
+  });
+
+  const tbody = document.getElementById('setupTableBody');
+  const sortedSetups = Object.keys(setups).sort((a,b) => setups[b].pnl - setups[a].pnl);
+  
+  if (sortedSetups.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:20px; color:var(--text3);">No trade setups recorded yet.</td></tr>`;
+      return;
+  }
+
+  tbody.innerHTML = sortedSetups.map(s => {
+      const stat = setups[s];
+      const winRate = ((stat.wins / stat.count) * 100).toFixed(1);
+      const pnlColor = stat.pnl >= 0 ? 'green' : 'red';
+      return `<tr>
+          <td style="font-weight:500; color:var(--text); text-transform:capitalize;">${s}</td>
+          <td style="font-family:var(--mono);">${stat.count}</td>
+          <td style="font-family:var(--mono);">${winRate}%</td>
+          <td class="${pnlColor}" style="font-family:var(--mono);">${stat.pnl >= 0 ? '+' : ''}${fmtINR(stat.pnl)}</td>
+      </tr>`;
+  }).join('');
+}
+
 
 /* ── ADD/EDIT ── */
 function openAddModal(){
