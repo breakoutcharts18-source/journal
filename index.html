@@ -791,7 +791,7 @@ function renderCards(){
 /* ── DETAIL ── */
 function openDetail(id){
   const t=trades.find(x=>x.id===id); if(!t) return;
-  detailId=id;
+  detailId=id; // IMPORTANT: Store the ID in memory
   
   const isClosed = t.status === 'closed';
   const evalPrice = isClosed ? (t.exitPrice || t.cmp) : t.cmp;
@@ -823,16 +823,24 @@ function openDetail(id){
   
   setTimeout(()=>{ drawCandleChart('detailChart', t, true); }, 150);
 }
+
 function closeDetail(){ 
     document.getElementById('detailOverlay').classList.remove('open'); 
     if(chartInstances['detailChart']) {
         chartInstances['detailChart'].destroy();
         delete chartInstances['detailChart'];
     }
-    detailId=null; 
+    detailId=null; // Wipes the memory for the next open
 }
+
 function closeDetailBackdrop(e){ if(e.target.id==='detailOverlay') closeDetail(); }
-function editFromDetail(){ closeDetail(); openEditModal(detailId); }
+
+// FIXED: Capture the detailId before the closeDetail function wipes it!
+function editFromDetail(){ 
+    const storedId = detailId; 
+    closeDetail(); 
+    openEditModal(storedId); 
+}
 
 function closeTradeFromDetail(){
   if(!detailId) return;
@@ -843,16 +851,22 @@ function closeTradeFromDetail(){
     return;
   }
   
+  // ADDED: Prompt you for a custom historical Exit Price
+  const manualExit = prompt(`Close ${t.name}?\n\nEnter your precise Exit Price (or leave blank to use the live CMP of ₹${t.cmp}):`);
+  if (manualExit === null) return; // You hit cancel
+  
+  let ePrice = parseFloat(manualExit);
+  if (isNaN(ePrice) || ePrice <= 0) ePrice = t.cmp;
+  
   Object.values(chartInstances).forEach(chart => { if(chart) chart.destroy(); });
   chartInstances = {};
   
   t.status = 'closed';
   t.exitDate = new Date().toISOString().split('T')[0];
-  t.exitPrice = t.cmp;
-  const lockedPnl = exitPnlVal(t);
+  t.exitPrice = ePrice;
   
   save(); closeDetail(); renderSummary(); renderCards();
-  showToast(`✓ Position closed! 🔒 Profit locked: ${fmtINR(lockedPnl)}`,'success');
+  showToast(`✓ Position closed! 🔒 Profit locked: ${fmtINR(exitPnlVal(t))}`,'success');
 }
 
 function deleteFromDetail(){
@@ -908,8 +922,20 @@ function saveTrade(){
   const name=document.getElementById('fName').value.trim();
   const entry=parseFloat(document.getElementById('fEntry').value);
   const qty=parseFloat(document.getElementById('fQty').value);
-  const cmp=parseFloat(document.getElementById('fCmp').value);
-  if(!name||isNaN(entry)||isNaN(qty)||isNaN(cmp)){ showToast('Please fill Name, Entry, Qty & CMP','error'); return; }
+  let cmp=parseFloat(document.getElementById('fCmp').value);
+  
+  const status = document.getElementById('fStatus').value;
+  const exitPrice = parseFloat(document.getElementById('fExitPrice').value)||null;
+  
+  // ADDED: If you are saving a closed trade, it no longer yells at you for leaving CMP blank.
+  if (status === 'closed' && exitPrice && isNaN(cmp)) {
+      cmp = exitPrice; 
+  }
+  
+  if(!name||isNaN(entry)||isNaN(qty)||isNaN(cmp)){ 
+      showToast('Please fill Name, Entry, Qty & CMP (or Exit Price if closed)','error'); 
+      return; 
+  }
   
   const trade={
     name, entry, qty, cmp,
