@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Trade Journal – Live Prices & Charts</title>
-<script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+<title>ATM Journal – Live Prices & Charts</title>
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
 :root {
@@ -23,7 +23,7 @@ html{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14
 body{min-height:100vh;}
 
 .topbar{display:flex;align-items:center;gap:12px;padding:14px 24px;background:var(--bg2);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:50;}
-.logo{font-size:17px;font-weight:600;display:flex;align-items:center;gap:8px;}
+.logo{font-size:17px;font-weight:600;display:flex;align-items:center;gap:8px;letter-spacing:0.5px;}
 .logo-dot{width:8px;height:8px;border-radius:50%;background:var(--green);animation:pulse 2s infinite;}
 @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.4;}}
 .live-badge{font-size:10px;background:var(--green-bg);color:var(--green);border:1px solid rgba(34,197,94,0.25);padding:2px 8px;border-radius:20px;font-weight:500;}
@@ -96,7 +96,7 @@ body{min-height:100vh;}
 .badge-live{background:rgba(59,130,246,.1);color:var(--blue);border:1px solid rgba(59,130,246,.2);}
 .badge-no-ticker{background:rgba(139,147,168,.1);color:var(--text3);border:1px solid var(--border);}
 .card-pnl-inline{font-size:11px;font-family:var(--mono);margin-left:auto;}
-.chart-wrap{height:105px;margin:10px 0;position:relative;}
+.chart-wrap{height:115px;margin:10px 0;position:relative;}
 .card-footer{display:flex;justify-content:space-between;align-items:flex-end;border-top:1px solid var(--border);padding-top:10px;margin-top:4px;}
 .price-col{display:flex;flex-direction:column;gap:1px;}
 .price-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;}
@@ -129,7 +129,7 @@ body{min-height:100vh;}
 .detail-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:200;align-items:center;justify-content:center;}
 .detail-overlay.open{display:flex;}
 .detail-panel{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius-lg);padding:26px;width:650px;max-width:96vw;max-height:92vh;overflow-y:auto;pointer-events:auto;}
-.detail-chart-wrap{height:360px;margin:14px 0;position:relative;}
+.detail-chart-wrap{height:320px;margin:14px 0;position:relative;}
 .detail-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:12px;}
 .detail-stat{background:var(--bg3);border-radius:var(--radius);padding:10px 12px;}
 .detail-stat-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;}
@@ -155,6 +155,10 @@ body{min-height:100vh;}
 select option{background:var(--bg3);}
 ::-webkit-scrollbar{width:5px;}
 ::-webkit-scrollbar-thumb{background:var(--bg3);border-radius:3px;}
+
+/* ApexCharts specific overrides */
+.apexcharts-tooltip { background: #1e2535 !important; border: 1px solid rgba(255,255,255,0.13) !important; box-shadow: 0 4px 6px rgba(0,0,0,0.3) !important; color: #fff; font-family: 'JetBrains Mono', monospace !important; }
+.apexcharts-tooltip-title { background: #161b27 !important; border-bottom: 1px solid rgba(255,255,255,0.07) !important; font-family: 'DM Sans', sans-serif !important; font-weight: 600 !important; padding: 6px 10px !important; }
 </style>
 </head>
 <body>
@@ -162,7 +166,7 @@ select option{background:var(--bg3);}
 <div class="topbar">
   <div class="logo">
     <div class="logo-dot"></div>
-    Trade Journal
+    ATM Journal
     <span class="live-badge">LIVE</span>
   </div>
   <div class="topbar-right">
@@ -348,7 +352,6 @@ select option{background:var(--bg3);}
         <tr><td>^NSEI</td><td>NIFTY 50</td></tr>
         <tr><td>^BSESN</td><td>BSE SENSEX</td></tr>
         <tr><td>^NSEBANK</td><td>BANK NIFTY</td></tr>
-        <tr><td>GOLD.MCX</td><td>Gold MCX (use .BO for BSE-listed ETFs)</td></tr>
       </table>
     </div>
     <div class="help-section" style="background:var(--blue-bg);border:1px solid rgba(59,130,246,.2);border-radius:var(--radius);padding:12px;margin-bottom:0;">
@@ -375,7 +378,6 @@ let progressTimer = null;
 let progressStart = null;
 let progressDuration = 0;
 
-// Store trading view chart instances to manage memory correctly
 let chartInstances = {};
 
 /* ── STORAGE ── */
@@ -431,7 +433,6 @@ function computeSummary(){
 
 /* ── LIVE PRICES ── */
 async function fetchPrice(ticker){
-  // Fetch a bit more history (60d) to ensure candlesticks look good
   const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?interval=1d&range=60d`;
   const proxied = PROXY + encodeURIComponent(url);
   const res = await fetch(proxied, {headers:{'x-requested-with':'XMLHttpRequest'}});
@@ -449,7 +450,6 @@ async function fetchPrice(ticker){
   let dailyData = [];
   let seenDates = new Set();
   
-  // Build proper OHLC format for Lightweight Charts
   for(let i=0; i<timestamps.length; i++){
     if(c[i] != null && o[i] != null && h[i] != null && l[i] != null){
       const dateStr = new Date(timestamps[i] * 1000).toISOString().split('T')[0];
@@ -481,7 +481,6 @@ async function fetchAllPrices(){
   const dot = document.getElementById('liveDot');
   const status = document.getElementById('liveStatus');
   
-  // We want to fetch for BOTH active and closed trades now to populate the candlestick charts
   const tickers = trades.filter(t=>t.ticker);
   if(!tickers.length){
     showToast('No trades have ticker symbols. Add tickers via Edit.','info'); return;
@@ -497,7 +496,6 @@ async function fetchAllPrices(){
       status.textContent = `Fetching ${t.ticker}…`;
       const r = await fetchPrice(t.ticker);
       
-      // Only update live CMP for active trades
       if(t.status === 'active') {
           t.cmp = parseFloat(r.price.toFixed(2));
           t.livePrice = t.cmp;
@@ -514,11 +512,10 @@ async function fetchAllPrices(){
   }
   save();
   dot.className = failed&&!success ? 'dot error' : 'dot';
-  status.textContent = `Updated ${success} charts ${failed?` · ${failed} failed (check ticker symbol)`:''} · ${new Date().toLocaleTimeString()}`;
+  status.textContent = `Updated ${success} charts ${failed?` · ${failed} failed`:''} · ${new Date().toLocaleTimeString()}`;
   document.getElementById('lastFetchTime').textContent = 'Last: '+new Date().toLocaleTimeString();
   btn.disabled=false; rbtn.disabled=false;
   
-  // Re-render
   renderSummary(); 
   renderCards();
   if(success) showToast(`Data fetched ✓`,'success');
@@ -596,134 +593,116 @@ function renderSummary(){
     </div>`;
 }
 
-/* ── TRADINGVIEW LIGHTWEIGHT CHARTS ENGINE ── */
+/* ── APEXCHARTS CANDLESTICK ENGINE ── */
 function drawCandleChart(containerId, trade, isDetail = false) {
-    const container = document.getElementById(containerId);
-    if(!container || !trade.dailyData || trade.dailyData.length === 0) return;
+    if(!document.getElementById(containerId) || !trade.dailyData || trade.dailyData.length === 0) return;
     
-    // Completely destroy old chart instance if it exists to prevent memory leak/button freeze
     if(chartInstances[containerId]){
-        chartInstances[containerId].remove();
+        chartInstances[containerId].destroy();
         delete chartInstances[containerId];
     }
     
-    // Initialize TradingView Chart
-    const chart = LightweightCharts.createChart(container, {
-        width: container.clientWidth,
-        height: container.clientHeight,
-        layout: { 
-            background: { type: 'solid', color: 'transparent' }, 
-            textColor: '#8b93a8' 
-        },
-        grid: { 
-            vertLines: { visible: false }, 
-            horzLines: { color: 'rgba(255,255,255,0.04)' } 
-        },
-        rightPriceScale: { 
-            borderVisible: false,
-            scaleMargins: { top: 0.1, bottom: 0.1 }
-        },
-        timeScale: { 
-            borderVisible: false, 
-            fixLeftEdge: true, 
-            fixRightEdge: true,
-            visible: isDetail // Only show timeline on detail view
-        },
-        handleScroll: isDetail, // Disable dragging on main cards
-        handleScale: isDetail,
-        crosshair: {
-            mode: LightweightCharts.CrosshairMode.Normal,
-        }
-    });
+    // Format data for ApexCharts
+    const seriesData = trade.dailyData.map(d => ({
+        x: new Date(d.time).getTime(),
+        y: [d.open, d.high, d.low, d.close]
+    }));
     
-    // Add Japanese Candlesticks
-    const candleSeries = chart.addCandlestickSeries({
-        upColor: '#22c55e', 
-        downColor: '#ef4444',
-        borderUpColor: '#22c55e', 
-        borderDownColor: '#ef4444',
-        wickUpColor: '#22c55e', 
-        wickDownColor: '#ef4444'
-    });
+    let yaxisAnnotations = [];
+    let pointAnnotations = [];
     
-    // Sort and set data
-    const sortedData = [...trade.dailyData].sort((a, b) => a.time.localeCompare(b.time));
-    candleSeries.setData(sortedData);
-    
-    // Add BUY / SELL Markers
-    let markers = [];
-    
-    // Buy Marker
-    if(trade.date) {
-        // Find exact or closest date
-        const entryData = sortedData.find(d => d.time >= trade.date);
-        if(entryData) {
-            markers.push({ 
-                time: entryData.time, 
-                position: 'belowBar', 
-                color: '#22c55e', 
-                shape: 'arrowUp', 
-                text: 'BUY' 
-            });
-        }
-    }
-    
-    // Sell Marker
-    if(trade.status === 'closed' && trade.exitDate) {
-        const exitData = sortedData.find(d => d.time >= trade.exitDate);
-        if(exitData) {
-            markers.push({ 
-                time: exitData.time, 
-                position: 'aboveBar', 
-                color: '#ef4444', 
-                shape: 'arrowDown', 
-                text: 'SELL' 
-            });
-        }
-    }
-    
-    // Apply markers to chart
-    if (markers.length > 0) {
-        candleSeries.setMarkers(markers);
-    }
-    
-    // Only in Detail View: Add horizontal lines for Entry, SL, Target
+    // Lines for Detail View
     if(isDetail) {
-        candleSeries.createPriceLine({
-            price: trade.entry,
-            color: '#3b82f6',
-            lineWidth: 2,
-            lineStyle: LightweightCharts.LineStyle.Dashed,
-            axisLabelVisible: true,
-            title: 'ENTRY',
+        yaxisAnnotations.push({
+            y: trade.entry, borderColor: '#3b82f6', strokeDashArray: 4,
+            label: { borderColor: 'transparent', style: { color: '#fff', background: '#3b82f6', fontFamily: "'JetBrains Mono', monospace"}, text: 'ENTRY' }
         });
-        
         if(trade.sl) {
-            candleSeries.createPriceLine({
-                price: trade.sl,
-                color: '#ef4444',
-                lineWidth: 2,
-                lineStyle: LightweightCharts.LineStyle.Dashed,
-                axisLabelVisible: true,
-                title: 'SL',
+            yaxisAnnotations.push({
+                y: trade.sl, borderColor: '#ef4444', strokeDashArray: 4,
+                label: { borderColor: 'transparent', style: { color: '#fff', background: '#ef4444', fontFamily: "'JetBrains Mono', monospace"}, text: 'SL' }
             });
         }
-        
         if(trade.target) {
-            candleSeries.createPriceLine({
-                price: trade.target,
-                color: '#22c55e',
-                lineWidth: 2,
-                lineStyle: LightweightCharts.LineStyle.Dashed,
-                axisLabelVisible: true,
-                title: 'TGT',
+            yaxisAnnotations.push({
+                y: trade.target, borderColor: '#22c55e', strokeDashArray: 4,
+                label: { borderColor: 'transparent', style: { color: '#fff', background: '#22c55e', fontFamily: "'JetBrains Mono', monospace"}, text: 'TGT' }
             });
         }
     }
     
-    chart.timeScale().fitContent();
-    
-    // Save instance for cleanup
+    // Buy / Sell Points
+    if(trade.date) {
+        const entryData = trade.dailyData.find(d => d.time >= trade.date);
+        if(entryData) {
+            pointAnnotations.push({
+                x: new Date(entryData.time).getTime(),
+                y: entryData.low,
+                marker: { size: 5, fillColor: '#22c55e', strokeColor: '#0f1117', strokeWidth: 2, shape: 'circle' },
+                label: { borderColor: 'transparent', offsetY: 0, style: { color: '#fff', background: '#22c55e', fontSize: '10px' }, text: 'BUY' }
+            });
+        }
+    }
+    if(trade.status === 'closed' && trade.exitDate) {
+        const exitData = trade.dailyData.find(d => d.time >= trade.exitDate);
+        if(exitData) {
+            pointAnnotations.push({
+                x: new Date(exitData.time).getTime(),
+                y: exitData.high,
+                marker: { size: 5, fillColor: '#ef4444', strokeColor: '#0f1117', strokeWidth: 2, shape: 'circle' },
+                label: { borderColor: 'transparent', offsetY: 0, style: { color: '#fff', background: '#ef4444', fontSize: '10px' }, text: 'SELL' }
+            });
+        }
+    }
+
+    const options = {
+        series: [{ data: seriesData }],
+        chart: {
+            type: 'candlestick',
+            height: isDetail ? 320 : 115,
+            background: 'transparent',
+            toolbar: { show: false },
+            animations: { enabled: false },
+            parentHeightOffset: 0
+        },
+        theme: { mode: 'dark' },
+        plotOptions: {
+            candlestick: {
+                colors: { upward: '#22c55e', downward: '#ef4444' },
+                wick: { useFillColor: true }
+            }
+        },
+        xaxis: {
+            type: 'datetime',
+            labels: { show: isDetail, style: { colors: '#555f74', fontFamily: "'JetBrains Mono', monospace" } },
+            axisBorder: { show: false },
+            axisTicks: { show: false },
+            tooltip: { enabled: false }
+        },
+        yaxis: {
+            labels: { 
+                show: isDetail, 
+                style: { colors: '#555f74', fontFamily: "'JetBrains Mono', monospace" },
+                formatter: (value) => { return value.toFixed(2) }
+            }
+        },
+        grid: {
+            borderColor: 'rgba(255,255,255,0.04)',
+            strokeDashArray: 4,
+            xaxis: { lines: { show: false } },
+            yaxis: { lines: { show: isDetail } },
+            padding: { top: 0, right: 0, bottom: 0, left: isDetail ? 10 : -10 }
+        },
+        annotations: { yaxis: yaxisAnnotations, points: pointAnnotations },
+        tooltip: {
+            enabled: true,
+            theme: 'dark',
+            x: { format: 'dd MMM yyyy' }
+        }
+    };
+
+    const chart = new ApexCharts(document.querySelector("#" + containerId), options);
+    chart.render();
     chartInstances[containerId] = chart;
 }
 
@@ -733,8 +712,7 @@ function setFilter(f,el){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   el.classList.add('active');
   
-  // FIX: Clear all active TradingView chart instances before removing their HTML containers
-  Object.values(chartInstances).forEach(chart => chart.remove());
+  Object.values(chartInstances).forEach(chart => { if(chart) chart.destroy(); });
   chartInstances = {};
   
   renderCards();
@@ -805,14 +783,9 @@ function renderCards(){
     </div>`;
   }).join('');
   
-  // Render charts after DOM updates
-  requestAnimationFrame(()=>{
-    visible.forEach(t=>{
-        if(t.dailyData) {
-            drawCandleChart('cv'+t.id, t, false);
-        }
-    });
-  });
+  setTimeout(()=>{
+    visible.forEach(t=>{ if(t.dailyData) drawCandleChart('cv'+t.id, t, false); });
+  }, 100);
 }
 
 /* ── DETAIL ── */
@@ -848,17 +821,12 @@ function openDetail(id){
   document.getElementById('detailNotes').textContent=t.notes||'No notes added.';
   document.getElementById('detailOverlay').classList.add('open');
   
-  // Render full detail chart
-  setTimeout(()=>{ 
-      drawCandleChart('detailChart', t, true); 
-  }, 50);
+  setTimeout(()=>{ drawCandleChart('detailChart', t, true); }, 150);
 }
 function closeDetail(){ 
     document.getElementById('detailOverlay').classList.remove('open'); 
-    
-    // Important: Clean up detail chart instance when closing modal
     if(chartInstances['detailChart']) {
-        chartInstances['detailChart'].remove();
+        chartInstances['detailChart'].destroy();
         delete chartInstances['detailChart'];
     }
     detailId=null; 
@@ -875,8 +843,7 @@ function closeTradeFromDetail(){
     return;
   }
   
-  // Clean up main UI charts before update
-  Object.values(chartInstances).forEach(chart => chart.remove());
+  Object.values(chartInstances).forEach(chart => { if(chart) chart.destroy(); });
   chartInstances = {};
   
   t.status = 'closed';
@@ -884,10 +851,7 @@ function closeTradeFromDetail(){
   t.exitPrice = t.cmp;
   const lockedPnl = exitPnlVal(t);
   
-  save();
-  closeDetail();
-  renderSummary();
-  renderCards();
+  save(); closeDetail(); renderSummary(); renderCards();
   showToast(`✓ Position closed! 🔒 Profit locked: ${fmtINR(lockedPnl)}`,'success');
 }
 
@@ -895,14 +859,10 @@ function deleteFromDetail(){
   if(!confirm('Delete this trade permanently?')) return;
   trades=trades.filter(t=>t.id!==detailId);
   
-  // Clean up charts before re-render
-  Object.values(chartInstances).forEach(chart => chart.remove());
+  Object.values(chartInstances).forEach(chart => { if(chart) chart.destroy(); });
   chartInstances = {};
   
-  save(); 
-  closeDetail(); 
-  renderSummary(); 
-  renderCards();
+  save(); closeDetail(); renderSummary(); renderCards();
   showToast('Trade deleted','error');
 }
 
@@ -966,8 +926,7 @@ function saveTrade(){
     notes:document.getElementById('fNotes').value||'',
   };
   
-  // Clean up all charts before UI refresh to prevent overlaps
-  Object.values(chartInstances).forEach(chart => chart.remove());
+  Object.values(chartInstances).forEach(chart => { if(chart) chart.destroy(); });
   chartInstances = {};
   
   if(editingId){
@@ -980,11 +939,7 @@ function saveTrade(){
   
   save(); closeModal(); renderSummary(); renderCards();
   showToast(editingId?'Trade updated ✓':'Trade added ✓','success');
-  
-  // Automatically pull historical data for the new chart if there is a ticker
-  if(trade.ticker) {
-      setTimeout(() => fetchAllPrices(), 500);
-  }
+  if(trade.ticker) setTimeout(() => fetchAllPrices(), 500);
 }
 
 /* ── EXPORT CSV ── */
@@ -994,19 +949,9 @@ function exportCSV(){
     const isClosed = t.status === 'closed';
     const evalPrice = isClosed ? (t.exitPrice || t.cmp) : t.cmp;
     return [
-      t.name,
-      t.ticker,
-      t.entry,
-      t.qty,
-      t.sl||'—',
-      t.target||'—',
-      evalPrice,
-      isClosed?exitPnlVal(t):pnlVal(t),
-      (pct(t.entry,evalPrice)).toFixed(2),
-      t.status,
-      t.date,
-      t.exitDate||'—',
-      t.setup||'—'
+      t.name, t.ticker, t.entry, t.qty, t.sl||'—', t.target||'—',
+      evalPrice, isClosed?exitPnlVal(t):pnlVal(t),
+      (pct(t.entry,evalPrice)).toFixed(2), t.status, t.date, t.exitDate||'—', t.setup||'—'
     ]
   });
   const csv = [header,...rows].map(r=>r.map(c=>`"${c}"`).join(',')).join('\n');
@@ -1015,20 +960,16 @@ function exportCSV(){
   const a = document.createElement('a');
   a.href = url;
   a.download = `trade_journal_${new Date().toISOString().split('T')[0]}.csv`;
-  a.click();
-  URL.revokeObjectURL(url);
+  a.click(); URL.revokeObjectURL(url);
   showToast('CSV exported ✓','success');
 }
 
-/* ── TOAST ── */
+/* ── TOAST & HELP ── */
 function showToast(msg, type='info'){
   const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className = `toast ${type} show`;
+  t.textContent = msg; t.className = `toast ${type} show`;
   setTimeout(()=>t.classList.remove('show'),3500);
 }
-
-/* ── HELP ── */
 function openHelp(){ document.getElementById('helpOverlay').classList.add('open'); }
 function closeHelp(){ document.getElementById('helpOverlay').classList.remove('open'); }
 function closeHelpBackdrop(e){ if(e.target.id==='helpOverlay') closeHelp(); }
