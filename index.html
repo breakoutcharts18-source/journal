@@ -27,7 +27,7 @@ body{min-height:100vh;}
 .logo-dot{width:8px;height:8px;border-radius:50%;background:var(--green);animation:pulse 2s infinite;}
 @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.4;}}
 .live-badge{font-size:10px;background:var(--green-bg);color:var(--green);border:1px solid rgba(34,197,94,0.25);padding:2px 8px;border-radius:20px;font-weight:500;}
-.topbar-right{margin-left:auto;display:flex;gap:8px;align-items:center;}
+.topbar-right{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
 .btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:var(--radius);font-size:13px;font-family:var(--font);cursor:pointer;border:1px solid var(--border2);background:rgba(255,255,255,0.02);transition:all 0.15s;font-weight:500;}
 .btn:hover{background:rgba(255,255,255,0.06);}
 .btn:disabled{opacity:0.45;cursor:not-allowed;}
@@ -174,9 +174,12 @@ select option{background:var(--bg3);}
     <button class="btn" onclick="openAnalytics()">📊 Analytics</button>
     <button class="btn btn-amber" id="fetchBtn" onclick="fetchAllPrices()">⬇ Fetch Live Prices</button>
     <button class="btn btn-green" onclick="exportCSV()">⬆ Export CSV</button>
+    <button class="btn btn-green" onclick="document.getElementById('csvFileInput').click()">⬇ Import CSV</button>
     <button class="btn btn-primary" onclick="openAddModal()">+ Add Trade</button>
   </div>
 </div>
+
+<input type="file" id="csvFileInput" accept=".csv" style="display:none;" onchange="handleCSVImport(event)" />
 
 <div class="main">
   <div class="live-bar">
@@ -353,7 +356,8 @@ select option{background:var(--bg3);}
     <div class="notes-box" id="detailNotes"></div>
     <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;">
       <button class="btn" style="flex:1;min-width:80px;justify-content:center;" onclick="editFromDetail()">✏ Edit</button>
-      <button class="btn btn-red" style="flex:1;min-width:80px;justify-content:center;" onclick="closeTradeFromDetail()">✓ Close</button>
+      <button class="btn btn-amber" style="flex:1;min-width:80px;justify-content:center;" id="btnPartialExit" onclick="partialExitFromDetail()">✂ Partial</button>
+      <button class="btn btn-red" style="flex:1;min-width:80px;justify-content:center;" id="btnCloseTrade" onclick="closeTradeFromDetail()">✓ Close</button>
       <button class="btn" style="flex:1;min-width:80px;justify-content:center;" onclick="deleteFromDetail()">✕ Delete</button>
       <button class="btn" style="flex:1;min-width:80px;justify-content:center;" onclick="closeDetail()">Done</button>
     </div>
@@ -646,35 +650,29 @@ function drawCandleChart(containerId, trade, isDetail = false) {
     let pointAnnotations = [];
     
     if(isDetail) {
-        // Entry Line
         yaxisAnnotations.push({
             y: trade.entry, borderColor: '#3b82f6', strokeDashArray: 4,
             label: { 
-                borderColor: 'transparent',
-                position: 'right', offsetX: -5,
+                borderColor: 'transparent', position: 'right', offsetX: -5,
                 style: { color: '#3b82f6', background: 'transparent', fontWeight: 600, fontFamily: "'JetBrains Mono', monospace"}, 
                 text: 'ENTRY' 
             }
         });
-        // SL Line
         if(trade.sl) {
             yaxisAnnotations.push({
                 y: trade.sl, borderColor: '#ef4444', strokeDashArray: 4,
                 label: { 
-                    borderColor: 'transparent',
-                    position: 'right', offsetX: -5,
+                    borderColor: 'transparent', position: 'right', offsetX: -5,
                     style: { color: '#ef4444', background: 'transparent', fontWeight: 600, fontFamily: "'JetBrains Mono', monospace"}, 
                     text: 'SL' 
                 }
             });
         }
-        // Target Line
         if(trade.target) {
             yaxisAnnotations.push({
                 y: trade.target, borderColor: '#22c55e', strokeDashArray: 4,
                 label: { 
-                    borderColor: 'transparent', 
-                    position: 'right', offsetX: -5,
+                    borderColor: 'transparent', position: 'right', offsetX: -5,
                     style: { color: '#22c55e', background: 'transparent', fontWeight: 600, fontFamily: "'JetBrains Mono', monospace"}, 
                     text: 'TGT' 
                 }
@@ -686,9 +684,7 @@ function drawCandleChart(containerId, trade, isDetail = false) {
         const entryData = trade.dailyData.find(d => d.time >= trade.date);
         if(entryData) {
             pointAnnotations.push({
-                x: new Date(entryData.time).getTime(),
-                y: entryData.low,
-                marker: { size: 0 },
+                x: new Date(entryData.time).getTime(), y: entryData.low, marker: { size: 0 },
                 label: { borderColor: 'transparent', offsetY: 12, style: { color: '#22c55e', background: 'transparent', fontSize: '16px', padding: 0 }, text: '▲' }
             });
         }
@@ -697,9 +693,7 @@ function drawCandleChart(containerId, trade, isDetail = false) {
         const exitData = trade.dailyData.find(d => d.time >= trade.exitDate);
         if(exitData) {
             pointAnnotations.push({
-                x: new Date(exitData.time).getTime(),
-                y: exitData.high,
-                marker: { size: 0 },
+                x: new Date(exitData.time).getTime(), y: exitData.high, marker: { size: 0 },
                 label: { borderColor: 'transparent', offsetY: -24, style: { color: '#ef4444', background: 'transparent', fontSize: '16px', padding: 0 }, text: '▼' }
             });
         }
@@ -708,47 +702,24 @@ function drawCandleChart(containerId, trade, isDetail = false) {
     const options = {
         series: [{ data: seriesData }],
         chart: {
-            type: 'candlestick',
-            height: isDetail ? 320 : 115,
-            background: 'transparent',
-            toolbar: { show: false },
-            animations: { enabled: false },
-            parentHeightOffset: 0
+            type: 'candlestick', height: isDetail ? 320 : 115, background: 'transparent',
+            toolbar: { show: false }, animations: { enabled: false }, parentHeightOffset: 0
         },
         theme: { mode: 'dark' },
-        plotOptions: {
-            candlestick: {
-                colors: { upward: '#22c55e', downward: '#ef4444' },
-                wick: { useFillColor: true }
-            }
-        },
+        plotOptions: { candlestick: { colors: { upward: '#22c55e', downward: '#ef4444' }, wick: { useFillColor: true } } },
         xaxis: {
             type: 'datetime',
             labels: { show: isDetail, style: { colors: '#555f74', fontFamily: "'JetBrains Mono', monospace" } },
-            axisBorder: { show: false },
-            axisTicks: { show: false },
-            tooltip: { enabled: false }
+            axisBorder: { show: false }, axisTicks: { show: false }, tooltip: { enabled: false }
         },
-        yaxis: {
-            labels: { 
-                show: isDetail, 
-                style: { colors: '#555f74', fontFamily: "'JetBrains Mono', monospace" },
-                formatter: (value) => { return value.toFixed(2) }
-            }
-        },
+        yaxis: { labels: { show: isDetail, style: { colors: '#555f74', fontFamily: "'JetBrains Mono', monospace" }, formatter: (value) => { return value.toFixed(2) } } },
         grid: {
-            borderColor: 'rgba(255,255,255,0.04)',
-            strokeDashArray: 4,
-            xaxis: { lines: { show: false } },
-            yaxis: { lines: { show: isDetail } },
+            borderColor: 'rgba(255,255,255,0.04)', strokeDashArray: 4,
+            xaxis: { lines: { show: false } }, yaxis: { lines: { show: isDetail } },
             padding: { top: 0, right: 0, bottom: 0, left: isDetail ? 10 : -10 }
         },
         annotations: { yaxis: yaxisAnnotations, points: pointAnnotations },
-        tooltip: {
-            enabled: true,
-            theme: 'dark',
-            x: { format: 'dd MMM yyyy' }
-        }
+        tooltip: { enabled: true, theme: 'dark', x: { format: 'dd MMM yyyy' } }
     };
 
     const chart = new ApexCharts(document.querySelector("#" + containerId), options);
@@ -869,8 +840,11 @@ function openDetail(id){
     <div class="detail-stat" style="grid-column: span 2"><div class="detail-stat-label">Setup</div><div class="detail-stat-val" style="font-size:12px;">${t.setup||'—'}</div></div>`;
     
   document.getElementById('detailNotes').textContent=t.notes||'No notes added.';
-  document.getElementById('detailOverlay').classList.add('open');
   
+  document.getElementById('btnPartialExit').style.display = isClosed ? 'none' : 'inline-flex';
+  document.getElementById('btnCloseTrade').style.display = isClosed ? 'none' : 'inline-flex';
+
+  document.getElementById('detailOverlay').classList.add('open');
   setTimeout(()=>{ drawCandleChart('detailChart', t, true); }, 150);
 }
 
@@ -891,16 +865,53 @@ function editFromDetail(){
     openEditModal(storedId); 
 }
 
+function partialExitFromDetail() {
+    if(!detailId) return;
+    const t = trades.find(x => x.id === detailId);
+    if(!t || t.status === 'closed') return;
+
+    const exitQtyStr = prompt(`Partial Exit for ${t.name}\nCurrent Quantity: ${t.qty}\n\nHow many shares are you selling?`);
+    if (exitQtyStr === null) return;
+    const exitQty = parseFloat(exitQtyStr);
+
+    if (isNaN(exitQty) || exitQty <= 0 || exitQty >= t.qty) {
+        showToast('Invalid quantity.', 'error');
+        return;
+    }
+
+    const exitPriceStr = prompt(`Exit Price for ${exitQty} shares\n(Leave blank to use CMP of ₹${t.cmp}):`);
+    if (exitPriceStr === null) return;
+    let ePrice = parseFloat(exitPriceStr);
+    if (isNaN(ePrice) || ePrice <= 0) ePrice = t.cmp;
+
+    const closedTradeId = Math.max(...trades.map(x=>x.id||0), 0) + 1;
+    const closedTrade = {
+        ...t,
+        id: closedTradeId,
+        qty: exitQty,
+        status: 'closed',
+        exitDate: new Date().toISOString().split('T')[0],
+        exitPrice: ePrice,
+        notes: `Partial exit of ${exitQty} shares.\n` + (t.notes || '')
+    };
+    trades.push(closedTrade);
+
+    t.qty = t.qty - exitQty;
+    t.notes = `Partially exited ${exitQty} shares on ${closedTrade.exitDate}.\n` + (t.notes || '');
+
+    Object.values(chartInstances).forEach(chart => { if(chart) chart.destroy(); });
+    chartInstances = {};
+
+    save(); closeDetail(); renderSummary(); renderCards();
+    showToast(`✂ Partial exit saved!`, 'success');
+}
+
 function closeTradeFromDetail(){
   if(!detailId) return;
   const t = trades.find(x => x.id === detailId);
-  if(!t) return;
-  if(t.status === 'closed'){
-    showToast('Trade is already closed','info');
-    return;
-  }
+  if(!t || t.status === 'closed') return;
   
-  const manualExit = prompt(`Close ${t.name}?\n\nEnter your precise Exit Price (or leave blank to use the live CMP of ₹${t.cmp}):`);
+  const manualExit = prompt(`Close ${t.name}?\n\nEnter your precise Exit Price (or leave blank to use live CMP of ₹${t.cmp}):`);
   if (manualExit === null) return; 
   
   let ePrice = parseFloat(manualExit);
@@ -914,7 +925,7 @@ function closeTradeFromDetail(){
   t.exitPrice = ePrice;
   
   save(); closeDetail(); renderSummary(); renderCards();
-  showToast(`✓ Position closed! 🔒 Profit locked: ${fmtINR(exitPnlVal(t))}`,'success');
+  showToast(`✓ Position closed!`, 'success');
 }
 
 function deleteFromDetail(){
@@ -933,15 +944,10 @@ function openAnalytics(){
   document.getElementById('analyticsOverlay').classList.add('open');
   switchAnalyticsTab('curve');
 }
-
 function closeAnalytics(){
   document.getElementById('analyticsOverlay').classList.remove('open');
-  if(equityChartInstance) {
-      equityChartInstance.destroy();
-      equityChartInstance = null;
-  }
+  if(equityChartInstance) { equityChartInstance.destroy(); equityChartInstance = null; }
 }
-
 function closeAnalyticsBackdrop(e){ if(e.target.id==='analyticsOverlay') closeAnalytics(); }
 
 function switchAnalyticsTab(tab){
@@ -949,226 +955,192 @@ function switchAnalyticsTab(tab){
   document.getElementById('tabSetups').classList.toggle('active', tab === 'setups');
   document.getElementById('viewCurve').style.display = tab === 'curve' ? 'block' : 'none';
   document.getElementById('viewSetups').style.display = tab === 'setups' ? 'block' : 'none';
-
-  if(tab === 'curve') {
-      renderEquityCurve();
-  } else {
-      renderSetupAnalytics();
-  }
+  if(tab === 'curve') renderEquityCurve(); else renderSetupAnalytics();
 }
 
 function renderEquityCurve(){
   if(equityChartInstance) equityChartInstance.destroy();
+  const closedTrades = trades.filter(t => t.status === 'closed' && t.exitDate).sort((a,b) => new Date(a.exitDate) - new Date(b.exitDate));
+  let currentEquity = 0; let seriesData = []; let dailyPnl = {};
 
-  const closedTrades = trades.filter(t => t.status === 'closed' && t.exitDate)
-                             .sort((a,b) => new Date(a.exitDate) - new Date(b.exitDate));
-
-  let currentEquity = 0;
-  let seriesData = [];
-  let dailyPnl = {};
-
-  // Aggregate P&L by day in case of multiple trades closing on the same date
   closedTrades.forEach(t => {
       if(!dailyPnl[t.exitDate]) dailyPnl[t.exitDate] = 0;
       dailyPnl[t.exitDate] += exitPnlVal(t);
   });
-
   const sortedDates = Object.keys(dailyPnl).sort((a,b) => new Date(a) - new Date(b));
-
   sortedDates.forEach(date => {
       currentEquity += dailyPnl[date];
       seriesData.push({ x: new Date(date).getTime(), y: parseFloat(currentEquity.toFixed(2)) });
   });
 
-  // Ensure there is a baseline starting at 0 for visual clarity
   if(seriesData.length === 0) {
       seriesData.push({ x: new Date().getTime(), y: 0 });
   } else {
-      const firstDate = new Date(sortedDates[0]);
-      firstDate.setDate(firstDate.getDate() - 1);
+      const firstDate = new Date(sortedDates[0]); firstDate.setDate(firstDate.getDate() - 1);
       seriesData.unshift({ x: firstDate.getTime(), y: 0 });
   }
 
   const options = {
       series: [{ name: 'Cumulative P&L', data: seriesData }],
-      chart: {
-          type: 'area', height: 300, background: 'transparent',
-          toolbar: { show: false }, animations: { enabled: false }
-      },
-      theme: { mode: 'dark' },
-      colors: ['#3b82f6'],
+      chart: { type: 'area', height: 300, background: 'transparent', toolbar: { show: false }, animations: { enabled: false } },
+      theme: { mode: 'dark' }, colors: ['#3b82f6'],
       fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.4, opacityTo: 0.0, stops: [0, 100] } },
-      dataLabels: { enabled: false },
       stroke: { curve: 'straight', width: 2 },
-      xaxis: { 
-          type: 'datetime', 
-          labels: { style: { colors: '#8b93a8', fontFamily: "'JetBrains Mono', monospace" } },
-          axisBorder: {show: false}, axisTicks: {show: false}, tooltip: {enabled: false}
-      },
-      yaxis: {
-          labels: {
-              style: { colors: '#8b93a8', fontFamily: "'JetBrains Mono', monospace" },
-              formatter: (value) => { return '₹' + value.toFixed(0) }
-          }
-      },
+      xaxis: { type: 'datetime', labels: { style: { colors: '#8b93a8', fontFamily: "'JetBrains Mono', monospace" } }, axisBorder: {show: false}, axisTicks: {show: false}, tooltip: {enabled: false} },
+      yaxis: { labels: { style: { colors: '#8b93a8', fontFamily: "'JetBrains Mono', monospace" }, formatter: (v) => '₹'+v.toFixed(0) } },
       grid: { borderColor: 'rgba(255,255,255,0.04)', strokeDashArray: 4 },
-      tooltip: { theme: 'dark', x: { format: 'dd MMM yyyy' }, y: { formatter: function(val) { return "₹" + val.toFixed(2) } } }
+      tooltip: { theme: 'dark', x: { format: 'dd MMM yyyy' }, y: { formatter: (v) => "₹" + v.toFixed(2) } }
   };
-
   equityChartInstance = new ApexCharts(document.querySelector("#equityChart"), options);
   equityChartInstance.render();
 }
 
 function renderSetupAnalytics(){
   const setups = {};
-  
   trades.forEach(t => {
       const s = (t.setup || 'Uncategorized').trim();
       if(!setups[s]) setups[s] = { count: 0, wins: 0, pnl: 0 };
       setups[s].count++;
-      
       const p = t.status === 'closed' ? exitPnlVal(t) : pnlVal(t);
-      setups[s].pnl += p;
-      if(p > 0) setups[s].wins++;
+      setups[s].pnl += p; if(p > 0) setups[s].wins++;
   });
-
   const tbody = document.getElementById('setupTableBody');
   const sortedSetups = Object.keys(setups).sort((a,b) => setups[b].pnl - setups[a].pnl);
-  
   if (sortedSetups.length === 0) {
       tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:20px; color:var(--text3);">No trade setups recorded yet.</td></tr>`;
       return;
   }
-
   tbody.innerHTML = sortedSetups.map(s => {
-      const stat = setups[s];
-      const winRate = ((stat.wins / stat.count) * 100).toFixed(1);
-      const pnlColor = stat.pnl >= 0 ? 'green' : 'red';
+      const stat = setups[s]; const winRate = ((stat.wins / stat.count) * 100).toFixed(1);
       return `<tr>
           <td style="font-weight:500; color:var(--text); text-transform:capitalize;">${s}</td>
           <td style="font-family:var(--mono);">${stat.count}</td>
           <td style="font-family:var(--mono);">${winRate}%</td>
-          <td class="${pnlColor}" style="font-family:var(--mono);">${stat.pnl >= 0 ? '+' : ''}${fmtINR(stat.pnl)}</td>
+          <td class="${stat.pnl >= 0 ? 'green' : 'red'}" style="font-family:var(--mono);">${stat.pnl >= 0 ? '+' : ''}${fmtINR(stat.pnl)}</td>
       </tr>`;
   }).join('');
 }
 
-
-/* ── ADD/EDIT ── */
-function openAddModal(){
-  editingId=null;
-  document.getElementById('modalTitle').textContent='Add Trade';
-  ['fName','fTicker','fEntry','fQty','fSL','fTarget','fCmp','fExitPrice','fNotes','fSetup'].forEach(id=>document.getElementById(id).value='');
-  ['fDate','fExitDate'].forEach(id=>document.getElementById(id).value='');
-  document.getElementById('fExchange').value='NSE';
-  document.getElementById('fType').value='Equity';
-  document.getElementById('fStatus').value='active';
-  document.getElementById('fDate').value=new Date().toISOString().split('T')[0];
-  document.getElementById('tickerResult').textContent='';
-  document.getElementById('tradeOverlay').classList.add('open');
+/* ── DATA IMPORT / EXPORT SYSTEM ── */
+function parseCSVLine(line) {
+    const result = []; let current = ''; let inQuotes = false;
+    for (let i = 0; i < line.length; i++) {
+        const char = line[i];
+        if (char === '"') {
+            if (inQuotes && line[i + 1] === '"') { current += '"'; i++; } 
+            else { inQuotes = !inQuotes; }
+        } else if (char === ',' && !inQuotes) {
+            result.push(current); current = '';
+        } else { current += char; }
+    }
+    result.push(current); return result;
 }
-function openEditModal(id){
-  const t=trades.find(x=>x.id===id); if(!t) return;
-  editingId=id;
-  document.getElementById('modalTitle').textContent='Edit Trade';
-  document.getElementById('fName').value=t.name||'';
-  document.getElementById('fTicker').value=t.ticker||'';
-  document.getElementById('fExchange').value=t.exchange||'NSE';
-  document.getElementById('fType').value=t.type||'Equity';
-  document.getElementById('fEntry').value=t.entry||'';
-  document.getElementById('fQty').value=t.qty||'';
-  document.getElementById('fSL').value=t.sl||'';
-  document.getElementById('fTarget').value=t.target||'';
-  document.getElementById('fCmp').value=t.cmp||'';
-  document.getElementById('fExitPrice').value=t.exitPrice||'';
-  document.getElementById('fStatus').value=t.status||'active';
-  document.getElementById('fDate').value=t.date||'';
-  document.getElementById('fExitDate').value=t.exitDate||'';
-  document.getElementById('fSetup').value=t.setup||'';
-  document.getElementById('fNotes').value=t.notes||'';
-  document.getElementById('tickerResult').textContent='';
-  document.getElementById('tradeOverlay').classList.add('open');
-}
-function closeModal(){ document.getElementById('tradeOverlay').classList.remove('open'); editingId=null; }
-function closeModalBackdrop(e){ if(e.target.id==='tradeOverlay') closeModal(); }
 
+function exportCSV(){
+  const header = ['Name','Ticker','Exchange','Type','Entry','Qty','SL','Target','CMP','ExitPrice','Status','EntryDate','ExitDate','Setup','Notes'];
+  const rows = trades.map(t=>[
+    t.name, t.ticker, t.exchange||'NSE', t.type||'Equity', t.entry, t.qty, t.sl||'', t.target||'', t.cmp, t.exitPrice||'', t.status, t.date, t.exitDate||'', t.setup||'', t.notes||''
+  ]);
+  const csv = [header,...rows].map(r=>r.map(c=>`"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv],{type:'text/csv'}); const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = `atm_journal_backup_${new Date().toISOString().split('T')[0]}.csv`;
+  a.click(); URL.revokeObjectURL(url); showToast('CSV backup exported ✓','success');
+}
+
+function handleCSVImport(e) {
+    const file = e.target.files[0]; if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(evt) {
+        const text = evt.target.result; const lines = text.split(/\r?\n/);
+        if (lines.length <= 1) { showToast('CSV file is empty', 'error'); return; }
+        
+        const header = parseCSVLine(lines[0]);
+        if (!header.includes('Name') || !header.includes('Entry') || !header.includes('Qty')) {
+            showToast('Invalid CSV template formatting.', 'error'); return;
+        }
+        
+        const newTrades = []; let maxId = 0;
+        for (let i = 1; i < lines.length; i++) {
+            if (!lines[i].trim()) continue;
+            const row = parseCSVLine(lines[i]); if (row.length < 3) continue;
+            
+            const getVal = (col) => { const idx = header.indexOf(col); return idx !== -1 ? row[idx] : ''; };
+            const entry = parseFloat(getVal('Entry')); const qty = parseFloat(getVal('Qty'));
+            if (isNaN(entry) || isNaN(qty)) continue;
+            
+            maxId++;
+            newTrades.push({
+                id: maxId, name: getVal('Name'), ticker: getVal('Ticker').toUpperCase(),
+                exchange: getVal('Exchange') || 'NSE', type: getVal('Type') || 'Equity',
+                entry: entry, qty: qty, sl: parseFloat(getVal('SL')) || parseFloat(getVal('Stop Loss')) || null,
+                target: parseFloat(getVal('Target')) || null, cmp: parseFloat(getVal('CMP')) || entry,
+                exitPrice: parseFloat(getVal('ExitPrice')) || null, status: getVal('Status').toLowerCase() === 'closed' ? 'closed' : 'active',
+                date: getVal('EntryDate') || new Date().toISOString().split('T')[0], exitDate: getVal('ExitDate') || '',
+                setup: getVal('Setup') || '', notes: getVal('Notes') || '', dailyData: []
+            });
+        }
+        
+        if (!newTrades.length) { showToast('No structural data found.', 'error'); return; }
+        if (confirm(`Overwrite local cache and restore ${newTrades.length} entries from backup?`)) {
+            Object.values(chartInstances).forEach(c => { if(c) c.destroy(); }); chartInstances = {};
+            trades = newTrades; save(); renderSummary(); renderCards();
+            showToast(`Data restored ✓`, 'success'); fetchAllPrices();
+        }
+    };
+    reader.readAsText(file); e.target.value = '';
+}
+
+/* ── CONTROL MODALS ── */
 function saveTrade(){
   const name=document.getElementById('fName').value.trim();
   const entry=parseFloat(document.getElementById('fEntry').value);
   const qty=parseFloat(document.getElementById('fQty').value);
   let cmp=parseFloat(document.getElementById('fCmp').value);
-  
   const status = document.getElementById('fStatus').value;
   const exitPrice = parseFloat(document.getElementById('fExitPrice').value)||null;
   
-  if (status === 'closed' && exitPrice && isNaN(cmp)) {
-      cmp = exitPrice; 
-  }
-  
-  if(!name||isNaN(entry)||isNaN(qty)||isNaN(cmp)){ 
-      showToast('Please fill Name, Entry, Qty & CMP (or Exit Price if closed)','error'); 
-      return; 
-  }
+  if (status === 'closed' && exitPrice && isNaN(cmp)) cmp = exitPrice; 
+  if(!name||isNaN(entry)||isNaN(qty)||isNaN(cmp)){ showToast('Fill Core Fields','error'); return; }
   
   const trade={
-    name, entry, qty, cmp,
-    ticker:(document.getElementById('fTicker').value.trim().toUpperCase())||'',
-    sl:parseFloat(document.getElementById('fSL').value)||null,
-    target:parseFloat(document.getElementById('fTarget').value)||null,
-    exitPrice:parseFloat(document.getElementById('fExitPrice').value)||null,
-    exchange:document.getElementById('fExchange').value,
-    type:document.getElementById('fType').value,
-    status:document.getElementById('fStatus').value,
-    date:document.getElementById('fDate').value||new Date().toISOString().split('T')[0],
-    exitDate:document.getElementById('fExitDate').value||'',
-    setup:document.getElementById('fSetup').value||'',
-    notes:document.getElementById('fNotes').value||'',
+    name, entry, qty, cmp, ticker:(document.getElementById('fTicker').value.trim().toUpperCase())||'',
+    sl:parseFloat(document.getElementById('fSL').value)||null, target:parseFloat(document.getElementById('fTarget').value)||null,
+    exitPrice, exchange:document.getElementById('fExchange').value, type:document.getElementById('fType').value, status,
+    date:document.getElementById('fDate').value||new Date().toISOString().split('T')[0], exitDate:document.getElementById('fExitDate').value||'',
+    setup:document.getElementById('fSetup').value||'', notes:document.getElementById('fNotes').value||''
   };
   
-  Object.values(chartInstances).forEach(chart => { if(chart) chart.destroy(); });
-  chartInstances = {};
-  
-  if(editingId){
-    const t=trades.find(x=>x.id===editingId);
-    if(t) Object.assign(t,trade);
-  }else{
-    trade.id=Math.max(...trades.map(t=>t.id||0),0)+1;
-    trades.push(trade);
-  }
+  Object.values(chartInstances).forEach(c => { if(c) c.destroy(); }); chartInstances = {};
+  if(editingId){ const t=trades.find(x=>x.id===editingId); if(t) Object.assign(t,trade); }
+  else { trade.id=Math.max(...trades.map(t=>t.id||0),0)+1; trades.push(trade); }
   
   save(); closeModal(); renderSummary(); renderCards();
-  showToast(editingId?'Trade updated ✓':'Trade added ✓','success');
+  showToast(editingId?'Updated ✓':'Logged ✓','success');
   if(trade.ticker) setTimeout(() => fetchAllPrices(), 500);
 }
 
-/* ── EXPORT CSV ── */
-function exportCSV(){
-  const header = ['Name','Ticker','Entry','Qty','SL','Target','CMP','P&L','Return %','Status','Entry Date','Exit Date','Setup'];
-  const rows = trades.map(t=>{
-    const isClosed = t.status === 'closed';
-    const evalPrice = isClosed ? (t.exitPrice || t.cmp) : t.cmp;
-    return [
-      t.name, t.ticker, t.entry, t.qty, t.sl||'—', t.target||'—',
-      evalPrice, isClosed?exitPnlVal(t):pnlVal(t),
-      (pct(t.entry,evalPrice)).toFixed(2), t.status, t.date, t.exitDate||'—', t.setup||'—'
-    ]
-  });
-  const csv = [header,...rows].map(r=>r.map(c=>`"${c}"`).join(',')).join('\n');
-  const blob = new Blob([csv],{type:'text/csv'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `trade_journal_${new Date().toISOString().split('T')[0]}.csv`;
-  a.click(); URL.revokeObjectURL(url);
-  showToast('CSV exported ✓','success');
+function openEditModal(id){
+  const t=trades.find(x=>x.id===id); if(!t) return;
+  editingId=id; document.getElementById('modalTitle').textContent='Edit Trade';
+  document.getElementById('fName').value=t.name||''; document.getElementById('fTicker').value=t.ticker||'';
+  document.getElementById('fExchange').value=t.exchange||'NSE'; document.getElementById('fType').value=t.type||'Equity';
+  document.getElementById('fEntry').value=t.entry||''; document.getElementById('fQty').value=t.qty||'';
+  document.getElementById('fSL').value=t.sl||''; document.getElementById('fTarget').value=t.target||'';
+  document.getElementById('fCmp').value=t.cmp||''; document.getElementById('fExitPrice').value=t.exitPrice||'';
+  document.getElementById('fStatus').value=t.status||'active'; document.getElementById('fDate').value=t.date||'';
+  document.getElementById('fExitDate').value=t.exitDate||''; document.getElementById('fSetup').value=t.setup||'';
+  document.getElementById('fNotes').value=t.notes||''; document.getElementById('tradeOverlay').classList.add('open');
 }
-
-/* ── TOAST & HELP ── */
-function showToast(msg, type='info'){
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.className = `toast ${type} show`;
-  setTimeout(()=>t.classList.remove('show'),3500);
+function openAddModal(){
+  editingId=null; document.getElementById('modalTitle').textContent='Add Trade';
+  ['fName','fTicker','fEntry','fQty','fSL','fTarget','fCmp','fExitPrice','fNotes','fSetup'].forEach(id=>document.getElementById(id).value='');
+  ['fDate','fExitDate'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('fExchange').value='NSE'; document.getElementById('fType').value='Equity';
+  document.getElementById('fStatus').value='active'; document.getElementById('fDate').value=new Date().toISOString().split('T')[0];
+  document.getElementById('tradeOverlay').classList.add('open');
 }
+function closeModal(){ document.getElementById('tradeOverlay').classList.remove('open'); editingId=null; }
+function closeModalBackdrop(e){ if(e.target.id==='tradeOverlay') closeModal(); }
 function openHelp(){ document.getElementById('helpOverlay').classList.add('open'); }
 function closeHelp(){ document.getElementById('helpOverlay').classList.remove('open'); }
 function closeHelpBackdrop(e){ if(e.target.id==='helpOverlay') closeHelp(); }
