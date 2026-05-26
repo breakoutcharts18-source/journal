@@ -236,6 +236,9 @@ select option{background:var(--bg3);}
 
     <div id="viewCurve">
         <div style="font-size:12px; color:var(--text2); margin-bottom: 8px;">Cumulative P&L over time (based on Closed trades)</div>
+        
+        <div class="detail-grid" id="advancedStatsGrid" style="margin-bottom: 16px;"></div>
+
         <div style="height: 300px; position:relative;" id="equityChart"></div>
     </div>
 
@@ -284,7 +287,7 @@ select option{background:var(--bg3);}
       </div>
       <div class="form-group">
         <label>Type</label>
-        <select id="fType"><option>Equity</option><option>F&O</option><option>Commodity</option><option>Crypto</option></select>
+        <select id="fType"><option>Equity</option><option>F&O</option></select>
       </div>
       <hr class="form-divider"/>
       <div class="form-section-label">Position Details</div>
@@ -447,10 +450,15 @@ function fmtINR(v){
 }
 function pnlVal(t){ return (t.cmp - t.entry)*t.qty; }
 function exitPnlVal(t){ return ((t.exitPrice || t.cmp) - t.entry)*t.qty; }
+
+// UPDATED HOLD DAYS FUNCTION
 function holdDays(t){
   if(!t.date) return t.holding||0;
-  return Math.max(0,Math.floor((new Date()-new Date(t.date))/86400000));
+  const start = new Date(t.date);
+  const end = (t.status === 'closed' && t.exitDate) ? new Date(t.exitDate) : new Date();
+  return Math.max(0, Math.floor((end - start) / 86400000));
 }
+
 function rrRatio(t){
   if(!t.sl||!t.target||t.sl>=t.entry) return null;
   return ((t.target-t.entry)/(t.entry-t.sl)).toFixed(1);
@@ -950,12 +958,76 @@ function closeAnalytics(){
 }
 function closeAnalyticsBackdrop(e){ if(e.target.id==='analyticsOverlay') closeAnalytics(); }
 
+// UPDATED TABS FUNCTION
 function switchAnalyticsTab(tab){
   document.getElementById('tabCurve').classList.toggle('active', tab === 'curve');
   document.getElementById('tabSetups').classList.toggle('active', tab === 'setups');
   document.getElementById('viewCurve').style.display = tab === 'curve' ? 'block' : 'none';
   document.getElementById('viewSetups').style.display = tab === 'setups' ? 'block' : 'none';
-  if(tab === 'curve') renderEquityCurve(); else renderSetupAnalytics();
+  
+  if(tab === 'curve') {
+      renderEquityCurve();
+      renderAdvancedStats();
+  } else {
+      renderSetupAnalytics();
+  }
+}
+
+// NEW ADVANCED STATS FUNCTION
+function renderAdvancedStats(){
+  const closedTrades = trades.filter(t => t.status === 'closed' && t.exitDate)
+                             .sort((a,b) => new Date(a.exitDate) - new Date(b.exitDate));
+  
+  let wDays=0, wCount=0, lDays=0, lCount=0;
+  let currStreak=0, maxWStreak=0, maxLStreak=0, isWinStreak=null;
+  let eq=0, peakEq=0, maxDd=0;
+
+  closedTrades.forEach(t => {
+    const pnl = exitPnlVal(t);
+    const isWin = pnl >= 0;
+    const days = holdDays(t);
+
+    if(isWin) { wDays += days; wCount++; }
+    else { lDays += days; lCount++; }
+
+    if(isWinStreak === null) {
+      isWinStreak = isWin; currStreak = 1;
+    } else if(isWin === isWinStreak) {
+      currStreak++;
+    } else {
+      isWinStreak = isWin; currStreak = 1;
+    }
+
+    if(isWinStreak && currStreak > maxWStreak) maxWStreak = currStreak;
+    if(!isWinStreak && currStreak > maxLStreak) maxLStreak = currStreak;
+
+    eq += pnl;
+    if(eq > peakEq) peakEq = eq;
+    const dd = peakEq - eq;
+    if(dd > maxDd) maxDd = dd;
+  });
+
+  const avgWinHold = wCount ? (wDays/wCount).toFixed(1) : 0;
+  const avgLossHold = lCount ? (lDays/lCount).toFixed(1) : 0;
+
+  document.getElementById('advancedStatsGrid').innerHTML = `
+    <div class="detail-stat">
+      <div class="detail-stat-label">Avg Win Hold</div>
+      <div class="detail-stat-val green">${avgWinHold}d</div>
+    </div>
+    <div class="detail-stat">
+      <div class="detail-stat-label">Avg Loss Hold</div>
+      <div class="detail-stat-val red">${avgLossHold}d</div>
+    </div>
+    <div class="detail-stat">
+      <div class="detail-stat-label">Max Drawdown</div>
+      <div class="detail-stat-val red">-₹${maxDd.toLocaleString('en-IN')}</div>
+    </div>
+    <div class="detail-stat">
+      <div class="detail-stat-label">Max Streaks</div>
+      <div class="detail-stat-val"><span class="green">${maxWStreak}W</span> / <span class="red">${maxLStreak}L</span></div>
+    </div>
+  `;
 }
 
 function renderEquityCurve(){
