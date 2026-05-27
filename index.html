@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>ATM Journal – Live Prices & Charts</title>
+<title>TRADE JOURNAL – Live Prices & Charts</title>
 <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
@@ -166,7 +166,7 @@ select option{background:var(--bg3);}
 <div class="topbar">
   <div class="logo">
     <div class="logo-dot"></div>
-    ATM Journal
+    TRADE JOURNAL
     <span class="live-badge">LIVE</span>
   </div>
   <div class="topbar-right">
@@ -1116,7 +1116,7 @@ function exportCSV(){
   ]);
   const csv = [header,...rows].map(r=>r.map(c=>`"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
   const blob = new Blob([csv],{type:'text/csv'}); const url = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href = url; a.download = `atm_journal_backup_${new Date().toISOString().split('T')[0]}.csv`;
+  const a = document.createElement('a'); a.href = url; a.download = `trade_journal_backup_${new Date().toISOString().split('T')[0]}.csv`;
   a.click(); URL.revokeObjectURL(url); showToast('CSV backup exported ✓','success');
 }
 
