@@ -508,7 +508,16 @@ function computeSummary(){
   const activePnl=active.reduce((a,t)=>a+pnlVal(t),0);
   const closedProfit=closed.reduce((a,t)=>a+exitPnlVal(t),0);
   const totalPnl=activePnl+closedProfit;
-  const dayPnl=active.reduce((a,t)=>a+(t.liveChange||0)*t.entry*t.qty/100,0);
+  
+  // FIXED: Calculates true daily P&L by comparing CMP against yesterday's close
+  const dayPnl = active.reduce((a, t) => {
+    if (!t.cmp || t.liveChange === null || t.liveChange === undefined) return a;
+    const currentVal = t.cmp * t.qty;
+    const prevClosePrice = t.cmp / (1 + (t.liveChange / 100));
+    const prevCloseVal = prevClosePrice * t.qty;
+    return a + (currentVal - prevCloseVal);
+  }, 0);
+  
   const riskAmt=active.filter(t=>t.sl).reduce((a,t)=>a+(t.entry-t.sl)*t.qty,0);
   const openRiskPct=invested?(riskAmt/invested*100):0;
   return {positions:active.length,invested,activePnl,closedProfit,totalPnl,dayPnl,openRiskPct,lockedProfit:closedProfit,closed:closed.length};
