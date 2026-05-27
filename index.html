@@ -644,9 +644,26 @@ function renderCards(){
   const grid=document.getElementById('cardsGrid'), q=document.getElementById('searchInput').value.toLowerCase(), sort=document.getElementById('sortSelect').value;
   let visible=trades.filter(t=>currentFilter==='all'||t.status===currentFilter);
   if(q) visible=visible.filter(t=>t.name.toLowerCase().includes(q)||(t.ticker||'').toLowerCase().includes(q));
+  
   visible.sort((a,b)=>{
-    if(sort==='pct-desc') return pct(b.entry,b.cmp)-pct(a.entry,a.cmp); if(sort==='pct-asc') return pct(a.entry,a.cmp)-pct(b.entry,b.cmp);
-    if(sort==='pnl-desc') return exitPnlVal(b)-exitPnlVal(a); if(sort==='name') return a.name.localeCompare(b.name); return b.id-a.id;
+    const evalA = a.status === 'closed' ? (a.exitPrice || a.cmp) : a.cmp;
+    const evalB = b.status === 'closed' ? (b.exitPrice || b.cmp) : b.cmp;
+    
+    if(sort==='pct-desc') return pct(b.entry, evalB) - pct(a.entry, evalA);
+    if(sort==='pct-asc') return pct(a.entry, evalA) - pct(b.entry, evalB);
+    if(sort==='pnl-desc') {
+       const pnlA = (evalA - a.entry) * a.qty;
+       const pnlB = (evalB - b.entry) * b.qty;
+       return pnlB - pnlA;
+    }
+    if(sort==='name') return a.name.localeCompare(b.name);
+    
+    // Default: Sort by Date (Newest first)
+    const dateA = new Date(a.status === 'closed' && a.exitDate ? a.exitDate : a.date).getTime() || 0;
+    const dateB = new Date(b.status === 'closed' && b.exitDate ? b.exitDate : b.date).getTime() || 0;
+    if (dateA !== dateB) return dateB - dateA;
+    
+    return b.id - a.id;
   });
   
   if(!visible.length){ grid.innerHTML=`<div class="empty-state"><div style="font-size:32px">📈</div><p>No trades found.</p></div>`; return; }
