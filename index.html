@@ -550,7 +550,7 @@ async function fetchPrice(ticker){
       }
     }
   }
-  return { price: meta.regularMarketPrice, prevClose: meta.chartPreviousClose || meta.previousClose, currency: meta.currency, marketState: meta.marketState, dailyData: dailyData };
+  return { price: meta.regularMarketPrice, prevClose: meta.previousClose || meta.chartPreviousClose, currency: meta.currency, marketState: meta.marketState, dailyData: dailyData };
 }
 
 async function fetchAllPrices(){
