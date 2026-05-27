@@ -650,6 +650,10 @@ function renderCards(){
       <div class="chart-wrap" id="cv${t.id}"></div>
       <div class="card-footer">
         <div class="price-col"><span class="price-label">Entry</span><span class="price-val">₹${t.entry.toLocaleString('en-IN')}</span></div>
+        <div class="price-col" style="text-align:center;">
+          <span class="price-label">Held</span>
+          <span class="price-val" style="color:var(--text2);">${days}d</span>
+        </div>
         <div class="price-col" style="text-align:right;">
           <span class="price-label">${isClosed ? 'EXIT PRICE' : (hasLive ? 'CMP · live' : 'CMP')}</span>
           <span class="price-val ${bull?'green':'red'}">₹${evalPrice.toLocaleString('en-IN')}</span>
