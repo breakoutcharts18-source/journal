@@ -619,7 +619,7 @@ function drawCandleChart(containerId, trade, isDetail = false) {
         if(trade.sl) { yaxisAnnotations.push({ y: trade.sl, borderColor: '#ef4444', strokeDashArray: 4, label: { borderColor: 'transparent', position: 'right', offsetX: -5, style: { color: '#ef4444', background: 'transparent', fontWeight: 600, fontFamily: "'JetBrains Mono', monospace"}, text: 'SL' } }); }
         if(trade.target) { yaxisAnnotations.push({ y: trade.target, borderColor: '#22c55e', strokeDashArray: 4, label: { borderColor: 'transparent', position: 'right', offsetX: -5, style: { color: '#22c55e', background: 'transparent', fontWeight: 600, fontFamily: "'JetBrains Mono', monospace"}, text: 'TGT' } }); }
     }
-    if(trade.date) { const e = trade.dailyData.find(d => d.time >= trade.date); if(e) pointAnnotations.push({ x: new Date(e.time).getTime(), y: e.low, marker: { size: 0 }, label: { borderColor: 'transparent', offsetY: 12, style: { color: '#22c55e', background: 'transparent', fontSize: '16px', padding: 0 }, text: '▲' }}); }
+    if(trade.date) { const e = trade.dailyData.find(d => d.time >= trade.date); if(e) pointAnnotations.push({ x: new Date(e.time).getTime(), y: e.low, marker: { size: 0 }, label: { borderColor: 'transparent', offsetY: 24, style: { color: '#22c55e', background: 'transparent', fontSize: '16px', padding: 0 }, text: '▲' }}); }
     if(trade.status === 'closed' && trade.exitDate) { const ex = trade.dailyData.find(d => d.time >= trade.exitDate); if(ex) pointAnnotations.push({ x: new Date(ex.time).getTime(), y: ex.high, marker: { size: 0 }, label: { borderColor: 'transparent', offsetY: -24, style: { color: '#ef4444', background: 'transparent', fontSize: '16px', padding: 0 }, text: '▼' }}); }
 
     const options = {
@@ -628,7 +628,7 @@ function drawCandleChart(containerId, trade, isDetail = false) {
         theme: { mode: 'dark' }, plotOptions: { candlestick: { colors: { upward: '#22c55e', downward: '#ef4444' }, wick: { useFillColor: true } } },
         xaxis: { type: 'datetime', labels: { show: isDetail, style: { colors: '#555f74', fontFamily: "'JetBrains Mono', monospace" } }, axisBorder: { show: false }, axisTicks: { show: false }, tooltip: { enabled: false } },
         yaxis: { labels: { show: isDetail, style: { colors: '#555f74', fontFamily: "'JetBrains Mono', monospace" }, formatter: (value) => { return value.toFixed(2) } } },
-        grid: { borderColor: 'rgba(255,255,255,0.04)', strokeDashArray: 4, xaxis: { lines: { show: false } }, yaxis: { lines: { show: isDetail } }, padding: { top: 0, right: 0, bottom: 0, left: isDetail ? 10 : -10 } },
+        grid: { borderColor: 'rgba(255,255,255,0.04)', strokeDashArray: 4, xaxis: { lines: { show: false } }, yaxis: { lines: { show: isDetail } }, padding: { top: 10, right: 0, bottom: 10, left: isDetail ? 10 : -10 } },
         annotations: { yaxis: yaxisAnnotations, points: pointAnnotations }, tooltip: { enabled: true, theme: 'dark', x: { format: 'dd MMM yyyy' } }
     };
     chartInstances[containerId] = new ApexCharts(document.querySelector("#" + containerId), options);
