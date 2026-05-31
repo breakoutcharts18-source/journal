@@ -325,6 +325,10 @@ select option{background:var(--bg3);}
     </button>
     <button class="btn btn-green" onclick="exportCSV()" title="Export CSV">↑ CSV</button>
     <button class="btn btn-green" onclick="document.getElementById('csvFileInput').click()" title="Import CSV">↓ CSV</button>
+    <button class="btn btn-red" onclick="clearAllTrades()">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+      Clear All
+    </button>
     <button class="btn btn-primary" onclick="openAddModal()">
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
       New Trade
@@ -922,10 +926,38 @@ function drawCandleChart(containerId,trade,isDetail=false){
   }
   
   const series=data.map(d=>({x:new Date(d.time).getTime(),y:[d.open,d.high,d.low,d.close]}));
-  const annotations={yaxis:[]};
-  annotations.yaxis.push({value:trade.entry,borderColor:'#4d7cff',strokeDashArray:4,label:{text:'Entry ₹'+trade.entry,position:'right',style:{background:'#4d7cff',color:'#fff',fontSize:'9px',fontFamily:'Space Mono',padding:{top:3,bottom:3,left:6,right:6}}}});
-  if(trade.sl)annotations.yaxis.push({value:trade.sl,borderColor:'#ff4d6a',strokeDashArray:4,label:{text:'SL ₹'+trade.sl,position:'right',style:{background:'#ff4d6a',color:'#fff',fontSize:'9px',fontFamily:'Space Mono',padding:{top:3,bottom:3,left:6,right:6}}}});
-  if(trade.target)annotations.yaxis.push({value:trade.target,borderColor:'#00e5a0',strokeDashArray:4,label:{text:'Target ₹'+trade.target,position:'right',style:{background:'#00e5a0',color:'#000',fontSize:'9px',fontFamily:'Space Mono',padding:{top:3,bottom:3,left:6,right:6}}}});
+  const annotations={yaxis:[],xaxis:[]};
+
+  // Horizontal price lines
+  annotations.yaxis.push({
+    value:trade.entry,borderColor:'#4d7cff',strokeDashArray:5,
+    label:{text:'ENTRY ₹'+trade.entry,position:'right',offsetX:-4,style:{background:'#4d7cff',color:'#fff',fontSize:'9px',fontFamily:'Space Mono',padding:{top:3,bottom:3,left:6,right:6}}}
+  });
+  if(trade.sl)annotations.yaxis.push({
+    value:trade.sl,borderColor:'#ff4d6a',strokeDashArray:5,
+    label:{text:'SL ₹'+trade.sl,position:'right',offsetX:-4,style:{background:'#ff4d6a',color:'#fff',fontSize:'9px',fontFamily:'Space Mono',padding:{top:3,bottom:3,left:6,right:6}}}
+  });
+  if(trade.target)annotations.yaxis.push({
+    value:trade.target,borderColor:'#00e5a0',strokeDashArray:5,
+    label:{text:'TARGET ₹'+trade.target,position:'right',offsetX:-4,style:{background:'#00e5a0',color:'#000',fontSize:'9px',fontFamily:'Space Mono',padding:{top:3,bottom:3,left:6,right:6}}}
+  });
+
+  // Vertical date lines — entry and exit
+  if(trade.date){
+    annotations.xaxis.push({
+      x:new Date(trade.date).getTime(),
+      borderColor:'#4d7cff',strokeDashArray:0,borderWidth:2,
+      label:{text:'▲ ENTRY',orientation:'horizontal',position:'top',offsetY:6,style:{background:'#4d7cff',color:'#fff',fontSize:'9px',fontFamily:'Space Mono',padding:{top:3,bottom:3,left:6,right:6}}}
+    });
+  }
+  if(trade.status==='closed'&&trade.exitDate){
+    const exitPnl=((trade.exitPrice||trade.cmp)-trade.entry)*trade.qty;
+    annotations.xaxis.push({
+      x:new Date(trade.exitDate).getTime(),
+      borderColor:exitPnl>=0?'#00e5a0':'#ff4d6a',strokeDashArray:0,borderWidth:2,
+      label:{text:exitPnl>=0?'★ EXIT +':'✕ EXIT',orientation:'horizontal',position:'top',offsetY:6,style:{background:exitPnl>=0?'#00e5a0':'#ff4d6a',color:exitPnl>=0?'#000':'#fff',fontSize:'9px',fontFamily:'Space Mono',padding:{top:3,bottom:3,left:6,right:6}}}
+    });
+  }
   
   const opts={
     series:[{data:series}],
