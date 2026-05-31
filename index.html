@@ -9,37 +9,37 @@
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;500;600;700;800&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg:#060810;
-  --bg2:#0c0f1a;
-  --bg3:#111527;
-  --bg4:#161c32;
-  --border:rgba(100,120,255,0.08);
-  --border2:rgba(100,120,255,0.18);
-  --border3:rgba(100,120,255,0.35);
-  --text:#e2e8ff;
-  --text2:#8b96c8;
-  --text3:#454d75;
-  --green:#00e5a0;
-  --green-dim:rgba(0,229,160,0.08);
-  --green-mid:rgba(0,229,160,0.18);
-  --red:#ff4d6a;
-  --red-dim:rgba(255,77,106,0.08);
-  --red-mid:rgba(255,77,106,0.18);
-  --blue:#4d7cff;
-  --blue-dim:rgba(77,124,255,0.08);
-  --amber:#ffb340;
-  --amber-dim:rgba(255,179,64,0.08);
-  --purple:#b46dff;
-  --purple-dim:rgba(180,109,255,0.08);
-  --cyan:#00d4ff;
-  --cyan-dim:rgba(0,212,255,0.08);
-  --r:10px;--rl:16px;
-  --font:'Inter',sans-serif;
-  --display:'Syne',sans-serif;
-  --mono:'Space Mono',monospace;
-  --glow-green:0 0 20px rgba(0,229,160,0.25);
-  --glow-blue:0 0 20px rgba(77,124,255,0.3);
-  --glow-red:0 0 20px rgba(255,77,106,0.25);
+  --bg:#060810;
+  --bg2:#0c0f1a;
+  --bg3:#111527;
+  --bg4:#161c32;
+  --border:rgba(100,120,255,0.08);
+  --border2:rgba(100,120,255,0.18);
+  --border3:rgba(100,120,255,0.35);
+  --text:#e2e8ff;
+  --text2:#8b96c8;
+  --text3:#454d75;
+  --green:#00e5a0;
+  --green-dim:rgba(0,229,160,0.08);
+  --green-mid:rgba(0,229,160,0.18);
+  --red:#ff4d6a;
+  --red-dim:rgba(255,77,106,0.08);
+  --red-mid:rgba(255,77,106,0.18);
+  --blue:#4d7cff;
+  --blue-dim:rgba(77,124,255,0.08);
+  --amber:#ffb340;
+  --amber-dim:rgba(255,179,64,0.08);
+  --purple:#b46dff;
+  --purple-dim:rgba(180,109,255,0.08);
+  --cyan:#00d4ff;
+  --cyan-dim:rgba(0,212,255,0.08);
+  --r:10px;--rl:16px;
+  --font:'Inter',sans-serif;
+  --display:'Syne',sans-serif;
+  --mono:'Space Mono',monospace;
+  --glow-green:0 0 20px rgba(0,229,160,0.25);
+  --glow-blue:0 0 20px rgba(77,124,255,0.3);
+  --glow-red:0 0 20px rgba(255,77,106,0.25);
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 html{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14px;scrollbar-width:thin;scrollbar-color:var(--bg4) transparent;}
@@ -275,369 +275,379 @@ select option{background:var(--bg3);}
 <body>
 
 <div class="topbar">
-  <a href="https://t.me/breakoutcharts018" target="_blank" style="text-decoration: none; color: inherit; display: flex;">
-    <div class="logo">
-      <div class="logo-icon">B</div>
-      <div>
-        BREAKOUTCHARTS JOURNAL
-        <div class="logo-sub">AI-POWERED JOURNAL</div>
-      </div>
-    </div>
-  </a>
-  <div class="live-pulse">
-    <div class="dot"></div>
-    LIVE
-  </div>
-  <div class="topbar-right">
-    <button class="btn btn-ai" onclick="openAICoach()">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10H12V2z"/><path d="M12 2a10 10 0 0 1 10 10"/><circle cx="12" cy="12" r="3"/></svg>
-      AI Coach
-    </button>
-    <button class="btn btn-cyan" onclick="openWatchlist()">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-      Watchlist
-    </button>
-    <button class="btn btn-purple" onclick="openAnalytics()">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-      Analytics
-    </button>
-    <button class="btn btn-amber" onclick="openRisk()">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-      Risk
-    </button>
-    <button class="btn btn-amber" id="fetchBtn" onclick="fetchAllPrices()">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-      Fetch Prices
-    </button>
-    <button class="btn btn-green" onclick="exportCSV()">↑ Export</button>
-    <button class="btn btn-green" onclick="document.getElementById('csvFileInput').click()">↓ Import</button>
-    <button class="btn btn-primary" onclick="openAddModal()">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-      New Trade
-    </button>
-  </div>
+  <div class="logo">
+    <div class="logo-icon">N</div>
+    <div>
+      NEXUS TRADE
+      <div class="logo-sub">AI-POWERED JOURNAL</div>
+    </div>
+  </div>
+  <div class="live-pulse">
+    <div class="dot"></div>
+    LIVE
+  </div>
+  <div class="topbar-right">
+    <button class="btn btn-ai" onclick="openAICoach()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10H12V2z"/><path d="M12 2a10 10 0 0 1 10 10"/><circle cx="12" cy="12" r="3"/></svg>
+      AI Coach
+    </button>
+    <button class="btn btn-cyan" onclick="openWatchlist()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+      Watchlist
+    </button>
+    <button class="btn btn-purple" onclick="openAnalytics()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      Analytics
+    </button>
+    <button class="btn btn-amber" onclick="openRisk()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      Risk
+    </button>
+    <button class="btn btn-amber" id="fetchBtn" onclick="fetchAllPrices()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+      Fetch Prices
+    </button>
+    <button class="btn btn-green" onclick="exportCSV()">↑ Export</button>
+    <button class="btn btn-green" onclick="document.getElementById('csvFileInput').click()">↓ Import</button>
+    <button class="btn btn-primary" onclick="openAddModal()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      New Trade
+    </button>
+  </div>
 </div>
 
 <input type="file" id="csvFileInput" accept=".csv" style="display:none;" onchange="handleCSVImport(event)" />
 
 <div class="main">
-  <div class="status-bar">
-    <div class="status-dot" id="statusDot"></div>
-    <span id="liveStatus">Ready — fetch live prices or add a trade to get started.</span>
-    <div class="refresh-ctrl">
-      <label>Auto-refresh</label>
-      <select class="nano" id="autoRefreshSelect" onchange="setAutoRefresh()">
-        <option value="0">Off</option>
-        <option value="60">1 min</option>
-        <option value="300">5 min</option>
-        <option value="900">15 min</option>
-      </select>
-    </div>
-    <span id="lastFetchTime" style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-left:8px;"></span>
-  </div>
-  <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+  <!-- STATUS BAR -->
+  <div class="status-bar">
+    <div class="status-dot" id="statusDot"></div>
+    <span id="liveStatus">Ready — fetch live prices or add a trade to get started.</span>
+    <div class="refresh-ctrl">
+      <label>Auto-refresh</label>
+      <select class="nano" id="autoRefreshSelect" onchange="setAutoRefresh()">
+        <option value="0">Off</option>
+        <option value="60">1 min</option>
+        <option value="300">5 min</option>
+        <option value="900">15 min</option>
+      </select>
+    </div>
+    <span id="lastFetchTime" style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-left:8px;"></span>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
 
-  <div class="summary-bar" id="summaryBar"></div>
+  <!-- SUMMARY -->
+  <div class="summary-bar" id="summaryBar"></div>
 
-  <div class="controls">
-    <div class="tabs">
-      <button class="tab active" onclick="setFilter('active',this)">ACTIVE</button>
-      <button class="tab" onclick="setFilter('closed',this)">CLOSED</button>
-      <button class="tab" onclick="setFilter('all',this)">ALL</button>
-    </div>
-    <div class="search-wrap">
-      <svg class="ico" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-      <input class="search-input" id="searchInput" placeholder="Search..." oninput="renderCards()" />
-    </div>
-    <select class="sort-select" id="sortSelect" onchange="renderCards()">
-      <option value="date">Newest First</option>
-      <option value="pct-desc">% Gain ↓</option>
-      <option value="pct-asc">% Gain ↑</option>
-      <option value="pnl-desc">P&L ↓</option>
-      <option value="risk">Risk ↓</option>
-      <option value="name">A–Z</option>
-    </select>
-    <button class="btn ml-auto" onclick="fetchAllPrices()">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-      Refresh
-    </button>
-  </div>
+  <!-- CONTROLS -->
+  <div class="controls">
+    <div class="tabs">
+      <button class="tab active" onclick="setFilter('active',this)">ACTIVE</button>
+      <button class="tab" onclick="setFilter('closed',this)">CLOSED</button>
+      <button class="tab" onclick="setFilter('all',this)">ALL</button>
+    </div>
+    <div class="search-wrap">
+      <svg class="ico" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input class="search-input" id="searchInput" placeholder="Search..." oninput="renderCards()" />
+    </div>
+    <select class="sort-select" id="sortSelect" onchange="renderCards()">
+      <option value="date">Newest First</option>
+      <option value="pct-desc">% Gain ↓</option>
+      <option value="pct-asc">% Gain ↑</option>
+      <option value="pnl-desc">P&L ↓</option>
+      <option value="risk">Risk ↓</option>
+      <option value="name">A–Z</option>
+    </select>
+    <button class="btn ml-auto" onclick="fetchAllPrices()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+      Refresh
+    </button>
+  </div>
 
-  <div class="cards-grid" id="cardsGrid"></div>
+  <!-- CARDS -->
+  <div class="cards-grid" id="cardsGrid"></div>
 </div>
 
+<!-- ── ANALYTICS MODAL ── -->
 <div class="overlay" id="analyticsOverlay" onclick="closeAnalyticsBackdrop(event)">
-  <div class="modal" style="width:900px;">
-    <div class="modal-title">
-      Performance Dashboard
-      <button class="modal-close" onclick="closeAnalytics()">✕</button>
-    </div>
-    <div class="analytics-tabs">
-      <button class="analytics-tab active" id="tabCurve" onclick="switchAnalyticsTab('curve')">EQUITY CURVE</button>
-      <button class="analytics-tab" id="tabSetups" onclick="switchAnalyticsTab('setups')">SETUPS</button>
-      <button class="analytics-tab" id="tabHeatmap" onclick="switchAnalyticsTab('heatmap')">HEAT MAP</button>
-      <button class="analytics-tab" id="tabCalendar" onclick="switchAnalyticsTab('calendar')">CALENDAR</button>
-    </div>
-    <div id="viewCurve">
-      <div id="advancedStatsGrid" class="stat-grid-2"></div>
-      <div class="analytics-chart" id="equityChart"></div>
-    </div>
-    <div id="viewSetups" style="display:none;">
-      <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px;">
-        <select class="sort-select" id="analyticsGroupSelect" onchange="renderSetupAnalytics()">
-          <option value="setupType">By Setup Type</option>
-          <option value="marketContext">By Market Context</option>
-          <option value="execution">By Execution Grade</option>
-          <option value="type">By Asset Type</option>
-        </select>
-      </div>
-      <table class="setup-table">
-        <thead><tr>
-          <th id="analyticsGroupHeader">Setup Type</th>
-          <th>Trades</th><th>Win Rate</th><th>Prof. Factor</th><th>Avg RR</th><th>Total P&L</th>
-        </tr></thead>
-        <tbody id="setupTableBody"></tbody>
-      </table>
-    </div>
-    <div id="viewHeatmap" style="display:none;">
-      <div class="heatmap-grid" id="heatmapGrid"></div>
-    </div>
-    <div id="viewCalendar" style="display:none;">
-      <div id="calendarView"></div>
-    </div>
-  </div>
+  <div class="modal" style="width:900px;">
+    <div class="modal-title">
+      Performance Dashboard
+      <button class="modal-close" onclick="closeAnalytics()">✕</button>
+    </div>
+    <div class="analytics-tabs">
+      <button class="analytics-tab active" id="tabCurve" onclick="switchAnalyticsTab('curve')">EQUITY CURVE</button>
+      <button class="analytics-tab" id="tabSetups" onclick="switchAnalyticsTab('setups')">SETUPS</button>
+      <button class="analytics-tab" id="tabHeatmap" onclick="switchAnalyticsTab('heatmap')">HEAT MAP</button>
+      <button class="analytics-tab" id="tabCalendar" onclick="switchAnalyticsTab('calendar')">CALENDAR</button>
+    </div>
+    <div id="viewCurve">
+      <div id="advancedStatsGrid" class="stat-grid-2"></div>
+      <div class="analytics-chart" id="equityChart"></div>
+    </div>
+    <div id="viewSetups" style="display:none;">
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px;">
+        <select class="sort-select" id="analyticsGroupSelect" onchange="renderSetupAnalytics()">
+          <option value="setupType">By Setup Type</option>
+          <option value="marketContext">By Market Context</option>
+          <option value="execution">By Execution Grade</option>
+          <option value="type">By Asset Type</option>
+        </select>
+      </div>
+      <table class="setup-table">
+        <thead><tr>
+          <th id="analyticsGroupHeader">Setup Type</th>
+          <th>Trades</th><th>Win Rate</th><th>Prof. Factor</th><th>Avg RR</th><th>Total P&L</th>
+        </tr></thead>
+        <tbody id="setupTableBody"></tbody>
+      </table>
+    </div>
+    <div id="viewHeatmap" style="display:none;">
+      <div class="heatmap-grid" id="heatmapGrid"></div>
+    </div>
+    <div id="viewCalendar" style="display:none;">
+      <div id="calendarView"></div>
+    </div>
+  </div>
 </div>
 
+<!-- ── ADD/EDIT TRADE MODAL ── -->
 <div class="overlay" id="tradeOverlay" onclick="closeModalBackdrop(event)">
-  <div class="modal">
-    <div class="modal-title">
-      <span id="modalTitle">New Trade</span>
-      <button class="modal-close" onclick="closeModal()">✕</button>
-    </div>
-    <div class="form-grid">
-      <div class="form-section-label">CORE POSITION DATA</div>
-      <div class="form-group form-full">
-        <label>Company / Asset Name</label>
-        <input id="fName" placeholder="e.g. Reliance Industries" />
-      </div>
-      <div class="form-group">
-        <label>Yahoo Finance Ticker</label>
-        <div class="ticker-test-row">
-          <input id="fTicker" placeholder="e.g. RELIANCE.NS" />
-          <button class="btn btn-cyan" onclick="testTicker()" style="padding:8px 12px;white-space:nowrap;flex-shrink:0;">Test ↗</button>
-        </div>
-        <div class="ticker-result" id="tickerResult"></div>
-      </div>
-      <div class="form-group">
-        <label>Exchange</label>
-        <select id="fExchange"><option>NSE</option><option>BSE</option><option>NASDAQ</option><option>NYSE</option><option>F&O</option><option>Crypto</option></select>
-      </div>
-      <div class="form-group">
-        <label>Asset Type</label>
-        <select id="fType"><option>Equity</option><option>F&O Futures</option><option>F&O Options</option><option>ETF</option><option>Crypto</option><option>Currency</option></select>
-      </div>
-      <div class="form-group">
-        <label>Status</label>
-        <select id="fStatus"><option value="active">Active / Open</option><option value="closed">Closed</option></select>
-      </div>
+  <div class="modal">
+    <div class="modal-title">
+      <span id="modalTitle">New Trade</span>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="form-grid">
+      <div class="form-section-label">CORE POSITION DATA</div>
+      <div class="form-group form-full">
+        <label>Company / Asset Name</label>
+        <input id="fName" placeholder="e.g. Reliance Industries" />
+      </div>
+      <div class="form-group">
+        <label>Yahoo Finance Ticker</label>
+        <div class="ticker-test-row">
+          <input id="fTicker" placeholder="e.g. RELIANCE.NS" />
+          <button class="btn btn-cyan" onclick="testTicker()" style="padding:8px 12px;white-space:nowrap;flex-shrink:0;">Test ↗</button>
+        </div>
+        <div class="ticker-result" id="tickerResult"></div>
+      </div>
+      <div class="form-group">
+        <label>Exchange</label>
+        <select id="fExchange"><option>NSE</option><option>BSE</option><option>NASDAQ</option><option>NYSE</option><option>F&O</option><option>Crypto</option></select>
+      </div>
+      <div class="form-group">
+        <label>Asset Type</label>
+        <select id="fType"><option>Equity</option><option>F&O Futures</option><option>F&O Options</option><option>ETF</option><option>Crypto</option><option>Currency</option></select>
+      </div>
+      <div class="form-group">
+        <label>Status</label>
+        <select id="fStatus"><option value="active">Active / Open</option><option value="closed">Closed</option></select>
+      </div>
 
-      <div class="form-divider"></div>
-      <div class="form-section-label">PRICE & SIZING</div>
+      <div class="form-divider"></div>
+      <div class="form-section-label">PRICE & SIZING</div>
 
-      <div class="form-group">
-        <label>Entry Price (₹)</label>
-        <input id="fEntry" type="number" step="0.01" placeholder="0.00" oninput="calcRR()" />
-      </div>
-      <div class="form-group">
-        <label>Quantity / Lots</label>
-        <input id="fQty" type="number" step="1" placeholder="0" oninput="calcRR()" />
-      </div>
-      <div class="form-group">
-        <label>Stop Loss (₹)</label>
-        <input id="fSL" type="number" step="0.01" placeholder="0.00" oninput="calcRR()" />
-      </div>
-      <div class="form-group">
-        <label>Target (₹)</label>
-        <input id="fTarget" type="number" step="0.01" placeholder="0.00" oninput="calcRR()" />
-      </div>
-      <div class="form-group">
-        <label>CMP / Current Price (₹)</label>
-        <input id="fCmp" type="number" step="0.01" placeholder="Auto-filled on fetch" />
-      </div>
-      <div class="form-group">
-        <label>Exit Price (₹)</label>
-        <input id="fExitPrice" type="number" step="0.01" placeholder="Leave blank if open" />
-      </div>
+      <div class="form-group">
+        <label>Entry Price (₹)</label>
+        <input id="fEntry" type="number" step="0.01" placeholder="0.00" oninput="calcRR()" />
+      </div>
+      <div class="form-group">
+        <label>Quantity / Lots</label>
+        <input id="fQty" type="number" step="1" placeholder="0" oninput="calcRR()" />
+      </div>
+      <div class="form-group">
+        <label>Stop Loss (₹)</label>
+        <input id="fSL" type="number" step="0.01" placeholder="0.00" oninput="calcRR()" />
+      </div>
+      <div class="form-group">
+        <label>Target (₹)</label>
+        <input id="fTarget" type="number" step="0.01" placeholder="0.00" oninput="calcRR()" />
+      </div>
+      <div class="form-group">
+        <label>CMP / Current Price (₹)</label>
+        <input id="fCmp" type="number" step="0.01" placeholder="Auto-filled on fetch" />
+      </div>
+      <div class="form-group">
+        <label>Exit Price (₹)</label>
+        <input id="fExitPrice" type="number" step="0.01" placeholder="Leave blank if open" />
+      </div>
 
-      <div class="form-group form-full">
-        <div id="rrCalcBox" style="display:none;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);padding:12px;display:grid;grid-template-columns:repeat(4,1fr);gap:10px;">
-          <div><div class="price-label">Risk Amount</div><div id="rrRisk" class="price-val r" style="font-family:var(--mono);font-size:13px;">—</div></div>
-          <div><div class="price-label">Reward</div><div id="rrReward" class="price-val g" style="font-family:var(--mono);font-size:13px;">—</div></div>
-          <div><div class="price-label">R:R Ratio</div><div id="rrRatio" class="price-val b" style="font-family:var(--mono);font-size:13px;">—</div></div>
-          <div><div class="price-label">% at Risk</div><div id="rrPct" class="price-val a" style="font-family:var(--mono);font-size:13px;">—</div></div>
-        </div>
-      </div>
+      <!-- Live RR Calculator -->
+      <div class="form-group form-full">
+        <div id="rrCalcBox" style="display:none;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);padding:12px;display:grid;grid-template-columns:repeat(4,1fr);gap:10px;">
+          <div><div class="price-label">Risk Amount</div><div id="rrRisk" class="price-val r" style="font-family:var(--mono);font-size:13px;">—</div></div>
+          <div><div class="price-label">Reward</div><div id="rrReward" class="price-val g" style="font-family:var(--mono);font-size:13px;">—</div></div>
+          <div><div class="price-label">R:R Ratio</div><div id="rrRatio" class="price-val b" style="font-family:var(--mono);font-size:13px;">—</div></div>
+          <div><div class="price-label">% at Risk</div><div id="rrPct" class="price-val a" style="font-family:var(--mono);font-size:13px;">—</div></div>
+        </div>
+      </div>
 
-      <div class="form-group">
-        <label>Entry Date</label>
-        <input id="fDate" type="date" />
-      </div>
-      <div class="form-group">
-        <label>Exit Date</label>
-        <input id="fExitDate" type="date" />
-      </div>
+      <div class="form-group">
+        <label>Entry Date</label>
+        <input id="fDate" type="date" />
+      </div>
+      <div class="form-group">
+        <label>Exit Date</label>
+        <input id="fExitDate" type="date" />
+      </div>
 
-      <div class="form-divider"></div>
-      <div class="form-section-label">TRADE METADATA & PSYCHOLOGY</div>
+      <div class="form-divider"></div>
+      <div class="form-section-label">TRADE METADATA & PSYCHOLOGY</div>
 
-      <div class="form-group">
-        <label>Setup Type</label>
-        <input id="fSetupType" placeholder="VCP, Breakout, Reversal..." list="setupSuggestions"/>
-        <datalist id="setupSuggestions">
-          <option value="VCP Breakout"/><option value="Volume Breakout"/><option value="Trend Continuation"/><option value="Pullback Buy"/><option value="Reversal"/><option value="Gap & Go"/><option value="52W High Breakout"/><option value="Support Bounce"/><option value="IPO"/>
-        </datalist>
-      </div>
-      <div class="form-group">
-        <label>Market Context</label>
-        <input id="fMarketContext" placeholder="Trending, Choppy, Bear..." list="contextSuggestions"/>
-        <datalist id="contextSuggestions">
-          <option value="Strong Bull"/><option value="Trending Up"/><option value="Sideways Chop"/><option value="Trending Down"/><option value="Strong Bear"/><option value="High VIX"/>
-        </datalist>
-      </div>
-      <div class="form-group">
-        <label>Execution Grade</label>
-        <select id="fExecution">
-          <option value="">Ungraded</option>
-          <option value="A+ Perfect">A+ — Perfect</option>
-          <option value="A Good">A — Good</option>
-          <option value="B Slight Deviation">B — Slight Deviation</option>
-          <option value="C Late Entry">C — Late Entry</option>
-          <option value="D FOMO">D — FOMO / Rule Break</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label>Emotional State</label>
-        <select id="fEmotion">
-          <option value="">Neutral</option>
-          <option value="Confident">Confident</option>
-          <option value="FOMO">FOMO</option>
-          <option value="Fearful">Fearful</option>
-          <option value="Revenge">Revenge Trading</option>
-          <option value="Patient">Patient / Disciplined</option>
-          <option value="Greedy">Greedy</option>
-        </select>
-      </div>
-      <div class="form-group form-full">
-        <label>Notes / Rationale / Lessons</label>
-        <textarea id="fNotes" placeholder="Why did you take this trade? What do you see? What would invalidate it?"></textarea>
-      </div>
-    </div>
-    <div class="form-actions">
-      <button class="btn" onclick="closeModal()">Cancel</button>
-      <button class="btn btn-primary" onclick="saveTrade()">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-        Save Trade
-      </button>
-    </div>
-  </div>
+      <div class="form-group">
+        <label>Setup Type</label>
+        <input id="fSetupType" placeholder="VCP, Breakout, Reversal..." list="setupSuggestions"/>
+        <datalist id="setupSuggestions">
+          <option value="VCP Breakout"/><option value="Volume Breakout"/><option value="Trend Continuation"/><option value="Pullback Buy"/><option value="Reversal"/><option value="Gap & Go"/><option value="52W High Breakout"/><option value="Support Bounce"/><option value="IPO"/>
+        </datalist>
+      </div>
+      <div class="form-group">
+        <label>Market Context</label>
+        <input id="fMarketContext" placeholder="Trending, Choppy, Bear..." list="contextSuggestions"/>
+        <datalist id="contextSuggestions">
+          <option value="Strong Bull"/><option value="Trending Up"/><option value="Sideways Chop"/><option value="Trending Down"/><option value="Strong Bear"/><option value="High VIX"/>
+        </datalist>
+      </div>
+      <div class="form-group">
+        <label>Execution Grade</label>
+        <select id="fExecution">
+          <option value="">Ungraded</option>
+          <option value="A+ Perfect">A+ — Perfect</option>
+          <option value="A Good">A — Good</option>
+          <option value="B Slight Deviation">B — Slight Deviation</option>
+          <option value="C Late Entry">C — Late Entry</option>
+          <option value="D FOMO">D — FOMO / Rule Break</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Emotional State</label>
+        <select id="fEmotion">
+          <option value="">Neutral</option>
+          <option value="Confident">Confident</option>
+          <option value="FOMO">FOMO</option>
+          <option value="Fearful">Fearful</option>
+          <option value="Revenge">Revenge Trading</option>
+          <option value="Patient">Patient / Disciplined</option>
+          <option value="Greedy">Greedy</option>
+        </select>
+      </div>
+      <div class="form-group form-full">
+        <label>Notes / Rationale / Lessons</label>
+        <textarea id="fNotes" placeholder="Why did you take this trade? What do you see? What would invalidate it?"></textarea>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveTrade()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+        Save Trade
+      </button>
+    </div>
+  </div>
 </div>
 
+<!-- ── DETAIL PANEL ── -->
 <div class="detail-overlay" id="detailOverlay" onclick="closeDetailBackdrop(event)">
-  <div class="detail-panel">
-    <div class="modal-title">
-      <div>
-        <div id="detailName" style="font-size:17px;font-family:var(--display);font-weight:800;"></div>
-        <div id="detailTicker" style="font-size:10px;color:var(--text3);font-family:var(--mono);margin-top:2px;letter-spacing:0.1em;"></div>
-      </div>
-      <button class="modal-close" onclick="closeDetail()">✕</button>
-    </div>
-    <div class="detail-chart-wrap" id="detailChart"></div>
-    <div id="detailTags" class="tag-container"></div>
-    <div class="detail-grid" id="detailGrid"></div>
-    <div class="notes-box" id="detailNotes"></div>
-    
-    <div style="margin-top:14px;">
-      <button class="btn btn-ai" style="width:100%;justify-content:center;" id="aiAnalyzeBtn" onclick="analyzeTradeWithAI()">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10H12V2z"/><path d="M12 2a10 10 0 0 1 10 10"/><circle cx="12" cy="12" r="3"/></svg>
-        Analyze This Trade with AI
-      </button>
-      <div id="aiTradeAnalysis" style="display:none;"></div>
-    </div>
-    
-    <div class="detail-actions">
-      <button class="btn" style="flex:1;justify-content:center;" onclick="editFromDetail()">✏ Edit</button>
-      <button class="btn btn-amber" style="flex:1;justify-content:center;" id="btnPartialExit" onclick="partialExitFromDetail()">✂ Partial</button>
-      <button class="btn btn-green" style="flex:1;justify-content:center;" id="btnCloseTrade" onclick="closeTradeFromDetail()">✓ Close</button>
-      <button class="btn btn-red" style="flex:1;justify-content:center;" onclick="deleteFromDetail()">✕ Delete</button>
-    </div>
-  </div>
+  <div class="detail-panel">
+    <div class="modal-title">
+      <div>
+        <div id="detailName" style="font-size:17px;font-family:var(--display);font-weight:800;"></div>
+        <div id="detailTicker" style="font-size:10px;color:var(--text3);font-family:var(--mono);margin-top:2px;letter-spacing:0.1em;"></div>
+      </div>
+      <button class="modal-close" onclick="closeDetail()">✕</button>
+    </div>
+    <div class="detail-chart-wrap" id="detailChart"></div>
+    <div id="detailTags" class="tag-container"></div>
+    <div class="detail-grid" id="detailGrid"></div>
+    <div class="notes-box" id="detailNotes"></div>
+    
+    <!-- AI Analysis Section -->
+    <div style="margin-top:14px;">
+      <button class="btn btn-ai" style="width:100%;justify-content:center;" id="aiAnalyzeBtn" onclick="analyzeTradeWithAI()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10H12V2z"/><path d="M12 2a10 10 0 0 1 10 10"/><circle cx="12" cy="12" r="3"/></svg>
+        Analyze This Trade with AI
+      </button>
+      <div id="aiTradeAnalysis" style="display:none;"></div>
+    </div>
+    
+    <div class="detail-actions">
+      <button class="btn" style="flex:1;justify-content:center;" onclick="editFromDetail()">✏ Edit</button>
+      <button class="btn btn-amber" style="flex:1;justify-content:center;" id="btnPartialExit" onclick="partialExitFromDetail()">✂ Partial</button>
+      <button class="btn btn-green" style="flex:1;justify-content:center;" id="btnCloseTrade" onclick="closeTradeFromDetail()">✓ Close</button>
+      <button class="btn btn-red" style="flex:1;justify-content:center;" onclick="deleteFromDetail()">✕ Delete</button>
+    </div>
+  </div>
 </div>
 
+<!-- ── AI COACH MODAL ── -->
 <div class="overlay" id="aiCoachOverlay" onclick="if(event.target.id==='aiCoachOverlay')closeAICoach()">
-  <div class="modal" style="width:780px;">
-    <div class="modal-title">
-      <div style="display:flex;align-items:center;gap:10px;">
-        <div style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,var(--purple),var(--blue));display:flex;align-items:center;justify-content:center;font-size:14px;">⬡</div>
-        <div>
-          <div>AI Trading Coach</div>
-          <div style="font-family:var(--mono);font-size:10px;color:var(--text3);font-weight:400;margin-top:1px;">Powered by Claude — Your personal trading analyst</div>
-        </div>
-      </div>
-      <button class="modal-close" onclick="closeAICoach()">✕</button>
-    </div>
-    
-    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">
-      <button class="btn btn-purple" style="font-size:11px;" onclick="askCoach('Analyze my overall portfolio and give me a performance review.')">📊 Portfolio Review</button>
-      <button class="btn btn-purple" style="font-size:11px;" onclick="askCoach('What are my psychological trading patterns based on my emotion tags? Where am I losing discipline?')">🧠 Psychology Audit</button>
-      <button class="btn btn-purple" style="font-size:11px;" onclick="askCoach('Which of my setups has the best risk-adjusted returns? What should I focus on?')">🎯 Best Setups</button>
-      <button class="btn btn-purple" style="font-size:11px;" onclick="askCoach('What mistakes am I repeating and how do I fix them?')">⚠ Mistake Patterns</button>
-      <button class="btn btn-purple" style="font-size:11px;" onclick="askCoach('Give me a position sizing recommendation for my next trade based on my account equity and recent performance.')">💰 Position Sizing</button>
-    </div>
-    
-    <div id="coachHistory" style="max-height:380px;overflow-y:auto;margin-bottom:12px;display:flex;flex-direction:column;gap:10px;"></div>
-    
-    <div style="display:flex;gap:8px;align-items:flex-end;">
-      <textarea id="coachInput" placeholder="Ask your AI coach anything about your trades..." style="flex:1;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);padding:10px 14px;color:var(--text);font-family:var(--font);font-size:13px;outline:none;resize:none;min-height:54px;line-height:1.5;" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendCoachMessage();}"></textarea>
-      <button class="btn btn-primary" onclick="sendCoachMessage()" style="padding:10px 18px;align-self:flex-end;">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-      </button>
-    </div>
-  </div>
+  <div class="modal" style="width:780px;">
+    <div class="modal-title">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,var(--purple),var(--blue));display:flex;align-items:center;justify-content:center;font-size:14px;">⬡</div>
+        <div>
+          <div>AI Trading Coach</div>
+          <div style="font-family:var(--mono);font-size:10px;color:var(--text3);font-weight:400;margin-top:1px;">Powered by Claude — Your personal trading analyst</div>
+        </div>
+      </div>
+      <button class="modal-close" onclick="closeAICoach()">✕</button>
+    </div>
+    
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">
+      <button class="btn btn-purple" style="font-size:11px;" onclick="askCoach('Analyze my overall portfolio and give me a performance review.')">📊 Portfolio Review</button>
+      <button class="btn btn-purple" style="font-size:11px;" onclick="askCoach('What are my psychological trading patterns based on my emotion tags? Where am I losing discipline?')">🧠 Psychology Audit</button>
+      <button class="btn btn-purple" style="font-size:11px;" onclick="askCoach('Which of my setups has the best risk-adjusted returns? What should I focus on?')">🎯 Best Setups</button>
+      <button class="btn btn-purple" style="font-size:11px;" onclick="askCoach('What mistakes am I repeating and how do I fix them?')">⚠ Mistake Patterns</button>
+      <button class="btn btn-purple" style="font-size:11px;" onclick="askCoach('Give me a position sizing recommendation for my next trade based on my account equity and recent performance.')">💰 Position Sizing</button>
+    </div>
+    
+    <div id="coachHistory" style="max-height:380px;overflow-y:auto;margin-bottom:12px;display:flex;flex-direction:column;gap:10px;"></div>
+    
+    <div style="display:flex;gap:8px;align-items:flex-end;">
+      <textarea id="coachInput" placeholder="Ask your AI coach anything about your trades..." style="flex:1;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);padding:10px 14px;color:var(--text);font-family:var(--font);font-size:13px;outline:none;resize:none;min-height:54px;line-height:1.5;" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendCoachMessage();}"></textarea>
+      <button class="btn btn-primary" onclick="sendCoachMessage()" style="padding:10px 18px;align-self:flex-end;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      </button>
+    </div>
+  </div>
 </div>
 
+<!-- ── RISK MODAL ── -->
 <div class="overlay" id="riskOverlay" onclick="if(event.target.id==='riskOverlay')closeRisk()">
-  <div class="modal" style="width:720px;">
-    <div class="modal-title">
-      Risk Command Center
-      <button class="modal-close" onclick="closeRisk()">✕</button>
-    </div>
-    <div id="riskContent"></div>
-  </div>
+  <div class="modal" style="width:720px;">
+    <div class="modal-title">
+      Risk Command Center
+      <button class="modal-close" onclick="closeRisk()">✕</button>
+    </div>
+    <div id="riskContent"></div>
+  </div>
 </div>
 
+<!-- ── WATCHLIST MODAL ── -->
 <div class="overlay" id="watchlistOverlay" onclick="if(event.target.id==='watchlistOverlay')closeWatchlist()">
-  <div class="modal" style="width:640px;">
-    <div class="modal-title">
-      Live Watchlist
-      <button class="modal-close" onclick="closeWatchlist()">✕</button>
-    </div>
-    <div class="wl-add-row">
-      <input id="wlInput" placeholder="Add ticker (e.g. ZOMATO.NS, AAPL)" onkeydown="if(event.key==='Enter')addToWatchlist()"/>
-      <button class="btn btn-cyan" onclick="addToWatchlist()">+ Add</button>
-      <button class="btn btn-amber" onclick="fetchWatchlistPrices()">↻ Refresh All</button>
-    </div>
-    <div id="watchlistItems"></div>
-  </div>
+  <div class="modal" style="width:640px;">
+    <div class="modal-title">
+      Live Watchlist
+      <button class="modal-close" onclick="closeWatchlist()">✕</button>
+    </div>
+    <div class="wl-add-row">
+      <input id="wlInput" placeholder="Add ticker (e.g. ZOMATO.NS, AAPL)" onkeydown="if(event.key==='Enter')addToWatchlist()"/>
+      <button class="btn btn-cyan" onclick="addToWatchlist()">+ Add</button>
+      <button class="btn btn-amber" onclick="fetchWatchlistPrices()">↻ Refresh All</button>
+    </div>
+    <div id="watchlistItems"></div>
+  </div>
 </div>
 
 <div class="toast" id="toast"></div>
 
 <script>
 /* ═══════════════════════════════════════════════════
-   BREAKOUTCHARTS JOURNAL — AI-Powered Trading Journal
-   State & Constants
+   NEXUS TRADE — AI-Powered Trading Journal
+   State & Constants
 ═══════════════════════════════════════════════════ */
-const STORAGE_KEY = 'nexus_trade_v1'; /* Kept original to preserve your existing saved trades! */
+const STORAGE_KEY = 'nexus_trade_v1';
 const PROXY = 'https://corsproxy.io/?url=';
 
 let trades = [];
@@ -655,501 +665,501 @@ let coachHistory = [];
 
 /* ── STORAGE ── */
 function save(){
-  localStorage.setItem(STORAGE_KEY, JSON.stringify({trades, watchlist}));
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({trades, watchlist}));
 }
 function load(){
-  try{
-    const d = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
-    trades = d.trades || [];
-    watchlist = d.watchlist || [];
-  } catch{
-    trades = []; watchlist = [];
-  }
-  if(!trades.length) loadDefaults();
-  if(!watchlist.length) watchlist = ['NIFTY50.NS','BANKNIFTY.NS','AAPL','TSLA'];
+  try{
+    const d = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+    trades = d.trades || [];
+    watchlist = d.watchlist || [];
+  } catch{
+    trades = []; watchlist = [];
+  }
+  if(!trades.length) loadDefaults();
+  if(!watchlist.length) watchlist = ['NIFTY50.NS','BANKNIFTY.NS','AAPL','TSLA'];
 }
 function loadDefaults(){
-  const d=(n)=>{const x=new Date();x.setDate(x.getDate()-n);return x.toISOString().split('T')[0];};
-  trades=[
-    {id:1,name:'Reliance Industries',ticker:'RELIANCE.NS',exchange:'NSE',type:'Equity',entry:2820,cmp:2940,qty:10,sl:2760,target:3100,status:'active',date:d(14),setupType:'VCP Breakout',marketContext:'Trending Up',execution:'A Good',emotion:'Confident',notes:'Clean VCP pattern with volume contraction. Strong relative strength vs Nifty. Sector rotation into energy.'},
-    {id:2,name:'Tata Consultancy Services',ticker:'TCS.NS',exchange:'NSE',type:'Equity',entry:3850,cmp:4020,qty:5,sl:3780,target:4300,status:'active',date:d(8),setupType:'52W High Breakout',marketContext:'Strong Bull',execution:'A+ Perfect',emotion:'Patient / Disciplined',notes:'Breaking out of multi-month consolidation. IT sector leading. Perfect entry on breakout day.'},
-    {id:3,name:'Infosys Limited',ticker:'INFY.NS',exchange:'NSE',type:'Equity',entry:1480,cmp:1380,qty:20,sl:1440,target:1700,status:'active',date:d(5),setupType:'Pullback Buy',marketContext:'Sideways Chop',execution:'C Late Entry',emotion:'FOMO',notes:'Late entry — entered after a 3% move. Should have waited for pullback. Risk is above my usual threshold.'},
-    {id:4,name:'HDFC Bank',ticker:'HDFCBANK.NS',exchange:'NSE',type:'Equity',entry:1620,cmp:1690,qty:15,sl:1590,target:1800,status:'active',date:d(20),setupType:'Support Bounce',marketContext:'Trending Up',execution:'B Slight Deviation',emotion:'Neutral',notes:'Bounced off 200 DMA with volume. Banking sector strength. Slight late entry on second day.'},
-    {id:5,name:'Zomato',ticker:'ZOMATO.NS',exchange:'NSE',type:'Equity',entry:165,exitPrice:195,qty:100,sl:155,target:200,status:'closed',date:d(45),exitDate:d(20),setupType:'Gap & Go',marketContext:'Strong Bull',execution:'A+ Perfect',emotion:'Confident',notes:'Gapped up on earnings. Held for 25 days. Clean exit near target. Great trade.'},
-    {id:6,name:'IRFC',ticker:'IRFC.NS',exchange:'NSE',type:'Equity',entry:210,exitPrice:180,qty:50,sl:195,target:260,status:'closed',date:d(60),exitDate:d(30),setupType:'Trend Continuation',marketContext:'Sideways Chop',execution:'D FOMO',emotion:'Greedy',notes:'Stopped out. Did not respect my SL at first. Eventually taken out for a bigger loss. Lesson: trust the stop.'},
-  ];
-  save();
+  const d=(n)=>{const x=new Date();x.setDate(x.getDate()-n);return x.toISOString().split('T')[0];};
+  trades=[
+    {id:1,name:'Reliance Industries',ticker:'RELIANCE.NS',exchange:'NSE',type:'Equity',entry:2820,cmp:2940,qty:10,sl:2760,target:3100,status:'active',date:d(14),setupType:'VCP Breakout',marketContext:'Trending Up',execution:'A Good',emotion:'Confident',notes:'Clean VCP pattern with volume contraction. Strong relative strength vs Nifty. Sector rotation into energy.'},
+    {id:2,name:'Tata Consultancy Services',ticker:'TCS.NS',exchange:'NSE',type:'Equity',entry:3850,cmp:4020,qty:5,sl:3780,target:4300,status:'active',date:d(8),setupType:'52W High Breakout',marketContext:'Strong Bull',execution:'A+ Perfect',emotion:'Patient / Disciplined',notes:'Breaking out of multi-month consolidation. IT sector leading. Perfect entry on breakout day.'},
+    {id:3,name:'Infosys Limited',ticker:'INFY.NS',exchange:'NSE',type:'Equity',entry:1480,cmp:1380,qty:20,sl:1440,target:1700,status:'active',date:d(5),setupType:'Pullback Buy',marketContext:'Sideways Chop',execution:'C Late Entry',emotion:'FOMO',notes:'Late entry — entered after a 3% move. Should have waited for pullback. Risk is above my usual threshold.'},
+    {id:4,name:'HDFC Bank',ticker:'HDFCBANK.NS',exchange:'NSE',type:'Equity',entry:1620,cmp:1690,qty:15,sl:1590,target:1800,status:'active',date:d(20),setupType:'Support Bounce',marketContext:'Trending Up',execution:'B Slight Deviation',emotion:'Neutral',notes:'Bounced off 200 DMA with volume. Banking sector strength. Slight late entry on second day.'},
+    {id:5,name:'Zomato',ticker:'ZOMATO.NS',exchange:'NSE',type:'Equity',entry:165,exitPrice:195,qty:100,sl:155,target:200,status:'closed',date:d(45),exitDate:d(20),setupType:'Gap & Go',marketContext:'Strong Bull',execution:'A+ Perfect',emotion:'Confident',notes:'Gapped up on earnings. Held for 25 days. Clean exit near target. Great trade.'},
+    {id:6,name:'IRFC',ticker:'IRFC.NS',exchange:'NSE',type:'Equity',entry:210,exitPrice:180,qty:50,sl:195,target:260,status:'closed',date:d(60),exitDate:d(30),setupType:'Trend Continuation',marketContext:'Sideways Chop',execution:'D FOMO',emotion:'Greedy',notes:'Stopped out. Did not respect my SL at first. Eventually taken out for a bigger loss. Lesson: trust the stop.'},
+  ];
+  save();
 }
 
 /* ── MATH ── */
 const pct=(e,c)=>((c-e)/e*100);
 const fmtPct=v=>(v>=0?'+':'')+v.toFixed(2)+'%';
 function fmtINR(v){
-  const a=Math.abs(v),s=v<0?'-':'';
-  if(a>=10000000) return s+'₹'+(a/10000000).toFixed(2)+'Cr';
-  if(a>=100000) return s+'₹'+(a/100000).toFixed(2)+'L';
-  if(a>=1000) return s+'₹'+(a/1000).toFixed(1)+'K';
-  return s+'₹'+a.toFixed(0);
+  const a=Math.abs(v),s=v<0?'-':'';
+  if(a>=10000000) return s+'₹'+(a/10000000).toFixed(2)+'Cr';
+  if(a>=100000) return s+'₹'+(a/100000).toFixed(2)+'L';
+  if(a>=1000) return s+'₹'+(a/1000).toFixed(1)+'K';
+  return s+'₹'+a.toFixed(0);
 }
 const pnlVal=t=>(t.cmp-t.entry)*t.qty;
 const exitPnlVal=t=>((t.exitPrice||t.cmp)-t.entry)*t.qty;
 function holdDays(t){
-  if(!t.date) return 0;
-  const end=(t.status==='closed'&&t.exitDate)?new Date(t.exitDate):new Date();
-  return Math.max(0,Math.floor((end-new Date(t.date))/86400000));
+  if(!t.date) return 0;
+  const end=(t.status==='closed'&&t.exitDate)?new Date(t.exitDate):new Date();
+  return Math.max(0,Math.floor((end-new Date(t.date))/86400000));
 }
 function rrRatio(t){
-  if(!t.sl||!t.target||t.sl>=t.entry) return null;
-  return ((t.target-t.entry)/(t.entry-t.sl)).toFixed(1);
+  if(!t.sl||!t.target||t.sl>=t.entry) return null;
+  return ((t.target-t.entry)/(t.entry-t.sl)).toFixed(1);
 }
 function computeSummary(){
-  const active=trades.filter(t=>t.status==='active');
-  const closed=trades.filter(t=>t.status==='closed');
-  const invested=active.reduce((a,t)=>a+t.entry*t.qty,0);
-  const activePnl=active.reduce((a,t)=>a+pnlVal(t),0);
-  const closedProfit=closed.reduce((a,t)=>a+exitPnlVal(t),0);
-  const totalPnl=activePnl+closedProfit;
-  const dayPnl=active.reduce((a,t)=>a+(t.liveChange||0)*t.entry*t.qty/100,0);
-  const riskAmt=active.filter(t=>t.sl).reduce((a,t)=>a+Math.max(0,(t.entry-t.sl)*t.qty),0);
-  const openRiskPct=invested?(riskAmt/invested*100):0;
-  const winCount=closed.filter(t=>exitPnlVal(t)>0).length;
-  const winRate=closed.length?((winCount/closed.length)*100).toFixed(0):0;
-  return {positions:active.length,invested,activePnl,closedProfit,totalPnl,dayPnl,openRiskPct,lockedProfit:closedProfit,closed:closed.length,winRate};
+  const active=trades.filter(t=>t.status==='active');
+  const closed=trades.filter(t=>t.status==='closed');
+  const invested=active.reduce((a,t)=>a+t.entry*t.qty,0);
+  const activePnl=active.reduce((a,t)=>a+pnlVal(t),0);
+  const closedProfit=closed.reduce((a,t)=>a+exitPnlVal(t),0);
+  const totalPnl=activePnl+closedProfit;
+  const dayPnl=active.reduce((a,t)=>a+(t.liveChange||0)*t.entry*t.qty/100,0);
+  const riskAmt=active.filter(t=>t.sl).reduce((a,t)=>a+Math.max(0,(t.entry-t.sl)*t.qty),0);
+  const openRiskPct=invested?(riskAmt/invested*100):0;
+  const winCount=closed.filter(t=>exitPnlVal(t)>0).length;
+  const winRate=closed.length?((winCount/closed.length)*100).toFixed(0):0;
+  return {positions:active.length,invested,activePnl,closedProfit,totalPnl,dayPnl,openRiskPct,lockedProfit:closedProfit,closed:closed.length,winRate};
 }
 
 /* ── AI TRADE SCORE ── */
 function tradeScore(t){
-  let score=50;
-  const p=t.status==='closed'?pct(t.entry,t.exitPrice||t.cmp):pct(t.entry,t.cmp);
-  if(p>10)score+=20;else if(p>5)score+=12;else if(p>0)score+=5;else if(p<-5)score-=15;else score-=5;
-  const rr=parseFloat(rrRatio(t)||0);
-  if(rr>=3)score+=15;else if(rr>=2)score+=8;else if(rr>=1)score+=3;else score-=10;
-  const exec=t.execution||'';
-  if(exec.startsWith('A+'))score+=15;else if(exec.startsWith('A'))score+=10;else if(exec.startsWith('B'))score+=3;else if(exec.startsWith('C'))score-=8;else if(exec.startsWith('D'))score-=20;
-  const emo=t.emotion||'';
-  if(emo==='Patient / Disciplined')score+=10;else if(emo==='FOMO'||emo==='Revenge Trading'||emo==='Greedy')score-=12;
-  return Math.max(0,Math.min(100,Math.round(score)));
+  let score=50;
+  const p=t.status==='closed'?pct(t.entry,t.exitPrice||t.cmp):pct(t.entry,t.cmp);
+  if(p>10)score+=20;else if(p>5)score+=12;else if(p>0)score+=5;else if(p<-5)score-=15;else score-=5;
+  const rr=parseFloat(rrRatio(t)||0);
+  if(rr>=3)score+=15;else if(rr>=2)score+=8;else if(rr>=1)score+=3;else score-=10;
+  const exec=t.execution||'';
+  if(exec.startsWith('A+'))score+=15;else if(exec.startsWith('A'))score+=10;else if(exec.startsWith('B'))score+=3;else if(exec.startsWith('C'))score-=8;else if(exec.startsWith('D'))score-=20;
+  const emo=t.emotion||'';
+  if(emo==='Patient / Disciplined')score+=10;else if(emo==='FOMO'||emo==='Revenge Trading'||emo==='Greedy')score-=12;
+  return Math.max(0,Math.min(100,Math.round(score)));
 }
 function scoreGrade(s){
-  if(s>=80)return{g:'A+',cls:'a-grade'};if(s>=65)return{g:'A',cls:'a-grade'};
-  if(s>=50)return{g:'B',cls:'b-grade'};if(s>=35)return{g:'C',cls:'c-grade'};
-  return{g:'D',cls:'d-grade'};
+  if(s>=80)return{g:'A+',cls:'a-grade'};if(s>=65)return{g:'A',cls:'a-grade'};
+  if(s>=50)return{g:'B',cls:'b-grade'};if(s>=35)return{g:'C',cls:'c-grade'};
+  return{g:'D',cls:'d-grade'};
 }
 
 /* ── LIVE PRICES ── */
 async function fetchPrice(ticker){
-  const url=`https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?interval=1d&range=90d`;
-  const res=await fetch(PROXY+encodeURIComponent(url),{headers:{'x-requested-with':'XMLHttpRequest'}});
-  const data=await res.json();
-  const result=data?.chart?.result?.[0];
-  if(!result) throw new Error('No data');
-  const meta=result.meta;
-  const ts=result.timestamp||[];
-  const o=result.indicators?.quote?.[0]?.open||[];
-  const h=result.indicators?.quote?.[0]?.high||[];
-  const l=result.indicators?.quote?.[0]?.low||[];
-  const c=result.indicators?.quote?.[0]?.close||[];
-  const v=result.indicators?.quote?.[0]?.volume||[];
-  let dailyData=[];let seenDates=new Set();
-  for(let i=0;i<ts.length;i++){
-    if(c[i]!=null&&o[i]!=null){
-      const dateStr=new Date(ts[i]*1000).toISOString().split('T')[0];
-      if(!seenDates.has(dateStr)){seenDates.add(dateStr);dailyData.push({time:dateStr,open:+o[i].toFixed(2),high:+h[i].toFixed(2),low:+l[i].toFixed(2),close:+c[i].toFixed(2),volume:v[i]||0});}
-    }
-  }
-  return{price:meta.regularMarketPrice,prevClose:meta.chartPreviousClose||meta.previousClose,currency:meta.currency,marketState:meta.marketState,dailyData};
+  const url=`https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?interval=1d&range=90d`;
+  const res=await fetch(PROXY+encodeURIComponent(url),{headers:{'x-requested-with':'XMLHttpRequest'}});
+  const data=await res.json();
+  const result=data?.chart?.result?.[0];
+  if(!result) throw new Error('No data');
+  const meta=result.meta;
+  const ts=result.timestamp||[];
+  const o=result.indicators?.quote?.[0]?.open||[];
+  const h=result.indicators?.quote?.[0]?.high||[];
+  const l=result.indicators?.quote?.[0]?.low||[];
+  const c=result.indicators?.quote?.[0]?.close||[];
+  const v=result.indicators?.quote?.[0]?.volume||[];
+  let dailyData=[];let seenDates=new Set();
+  for(let i=0;i<ts.length;i++){
+    if(c[i]!=null&&o[i]!=null){
+      const dateStr=new Date(ts[i]*1000).toISOString().split('T')[0];
+      if(!seenDates.has(dateStr)){seenDates.add(dateStr);dailyData.push({time:dateStr,open:+o[i].toFixed(2),high:+h[i].toFixed(2),low:+l[i].toFixed(2),close:+c[i].toFixed(2),volume:v[i]||0});}
+    }
+  }
+  return{price:meta.regularMarketPrice,prevClose:meta.chartPreviousClose||meta.previousClose,currency:meta.currency,marketState:meta.marketState,dailyData};
 }
 
 async function fetchAllPrices(){
-  const btn=document.getElementById('fetchBtn'),dot=document.getElementById('statusDot'),status=document.getElementById('liveStatus');
-  const tickers=trades.filter(t=>t.ticker);
-  if(!tickers.length){showToast('No ticker symbols found. Add tickers via Edit.','info');return;}
-  btn.disabled=true;dot.className='status-dot fetching';
-  let success=0,failed=0;
-  for(const t of tickers){
-    try{
-      status.textContent=`Fetching ${t.ticker}…`;
-      const r=await fetchPrice(t.ticker);
-      if(t.status==='active'){t.cmp=+r.price.toFixed(2);t.livePrice=t.cmp;t.liveChange=r.prevClose?((r.price-r.prevClose)/r.prevClose*100):null;}
-      t.lastFetched=new Date().toISOString();t.dailyData=r.dailyData;success++;
-    }catch(e){failed++;}
-  }
-  save();
-  dot.className=failed&&!success?'status-dot error':'status-dot';
-  status.textContent=`Updated ${success} ticker${success!==1?'s':''} ${failed?`· ${failed} failed`:''} · ${new Date().toLocaleTimeString()}`;
-  document.getElementById('lastFetchTime').textContent='Last: '+new Date().toLocaleTimeString();
-  btn.disabled=false;
-  renderSummary();renderCards();
-  if(success)showToast(`Live prices updated ✓`,'success');
-  if(failed)showToast(`${failed} ticker(s) failed — check symbols`,'error');
+  const btn=document.getElementById('fetchBtn'),dot=document.getElementById('statusDot'),status=document.getElementById('liveStatus');
+  const tickers=trades.filter(t=>t.ticker);
+  if(!tickers.length){showToast('No ticker symbols found. Add tickers via Edit.','info');return;}
+  btn.disabled=true;dot.className='status-dot fetching';
+  let success=0,failed=0;
+  for(const t of tickers){
+    try{
+      status.textContent=`Fetching ${t.ticker}…`;
+      const r=await fetchPrice(t.ticker);
+      if(t.status==='active'){t.cmp=+r.price.toFixed(2);t.livePrice=t.cmp;t.liveChange=r.prevClose?((r.price-r.prevClose)/r.prevClose*100):null;}
+      t.lastFetched=new Date().toISOString();t.dailyData=r.dailyData;success++;
+    }catch(e){failed++;}
+  }
+  save();
+  dot.className=failed&&!success?'status-dot error':'status-dot';
+  status.textContent=`Updated ${success} ticker${success!==1?'s':''} ${failed?`· ${failed} failed`:''} · ${new Date().toLocaleTimeString()}`;
+  document.getElementById('lastFetchTime').textContent='Last: '+new Date().toLocaleTimeString();
+  btn.disabled=false;
+  renderSummary();renderCards();
+  if(success)showToast(`Live prices updated ✓`,'success');
+  if(failed)showToast(`${failed} ticker(s) failed — check symbols`,'error');
 }
 
 async function testTicker(){
-  const t=document.getElementById('fTicker').value.trim();
-  const res=document.getElementById('tickerResult');
-  if(!t){res.textContent='Enter a ticker first';res.style.color='var(--text3)';return;}
-  res.textContent='Checking…';res.style.color='var(--amber)';
-  try{
-    const r=await fetchPrice(t);
-    res.textContent=`✓ ${t}  →  ₹${r.price.toFixed(2)}  (${r.currency}, ${r.marketState})`;
-    res.style.color='var(--green)';document.getElementById('fCmp').value=r.price.toFixed(2);
-  }catch(e){
-    res.textContent=`✗ Not found. Try finance.yahoo.com to verify the symbol.`;res.style.color='var(--red)';
-  }
+  const t=document.getElementById('fTicker').value.trim();
+  const res=document.getElementById('tickerResult');
+  if(!t){res.textContent='Enter a ticker first';res.style.color='var(--text3)';return;}
+  res.textContent='Checking…';res.style.color='var(--amber)';
+  try{
+    const r=await fetchPrice(t);
+    res.textContent=`✓ ${t}  →  ₹${r.price.toFixed(2)}  (${r.currency}, ${r.marketState})`;
+    res.style.color='var(--green)';document.getElementById('fCmp').value=r.price.toFixed(2);
+  }catch(e){
+    res.textContent=`✗ Not found. Try finance.yahoo.com to verify the symbol.`;res.style.color='var(--red)';
+  }
 }
 
 /* ── RR CALCULATOR ── */
 function calcRR(){
-  const entry=parseFloat(document.getElementById('fEntry').value);
-  const qty=parseFloat(document.getElementById('fQty').value);
-  const sl=parseFloat(document.getElementById('fSL').value);
-  const target=parseFloat(document.getElementById('fTarget').value);
-  const box=document.getElementById('rrCalcBox');
-  if(!isNaN(entry)&&!isNaN(qty)&&!isNaN(sl)){
-    box.style.display='grid';
-    const risk=(entry-sl)*qty;
-    const reward=!isNaN(target)?(target-entry)*qty:0;
-    const rr=!isNaN(target)&&(entry-sl)>0?((target-entry)/(entry-sl)).toFixed(2):'—';
-    const pctRisk=((entry-sl)/entry*100).toFixed(2);
-    document.getElementById('rrRisk').textContent=fmtINR(risk);
-    document.getElementById('rrReward').textContent=reward?fmtINR(reward):'—';
-    document.getElementById('rrRatio').textContent=rr==='—'?'—':rr+'R';
-    document.getElementById('rrPct').textContent=pctRisk+'%';
-  } else { box.style.display='none'; }
+  const entry=parseFloat(document.getElementById('fEntry').value);
+  const qty=parseFloat(document.getElementById('fQty').value);
+  const sl=parseFloat(document.getElementById('fSL').value);
+  const target=parseFloat(document.getElementById('fTarget').value);
+  const box=document.getElementById('rrCalcBox');
+  if(!isNaN(entry)&&!isNaN(qty)&&!isNaN(sl)){
+    box.style.display='grid';
+    const risk=(entry-sl)*qty;
+    const reward=!isNaN(target)?(target-entry)*qty:0;
+    const rr=!isNaN(target)&&(entry-sl)>0?((target-entry)/(entry-sl)).toFixed(2):'—';
+    const pctRisk=((entry-sl)/entry*100).toFixed(2);
+    document.getElementById('rrRisk').textContent=fmtINR(risk);
+    document.getElementById('rrReward').textContent=reward?fmtINR(reward):'—';
+    document.getElementById('rrRatio').textContent=rr==='—'?'—':rr+'R';
+    document.getElementById('rrPct').textContent=pctRisk+'%';
+  } else { box.style.display='none'; }
 }
 
 function setAutoRefresh(){
-  clearInterval(autoRefreshTimer);clearInterval(progressTimer);
-  document.getElementById('progressFill').style.width='0%';
-  const secs=parseInt(document.getElementById('autoRefreshSelect').value);
-  if(!secs)return;
-  progressDuration=secs;progressStart=Date.now();
-  progressTimer=setInterval(()=>{
-    const elapsed=(Date.now()-progressStart)/1000;
-    document.getElementById('progressFill').style.width=Math.min(100,(elapsed/progressDuration)*100)+'%';
-    if(elapsed>=progressDuration){progressStart=Date.now();fetchAllPrices();}
-  },1000);
+  clearInterval(autoRefreshTimer);clearInterval(progressTimer);
+  document.getElementById('progressFill').style.width='0%';
+  const secs=parseInt(document.getElementById('autoRefreshSelect').value);
+  if(!secs)return;
+  progressDuration=secs;progressStart=Date.now();
+  progressTimer=setInterval(()=>{
+    const elapsed=(Date.now()-progressStart)/1000;
+    document.getElementById('progressFill').style.width=Math.min(100,(elapsed/progressDuration)*100)+'%';
+    if(elapsed>=progressDuration){progressStart=Date.now();fetchAllPrices();}
+  },1000);
 }
 
 /* ── SUMMARY ── */
 function renderSummary(){
-  const s=computeSummary();
-  const retPct=s.invested?(s.activePnl/s.invested*100):0;
-  document.getElementById('summaryBar').innerHTML=`
-    <div class="stat-card">
-      <div class="stat-label">Open Positions</div>
-      <div class="stat-val b">${s.positions}</div>
-      <div class="stat-sub">${s.closed} closed · ${fmtINR(s.invested)} deployed</div>
-    </div>
-    <div class="stat-card hl-blue">
-      <div class="stat-label">Today's P&L</div>
-      <div class="stat-val ${s.dayPnl>=0?'g':'r'}">${s.dayPnl>=0?'+':''}${fmtINR(s.dayPnl)}</div>
-      <div class="stat-sub" style="color:${s.dayPnl>=0?'var(--green)':'var(--red)'}">from live prices</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Active Unrealised</div>
-      <div class="stat-val ${s.activePnl>=0?'g':'r'}">${s.activePnl>=0?'+':''}${fmtINR(s.activePnl)}</div>
-      <div class="stat-sub" style="color:${retPct>=0?'var(--green)':'var(--red)'}">${retPct>=0?'+':''}${retPct.toFixed(2)}% return</div>
-    </div>
-    <div class="stat-card hl-green">
-      <div class="stat-label">🔒 Realised Profit</div>
-      <div class="stat-val ${s.lockedProfit>=0?'g':'r'}">${s.lockedProfit>=0?'+':''}${fmtINR(s.lockedProfit)}</div>
-      <div class="stat-sub">from ${s.closed} closed trades</div>
-    </div>
-    <div class="stat-card hl-purple">
-      <div class="stat-label">Total P&L</div>
-      <div class="stat-val ${s.totalPnl>=0?'g':'r'}">${s.totalPnl>=0?'+':''}${fmtINR(s.totalPnl)}</div>
-      <div class="stat-sub">unrealised + realised</div>
-    </div>
-    <div class="stat-card hl-amber">
-      <div class="stat-label">Open Risk</div>
-      <div class="stat-val ${s.openRiskPct>5?'r':s.openRiskPct>2?'a':'g'}">${s.openRiskPct.toFixed(1)}%</div>
-      <div class="stat-sub">of deployed capital</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Win Rate</div>
-      <div class="stat-val ${s.winRate>=55?'g':s.winRate>=45?'a':'r'}">${s.winRate}%</div>
-      <div class="stat-sub">${s.closed} closed trades</div>
-    </div>`;
+  const s=computeSummary();
+  const retPct=s.invested?(s.activePnl/s.invested*100):0;
+  document.getElementById('summaryBar').innerHTML=`
+    <div class="stat-card">
+      <div class="stat-label">Open Positions</div>
+      <div class="stat-val b">${s.positions}</div>
+      <div class="stat-sub">${s.closed} closed · ${fmtINR(s.invested)} deployed</div>
+    </div>
+    <div class="stat-card hl-blue">
+      <div class="stat-label">Today's P&L</div>
+      <div class="stat-val ${s.dayPnl>=0?'g':'r'}">${s.dayPnl>=0?'+':''}${fmtINR(s.dayPnl)}</div>
+      <div class="stat-sub" style="color:${s.dayPnl>=0?'var(--green)':'var(--red)'}">from live prices</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Active Unrealised</div>
+      <div class="stat-val ${s.activePnl>=0?'g':'r'}">${s.activePnl>=0?'+':''}${fmtINR(s.activePnl)}</div>
+      <div class="stat-sub" style="color:${retPct>=0?'var(--green)':'var(--red)'}">${retPct>=0?'+':''}${retPct.toFixed(2)}% return</div>
+    </div>
+    <div class="stat-card hl-green">
+      <div class="stat-label">🔒 Realised Profit</div>
+      <div class="stat-val ${s.lockedProfit>=0?'g':'r'}">${s.lockedProfit>=0?'+':''}${fmtINR(s.lockedProfit)}</div>
+      <div class="stat-sub">from ${s.closed} closed trades</div>
+    </div>
+    <div class="stat-card hl-purple">
+      <div class="stat-label">Total P&L</div>
+      <div class="stat-val ${s.totalPnl>=0?'g':'r'}">${s.totalPnl>=0?'+':''}${fmtINR(s.totalPnl)}</div>
+      <div class="stat-sub">unrealised + realised</div>
+    </div>
+    <div class="stat-card hl-amber">
+      <div class="stat-label">Open Risk</div>
+      <div class="stat-val ${s.openRiskPct>5?'r':s.openRiskPct>2?'a':'g'}">${s.openRiskPct.toFixed(1)}%</div>
+      <div class="stat-sub">of deployed capital</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Win Rate</div>
+      <div class="stat-val ${s.winRate>=55?'g':s.winRate>=45?'a':'r'}">${s.winRate}%</div>
+      <div class="stat-sub">${s.closed} closed trades</div>
+    </div>`;
 }
 
 /* ── CHART ── */
 function drawCandleChart(containerId,trade,isDetail=false){
-  if(chartInstances[containerId]){try{chartInstances[containerId].destroy();}catch(e){}}
-  const el=document.getElementById(containerId);
-  if(!el)return;
-  const data=trade.dailyData||[];
-  if(!data.length){el.innerHTML=`<div style="height:100%;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:10px;color:var(--text3);">No chart data — fetch prices</div>`;return;}
-  
-  const series=data.map(d=>({x:new Date(d.time).getTime(),y:[d.open,d.high,d.low,d.close]}));
-  const entryLine={value:trade.entry,borderColor:'var(--blue)',strokeDashArray:3,label:{text:'Entry',style:{background:'var(--blue)',color:'#fff',fontSize:'9px',fontFamily:'Space Mono'}}};
-  const annotations={yaxis:[entryLine]};
-  if(trade.sl)annotations.yaxis.push({value:trade.sl,borderColor:'var(--red)',strokeDashArray:3,label:{text:'SL',style:{background:'var(--red)',color:'#fff',fontSize:'9px',fontFamily:'Space Mono'}}});
-  if(trade.target)annotations.yaxis.push({value:trade.target,borderColor:'var(--green)',strokeDashArray:3,label:{text:'Target',style:{background:'var(--green)',color:'#000',fontSize:'9px',fontFamily:'Space Mono'}}});
-  
-  const opts={
-    series:[{data:series}],
-    chart:{type:'candlestick',height:'100%',background:'transparent',toolbar:{show:isDetail},animations:{enabled:false},sparkline:{enabled:!isDetail}},
-    theme:{mode:'dark'},
-    colors:['#4d7cff'],
-    plotOptions:{candlestick:{colors:{upward:'var(--green)',downward:'var(--red)'}}},
-    annotations,
-    xaxis:{type:'datetime',labels:{show:isDetail,style:{colors:'var(--text3)',fontFamily:'Space Mono',fontSize:'9px'}},axisBorder:{show:false},axisTicks:{show:false},tooltip:{enabled:false}},
-    yaxis:{labels:{show:isDetail,style:{colors:'var(--text3)',fontFamily:'Space Mono',fontSize:'9px'},formatter:v=>'₹'+v.toFixed(0)}},
-    grid:{show:isDetail,borderColor:'rgba(77,124,255,0.05)',strokeDashArray:4},
-    tooltip:{theme:'dark',x:{format:'dd MMM yy'},y:{formatter:v=>v?'₹'+v.toFixed(2):''}}
-  };
-  try{
-    const chart=new ApexCharts(el,opts);
-    chart.render();
-    chartInstances[containerId]=chart;
-  }catch(e){}
+  if(chartInstances[containerId]){try{chartInstances[containerId].destroy();}catch(e){}}
+  const el=document.getElementById(containerId);
+  if(!el)return;
+  const data=trade.dailyData||[];
+  if(!data.length){el.innerHTML=`<div style="height:100%;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:10px;color:var(--text3);">No chart data — fetch prices</div>`;return;}
+  
+  const series=data.map(d=>({x:new Date(d.time).getTime(),y:[d.open,d.high,d.low,d.close]}));
+  const entryLine={value:trade.entry,borderColor:'var(--blue)',strokeDashArray:3,label:{text:'Entry',style:{background:'var(--blue)',color:'#fff',fontSize:'9px',fontFamily:'Space Mono'}}};
+  const annotations={yaxis:[entryLine]};
+  if(trade.sl)annotations.yaxis.push({value:trade.sl,borderColor:'var(--red)',strokeDashArray:3,label:{text:'SL',style:{background:'var(--red)',color:'#fff',fontSize:'9px',fontFamily:'Space Mono'}}});
+  if(trade.target)annotations.yaxis.push({value:trade.target,borderColor:'var(--green)',strokeDashArray:3,label:{text:'Target',style:{background:'var(--green)',color:'#000',fontSize:'9px',fontFamily:'Space Mono'}}});
+  
+  const opts={
+    series:[{data:series}],
+    chart:{type:'candlestick',height:'100%',background:'transparent',toolbar:{show:isDetail},animations:{enabled:false},sparkline:{enabled:!isDetail}},
+    theme:{mode:'dark'},
+    colors:['#4d7cff'],
+    plotOptions:{candlestick:{colors:{upward:'var(--green)',downward:'var(--red)'}}},
+    annotations,
+    xaxis:{type:'datetime',labels:{show:isDetail,style:{colors:'var(--text3)',fontFamily:'Space Mono',fontSize:'9px'}},axisBorder:{show:false},axisTicks:{show:false},tooltip:{enabled:false}},
+    yaxis:{labels:{show:isDetail,style:{colors:'var(--text3)',fontFamily:'Space Mono',fontSize:'9px'},formatter:v=>'₹'+v.toFixed(0)}},
+    grid:{show:isDetail,borderColor:'rgba(77,124,255,0.05)',strokeDashArray:4},
+    tooltip:{theme:'dark',x:{format:'dd MMM yy'},y:{formatter:v=>v?'₹'+v.toFixed(2):''}}
+  };
+  try{
+    const chart=new ApexCharts(el,opts);
+    chart.render();
+    chartInstances[containerId]=chart;
+  }catch(e){}
 }
 
 /* ── RENDER CARDS ── */
 function setFilter(f,el){
-  currentFilter=f;
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-  if(el)el.classList.add('active');
-  renderCards();
+  currentFilter=f;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  if(el)el.classList.add('active');
+  renderCards();
 }
 
 function renderCards(){
-  const grid=document.getElementById('cardsGrid');
-  const q=(document.getElementById('searchInput').value||'').toLowerCase();
-  const sort=document.getElementById('sortSelect').value;
-  let list=trades.filter(t=>{
-    if(currentFilter==='active'&&t.status!=='active')return false;
-    if(currentFilter==='closed'&&t.status!=='closed')return false;
-    if(q&&!t.name.toLowerCase().includes(q)&&!(t.ticker||'').toLowerCase().includes(q)&&!(t.setupType||'').toLowerCase().includes(q))return false;
-    return true;
-  });
-  if(sort==='pct-desc')list.sort((a,b)=>pct(b.entry,b.cmp)-pct(a.entry,a.cmp));
-  else if(sort==='pct-asc')list.sort((a,b)=>pct(a.entry,a.cmp)-pct(b.entry,b.cmp));
-  else if(sort==='pnl-desc')list.sort((a,b)=>pnlVal(b)-pnlVal(a));
-  else if(sort==='risk')list.sort((a,b)=>(b.entry-b.sl)*b.qty-(a.entry-a.sl)*a.qty);
-  else if(sort==='name')list.sort((a,b)=>a.name.localeCompare(b.name));
-  else list.sort((a,b)=>new Date(b.date)-new Date(a.date));
-  
-  if(!list.length){
-    grid.innerHTML=`<div class="empty-state"><div class="empty-icon">⬡</div><div class="empty-title">No trades here</div><div class="empty-sub">Add your first trade or adjust filters</div></div>`;
-    return;
-  }
-  grid.innerHTML='';
-  list.forEach(t=>{
-    const isActive=t.status==='active';
-    const curPct=isActive?pct(t.entry,t.cmp):pct(t.entry,t.exitPrice||t.cmp);
-    const pnl=isActive?pnlVal(t):exitPnlVal(t);
-    const positive=pnl>=0;
-    const rr=rrRatio(t);
-    const sl_distance=t.sl?((t.entry-t.sl)/t.entry*100).toFixed(1):null;
-    const score=tradeScore(t);
-    const {g:grade,cls}=scoreGrade(score);
-    const hd=holdDays(t);
-    
-    let badges='';
-    if(isActive&&t.ticker)badges+=`<span class="badge badge-live">LIVE</span>`;
-    else if(!isActive)badges+=`<span class="badge badge-closed">CLOSED</span>`;
-    if(t.sl&&isActive){const riskPct=((t.entry-t.sl)/t.entry*100);badges+=riskPct<3?`<span class="badge badge-safe">SL ${riskPct.toFixed(1)}%</span>`:`<span class="badge badge-risk">SL ${riskPct.toFixed(1)}%</span>`;}
-    if(t.setupType)badges+=`<span class="badge badge-tag">${t.setupType}</span>`;
-    if(t.emotion&&(t.emotion==='FOMO'||t.emotion==='Revenge Trading'))badges+=`<span class="badge badge-risk">${t.emotion}</span>`;
-    
-    const cardClass=isActive?(positive?'profit':'loss'):'closed';
-    const div=document.createElement('div');
-    div.className=`trade-card ${cardClass}`;
-    div.onclick=()=>openDetail(t.id);
-    div.innerHTML=`
-      <div class="ai-score ${cls}">${grade} · ${score}</div>
-      <div class="card-ticker">${t.ticker||t.exchange||'MANUAL'}</div>
-      <div class="card-name">${t.name}</div>
-      <div class="card-meta">${badges}</div>
-      <div class="card-pct ${positive?'g':'r'}">${fmtPct(curPct)}</div>
-      <div class="card-pnl" style="color:${positive?'var(--green)':'var(--red)'};">${positive?'+':''}${fmtINR(pnl)} · ${hd}d</div>
-      <div class="chart-wrap" id="chart_${t.id}"></div>
-      <div class="card-footer">
-        <div class="price-col">
-          <div class="price-label">Entry</div>
-          <div class="price-val">₹${t.entry.toFixed(2)}</div>
-        </div>
-        <div class="price-col">
-          <div class="price-label">${isActive?'CMP':'Exit'}</div>
-          <div class="price-val">${isActive?'₹'+(t.cmp||'—'):'₹'+(t.exitPrice||t.cmp||'—')}</div>
-          ${t.liveChange!=null&&isActive?`<div class="price-change" style="color:${t.liveChange>=0?'var(--green)':'var(--red)'}">${t.liveChange>=0?'+':''}${t.liveChange.toFixed(2)}% today</div>`:''}
-        </div>
-        ${rr?`<div class="price-col"><div class="price-label">R:R</div><div class="price-val b">${rr}R</div></div>`:''}
-        ${t.target?`<div class="price-col"><div class="price-label">Target</div><div class="price-val g">₹${t.target}</div></div>`:''}
-      </div>
-      ${t.sl&&isActive?`<div class="risk-meter"><div class="risk-fill" style="width:${Math.min(100,Math.max(0,((t.cmp||t.entry)-t.sl)/(t.entry-t.sl)*100))}%;background:${positive?'var(--green)':'var(--red)'};"></div></div>`:''}`;
-    grid.appendChild(div);
-    setTimeout(()=>drawCandleChart('chart_'+t.id,t,false),0);
-  });
+  const grid=document.getElementById('cardsGrid');
+  const q=(document.getElementById('searchInput').value||'').toLowerCase();
+  const sort=document.getElementById('sortSelect').value;
+  let list=trades.filter(t=>{
+    if(currentFilter==='active'&&t.status!=='active')return false;
+    if(currentFilter==='closed'&&t.status!=='closed')return false;
+    if(q&&!t.name.toLowerCase().includes(q)&&!(t.ticker||'').toLowerCase().includes(q)&&!(t.setupType||'').toLowerCase().includes(q))return false;
+    return true;
+  });
+  if(sort==='pct-desc')list.sort((a,b)=>pct(b.entry,b.cmp)-pct(a.entry,a.cmp));
+  else if(sort==='pct-asc')list.sort((a,b)=>pct(a.entry,a.cmp)-pct(b.entry,b.cmp));
+  else if(sort==='pnl-desc')list.sort((a,b)=>pnlVal(b)-pnlVal(a));
+  else if(sort==='risk')list.sort((a,b)=>(b.entry-b.sl)*b.qty-(a.entry-a.sl)*a.qty);
+  else if(sort==='name')list.sort((a,b)=>a.name.localeCompare(b.name));
+  else list.sort((a,b)=>new Date(b.date)-new Date(a.date));
+  
+  if(!list.length){
+    grid.innerHTML=`<div class="empty-state"><div class="empty-icon">⬡</div><div class="empty-title">No trades here</div><div class="empty-sub">Add your first trade or adjust filters</div></div>`;
+    return;
+  }
+  grid.innerHTML='';
+  list.forEach(t=>{
+    const isActive=t.status==='active';
+    const curPct=isActive?pct(t.entry,t.cmp):pct(t.entry,t.exitPrice||t.cmp);
+    const pnl=isActive?pnlVal(t):exitPnlVal(t);
+    const positive=pnl>=0;
+    const rr=rrRatio(t);
+    const sl_distance=t.sl?((t.entry-t.sl)/t.entry*100).toFixed(1):null;
+    const score=tradeScore(t);
+    const {g:grade,cls}=scoreGrade(score);
+    const hd=holdDays(t);
+    
+    let badges='';
+    if(isActive&&t.ticker)badges+=`<span class="badge badge-live">LIVE</span>`;
+    else if(!isActive)badges+=`<span class="badge badge-closed">CLOSED</span>`;
+    if(t.sl&&isActive){const riskPct=((t.entry-t.sl)/t.entry*100);badges+=riskPct<3?`<span class="badge badge-safe">SL ${riskPct.toFixed(1)}%</span>`:`<span class="badge badge-risk">SL ${riskPct.toFixed(1)}%</span>`;}
+    if(t.setupType)badges+=`<span class="badge badge-tag">${t.setupType}</span>`;
+    if(t.emotion&&(t.emotion==='FOMO'||t.emotion==='Revenge Trading'))badges+=`<span class="badge badge-risk">${t.emotion}</span>`;
+    
+    const cardClass=isActive?(positive?'profit':'loss'):'closed';
+    const div=document.createElement('div');
+    div.className=`trade-card ${cardClass}`;
+    div.onclick=()=>openDetail(t.id);
+    div.innerHTML=`
+      <div class="ai-score ${cls}">${grade} · ${score}</div>
+      <div class="card-ticker">${t.ticker||t.exchange||'MANUAL'}</div>
+      <div class="card-name">${t.name}</div>
+      <div class="card-meta">${badges}</div>
+      <div class="card-pct ${positive?'g':'r'}">${fmtPct(curPct)}</div>
+      <div class="card-pnl" style="color:${positive?'var(--green)':'var(--red)'};">${positive?'+':''}${fmtINR(pnl)} · ${hd}d</div>
+      <div class="chart-wrap" id="chart_${t.id}"></div>
+      <div class="card-footer">
+        <div class="price-col">
+          <div class="price-label">Entry</div>
+          <div class="price-val">₹${t.entry.toFixed(2)}</div>
+        </div>
+        <div class="price-col">
+          <div class="price-label">${isActive?'CMP':'Exit'}</div>
+          <div class="price-val">${isActive?'₹'+(t.cmp||'—'):'₹'+(t.exitPrice||t.cmp||'—')}</div>
+          ${t.liveChange!=null&&isActive?`<div class="price-change" style="color:${t.liveChange>=0?'var(--green)':'var(--red)'}">${t.liveChange>=0?'+':''}${t.liveChange.toFixed(2)}% today</div>`:''}
+        </div>
+        ${rr?`<div class="price-col"><div class="price-label">R:R</div><div class="price-val b">${rr}R</div></div>`:''}
+        ${t.target?`<div class="price-col"><div class="price-label">Target</div><div class="price-val g">₹${t.target}</div></div>`:''}
+      </div>
+      ${t.sl&&isActive?`<div class="risk-meter"><div class="risk-fill" style="width:${Math.min(100,Math.max(0,((t.cmp||t.entry)-t.sl)/(t.entry-t.sl)*100))}%;background:${positive?'var(--green)':'var(--red)'};"></div></div>`:''}`;
+    grid.appendChild(div);
+    setTimeout(()=>drawCandleChart('chart_'+t.id,t,false),0);
+  });
 }
 
 /* ── DETAIL PANEL ── */
 function openDetail(id){
-  const t=trades.find(x=>x.id===id);if(!t)return;
-  detailId=id;
-  const isActive=t.status==='active';
-  const curPct=isActive?pct(t.entry,t.cmp):pct(t.entry,t.exitPrice||t.cmp);
-  const pnl=isActive?pnlVal(t):exitPnlVal(t);
-  const rr=rrRatio(t);
-  const score=tradeScore(t);
-  const {g:grade}=scoreGrade(score);
-  
-  document.getElementById('detailName').textContent=t.name;
-  document.getElementById('detailTicker').textContent=`${t.ticker||'MANUAL'} · ${t.exchange} · ${t.type}`;
-  
-  let tags='';
-  if(t.setupType)tags+=`<span class="badge badge-tag">${t.setupType}</span>`;
-  if(t.marketContext)tags+=`<span class="badge badge-tag">${t.marketContext}</span>`;
-  if(t.execution)tags+=`<span class="badge badge-tag">${t.execution}</span>`;
-  if(t.emotion)tags+=`<span class="badge ${t.emotion==='FOMO'||t.emotion==='Revenge Trading'?'badge-risk':'badge-live'}">${t.emotion}</span>`;
-  tags+=`<span class="badge" style="background:var(--purple-dim);color:var(--purple);border-color:rgba(180,109,255,0.2);">AI Score: ${grade} (${score})</span>`;
-  document.getElementById('detailTags').innerHTML=tags;
-  
-  document.getElementById('detailGrid').innerHTML=`
-    <div class="detail-stat"><div class="detail-stat-label">Entry</div><div class="detail-stat-val">₹${t.entry.toFixed(2)}</div></div>
-    <div class="detail-stat"><div class="detail-stat-label">${isActive?'CMP':'Exit Price'}</div><div class="detail-stat-val ${pnl>=0?'g':'r'}">₹${isActive?t.cmp:t.exitPrice||t.cmp}</div></div>
-    <div class="detail-stat"><div class="detail-stat-label">P&L</div><div class="detail-stat-val ${pnl>=0?'g':'r'}">${pnl>=0?'+':''}${fmtINR(pnl)}</div></div>
-    <div class="detail-stat"><div class="detail-stat-label">Return %</div><div class="detail-stat-val ${curPct>=0?'g':'r'}">${fmtPct(curPct)}</div></div>
-    <div class="detail-stat"><div class="detail-stat-label">Quantity</div><div class="detail-stat-val">${t.qty}</div></div>
-    <div class="detail-stat"><div class="detail-stat-label">Invested</div><div class="detail-stat-val">${fmtINR(t.entry*t.qty)}</div></div>
-    <div class="detail-stat"><div class="detail-stat-label">Stop Loss</div><div class="detail-stat-val r">${t.sl?'₹'+t.sl:'—'}</div></div>
-    <div class="detail-stat"><div class="detail-stat-label">Target</div><div class="detail-stat-val g">${t.target?'₹'+t.target:'—'}</div></div>
-    <div class="detail-stat"><div class="detail-stat-label">R:R Ratio</div><div class="detail-stat-val b">${rr?rr+'R':'—'}</div></div>
-    <div class="detail-stat"><div class="detail-stat-label">Holding Days</div><div class="detail-stat-val">${holdDays(t)}d</div></div>
-    <div class="detail-stat"><div class="detail-stat-label">Entry Date</div><div class="detail-stat-val" style="font-size:12px;">${t.date||'—'}</div></div>
-    <div class="detail-stat"><div class="detail-stat-label">${isActive?'Day Change':'Exit Date'}</div><div class="detail-stat-val ${!isActive?'':(t.liveChange>=0?'g':'r')}">${isActive?(t.liveChange!=null?fmtPct(t.liveChange):'—'):(t.exitDate||'—')}</div></div>`;
-  
-  document.getElementById('detailNotes').textContent=t.notes||'No notes recorded for this trade.';
-  document.getElementById('btnCloseTrade').style.display=isActive?'flex':'none';
-  document.getElementById('btnPartialExit').style.display=isActive?'flex':'none';
-  document.getElementById('aiTradeAnalysis').style.display='none';
-  document.getElementById('aiAnalyzeBtn').style.display='flex';
-  
-  document.getElementById('detailOverlay').classList.add('open');
-  setTimeout(()=>{
-    if(chartInstances['detailChartInner']){try{chartInstances['detailChartInner'].destroy();}catch(e){}}
-    drawCandleChart('detailChart',t,true);
-    chartInstances['detailChartInner']=chartInstances['detailChart'];
-  },50);
+  const t=trades.find(x=>x.id===id);if(!t)return;
+  detailId=id;
+  const isActive=t.status==='active';
+  const curPct=isActive?pct(t.entry,t.cmp):pct(t.entry,t.exitPrice||t.cmp);
+  const pnl=isActive?pnlVal(t):exitPnlVal(t);
+  const rr=rrRatio(t);
+  const score=tradeScore(t);
+  const {g:grade}=scoreGrade(score);
+  
+  document.getElementById('detailName').textContent=t.name;
+  document.getElementById('detailTicker').textContent=`${t.ticker||'MANUAL'} · ${t.exchange} · ${t.type}`;
+  
+  let tags='';
+  if(t.setupType)tags+=`<span class="badge badge-tag">${t.setupType}</span>`;
+  if(t.marketContext)tags+=`<span class="badge badge-tag">${t.marketContext}</span>`;
+  if(t.execution)tags+=`<span class="badge badge-tag">${t.execution}</span>`;
+  if(t.emotion)tags+=`<span class="badge ${t.emotion==='FOMO'||t.emotion==='Revenge Trading'?'badge-risk':'badge-live'}">${t.emotion}</span>`;
+  tags+=`<span class="badge" style="background:var(--purple-dim);color:var(--purple);border-color:rgba(180,109,255,0.2);">AI Score: ${grade} (${score})</span>`;
+  document.getElementById('detailTags').innerHTML=tags;
+  
+  document.getElementById('detailGrid').innerHTML=`
+    <div class="detail-stat"><div class="detail-stat-label">Entry</div><div class="detail-stat-val">₹${t.entry.toFixed(2)}</div></div>
+    <div class="detail-stat"><div class="detail-stat-label">${isActive?'CMP':'Exit Price'}</div><div class="detail-stat-val ${pnl>=0?'g':'r'}">₹${isActive?t.cmp:t.exitPrice||t.cmp}</div></div>
+    <div class="detail-stat"><div class="detail-stat-label">P&L</div><div class="detail-stat-val ${pnl>=0?'g':'r'}">${pnl>=0?'+':''}${fmtINR(pnl)}</div></div>
+    <div class="detail-stat"><div class="detail-stat-label">Return %</div><div class="detail-stat-val ${curPct>=0?'g':'r'}">${fmtPct(curPct)}</div></div>
+    <div class="detail-stat"><div class="detail-stat-label">Quantity</div><div class="detail-stat-val">${t.qty}</div></div>
+    <div class="detail-stat"><div class="detail-stat-label">Invested</div><div class="detail-stat-val">${fmtINR(t.entry*t.qty)}</div></div>
+    <div class="detail-stat"><div class="detail-stat-label">Stop Loss</div><div class="detail-stat-val r">${t.sl?'₹'+t.sl:'—'}</div></div>
+    <div class="detail-stat"><div class="detail-stat-label">Target</div><div class="detail-stat-val g">${t.target?'₹'+t.target:'—'}</div></div>
+    <div class="detail-stat"><div class="detail-stat-label">R:R Ratio</div><div class="detail-stat-val b">${rr?rr+'R':'—'}</div></div>
+    <div class="detail-stat"><div class="detail-stat-label">Holding Days</div><div class="detail-stat-val">${holdDays(t)}d</div></div>
+    <div class="detail-stat"><div class="detail-stat-label">Entry Date</div><div class="detail-stat-val" style="font-size:12px;">${t.date||'—'}</div></div>
+    <div class="detail-stat"><div class="detail-stat-label">${isActive?'Day Change':'Exit Date'}</div><div class="detail-stat-val ${!isActive?'':(t.liveChange>=0?'g':'r')}">${isActive?(t.liveChange!=null?fmtPct(t.liveChange):'—'):(t.exitDate||'—')}</div></div>`;
+  
+  document.getElementById('detailNotes').textContent=t.notes||'No notes recorded for this trade.';
+  document.getElementById('btnCloseTrade').style.display=isActive?'flex':'none';
+  document.getElementById('btnPartialExit').style.display=isActive?'flex':'none';
+  document.getElementById('aiTradeAnalysis').style.display='none';
+  document.getElementById('aiAnalyzeBtn').style.display='flex';
+  
+  document.getElementById('detailOverlay').classList.add('open');
+  setTimeout(()=>{
+    if(chartInstances['detailChartInner']){try{chartInstances['detailChartInner'].destroy();}catch(e){}}
+    drawCandleChart('detailChart',t,true);
+    chartInstances['detailChartInner']=chartInstances['detailChart'];
+  },50);
 }
 function closeDetail(){document.getElementById('detailOverlay').classList.remove('open');detailId=null;}
 function closeDetailBackdrop(e){if(e.target.id==='detailOverlay')closeDetail();}
 function editFromDetail(){const id=detailId;closeDetail();openEditModal(id);}
 function deleteFromDetail(){
-  if(!confirm('Delete this trade permanently? This cannot be undone.'))return;
-  trades=trades.filter(t=>t.id!==detailId);
-  Object.values(chartInstances).forEach(c=>{try{c.destroy();}catch(e){}});chartInstances={};
-  save();closeDetail();renderSummary();renderCards();showToast('Trade deleted','error');
+  if(!confirm('Delete this trade permanently? This cannot be undone.'))return;
+  trades=trades.filter(t=>t.id!==detailId);
+  Object.values(chartInstances).forEach(c=>{try{c.destroy();}catch(e){}});chartInstances={};
+  save();closeDetail();renderSummary();renderCards();showToast('Trade deleted','error');
 }
 function partialExitFromDetail(){
-  if(!detailId)return;const t=trades.find(x=>x.id===detailId);if(!t||t.status==='closed')return;
-  const qtyStr=prompt(`Partial exit from ${t.name}\nCurrent qty: ${t.qty}\n\nHow many shares to exit?`);
-  if(!qtyStr)return;const exitQty=parseFloat(qtyStr);
-  if(isNaN(exitQty)||exitQty<=0||exitQty>=t.qty){showToast('Invalid quantity','error');return;}
-  const eStr=prompt(`Exit price? (blank = use CMP ₹${t.cmp})`);
-  const ePrice=parseFloat(eStr)||t.cmp;
-  const closed={...t,id:Math.max(...trades.map(x=>x.id||0),0)+1,qty:exitQty,status:'closed',exitDate:new Date().toISOString().split('T')[0],exitPrice:ePrice,notes:`Partial exit (${exitQty} shares)\n`+(t.notes||'')};
-  trades.push(closed);t.qty-=exitQty;
-  Object.values(chartInstances).forEach(c=>{try{c.destroy();}catch(e){}});chartInstances={};
-  save();closeDetail();renderSummary();renderCards();showToast(`✂ Partial exit saved!`,'success');
+  if(!detailId)return;const t=trades.find(x=>x.id===detailId);if(!t||t.status==='closed')return;
+  const qtyStr=prompt(`Partial exit from ${t.name}\nCurrent qty: ${t.qty}\n\nHow many shares to exit?`);
+  if(!qtyStr)return;const exitQty=parseFloat(qtyStr);
+  if(isNaN(exitQty)||exitQty<=0||exitQty>=t.qty){showToast('Invalid quantity','error');return;}
+  const eStr=prompt(`Exit price? (blank = use CMP ₹${t.cmp})`);
+  const ePrice=parseFloat(eStr)||t.cmp;
+  const closed={...t,id:Math.max(...trades.map(x=>x.id||0),0)+1,qty:exitQty,status:'closed',exitDate:new Date().toISOString().split('T')[0],exitPrice:ePrice,notes:`Partial exit (${exitQty} shares)\n`+(t.notes||'')};
+  trades.push(closed);t.qty-=exitQty;
+  Object.values(chartInstances).forEach(c=>{try{c.destroy();}catch(e){}});chartInstances={};
+  save();closeDetail();renderSummary();renderCards();showToast(`✂ Partial exit saved!`,'success');
 }
 function closeTradeFromDetail(){
-  if(!detailId)return;const t=trades.find(x=>x.id===detailId);if(!t||t.status==='closed')return;
-  const eStr=prompt(`Close "${t.name}"\n\nEnter exit price (blank = CMP ₹${t.cmp}):`);
-  if(eStr===null)return;const ePrice=parseFloat(eStr)||t.cmp;
-  Object.values(chartInstances).forEach(c=>{try{c.destroy();}catch(e){}});chartInstances={};
-  t.status='closed';t.exitDate=new Date().toISOString().split('T')[0];t.exitPrice=ePrice;
-  save();closeDetail();renderSummary();renderCards();showToast('✓ Position closed!','success');
+  if(!detailId)return;const t=trades.find(x=>x.id===detailId);if(!t||t.status==='closed')return;
+  const eStr=prompt(`Close "${t.name}"\n\nEnter exit price (blank = CMP ₹${t.cmp}):`);
+  if(eStr===null)return;const ePrice=parseFloat(eStr)||t.cmp;
+  Object.values(chartInstances).forEach(c=>{try{c.destroy();}catch(e){}});chartInstances={};
+  t.status='closed';t.exitDate=new Date().toISOString().split('T')[0];t.exitPrice=ePrice;
+  save();closeDetail();renderSummary();renderCards();showToast('✓ Position closed!','success');
 }
 
 /* ── TRADE FORM ── */
 function openAddModal(){
-  editingId=null;document.getElementById('modalTitle').textContent='New Trade';
-  ['fName','fTicker','fEntry','fQty','fSL','fTarget','fCmp','fExitPrice','fNotes','fSetupType','fMarketContext','fExitDate'].forEach(id=>document.getElementById(id).value='');
-  document.getElementById('fExchange').value='NSE';document.getElementById('fType').value='Equity';
-  document.getElementById('fStatus').value='active';document.getElementById('fExecution').value='';
-  document.getElementById('fEmotion').value='';
-  document.getElementById('fDate').value=new Date().toISOString().split('T')[0];
-  document.getElementById('rrCalcBox').style.display='none';
-  document.getElementById('tickerResult').textContent='';
-  document.getElementById('tradeOverlay').classList.add('open');
+  editingId=null;document.getElementById('modalTitle').textContent='New Trade';
+  ['fName','fTicker','fEntry','fQty','fSL','fTarget','fCmp','fExitPrice','fNotes','fSetupType','fMarketContext','fExitDate'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('fExchange').value='NSE';document.getElementById('fType').value='Equity';
+  document.getElementById('fStatus').value='active';document.getElementById('fExecution').value='';
+  document.getElementById('fEmotion').value='';
+  document.getElementById('fDate').value=new Date().toISOString().split('T')[0];
+  document.getElementById('rrCalcBox').style.display='none';
+  document.getElementById('tickerResult').textContent='';
+  document.getElementById('tradeOverlay').classList.add('open');
 }
 function openEditModal(id){
-  const t=trades.find(x=>x.id===id);if(!t)return;
-  editingId=id;document.getElementById('modalTitle').textContent='Edit Trade';
-  document.getElementById('fName').value=t.name||'';
-  document.getElementById('fTicker').value=t.ticker||'';
-  document.getElementById('fExchange').value=t.exchange||'NSE';
-  document.getElementById('fType').value=t.type||'Equity';
-  document.getElementById('fEntry').value=t.entry||'';
-  document.getElementById('fQty').value=t.qty||'';
-  document.getElementById('fSL').value=t.sl||'';
-  document.getElementById('fTarget').value=t.target||'';
-  document.getElementById('fCmp').value=t.cmp||'';
-  document.getElementById('fExitPrice').value=t.exitPrice||'';
-  document.getElementById('fStatus').value=t.status||'active';
-  document.getElementById('fDate').value=t.date||'';
-  document.getElementById('fExitDate').value=t.exitDate||'';
-  document.getElementById('fSetupType').value=t.setupType||'';
-  document.getElementById('fMarketContext').value=t.marketContext||'';
-  document.getElementById('fExecution').value=t.execution||'';
-  document.getElementById('fEmotion').value=t.emotion||'';
-  document.getElementById('fNotes').value=t.notes||'';
-  document.getElementById('tickerResult').textContent='';
-  calcRR();
-  document.getElementById('tradeOverlay').classList.add('open');
+  const t=trades.find(x=>x.id===id);if(!t)return;
+  editingId=id;document.getElementById('modalTitle').textContent='Edit Trade';
+  document.getElementById('fName').value=t.name||'';
+  document.getElementById('fTicker').value=t.ticker||'';
+  document.getElementById('fExchange').value=t.exchange||'NSE';
+  document.getElementById('fType').value=t.type||'Equity';
+  document.getElementById('fEntry').value=t.entry||'';
+  document.getElementById('fQty').value=t.qty||'';
+  document.getElementById('fSL').value=t.sl||'';
+  document.getElementById('fTarget').value=t.target||'';
+  document.getElementById('fCmp').value=t.cmp||'';
+  document.getElementById('fExitPrice').value=t.exitPrice||'';
+  document.getElementById('fStatus').value=t.status||'active';
+  document.getElementById('fDate').value=t.date||'';
+  document.getElementById('fExitDate').value=t.exitDate||'';
+  document.getElementById('fSetupType').value=t.setupType||'';
+  document.getElementById('fMarketContext').value=t.marketContext||'';
+  document.getElementById('fExecution').value=t.execution||'';
+  document.getElementById('fEmotion').value=t.emotion||'';
+  document.getElementById('fNotes').value=t.notes||'';
+  document.getElementById('tickerResult').textContent='';
+  calcRR();
+  document.getElementById('tradeOverlay').classList.add('open');
 }
 function saveTrade(){
-  const name=document.getElementById('fName').value.trim();
-  const entry=parseFloat(document.getElementById('fEntry').value);
-  const qty=parseFloat(document.getElementById('fQty').value);
-  let cmp=parseFloat(document.getElementById('fCmp').value);
-  const status=document.getElementById('fStatus').value;
-  const exitPrice=parseFloat(document.getElementById('fExitPrice').value)||null;
-  if(status==='closed'&&exitPrice&&isNaN(cmp))cmp=exitPrice;
-  if(!name||isNaN(entry)||isNaN(qty)||isNaN(cmp)){showToast('Fill in Name, Entry, Qty, and CMP','error');return;}
-  const trade={
-    name,entry,qty,cmp,
-    ticker:(document.getElementById('fTicker').value.trim().toUpperCase())||'',
-    sl:parseFloat(document.getElementById('fSL').value)||null,
-    target:parseFloat(document.getElementById('fTarget').value)||null,
-    exitPrice,exchange:document.getElementById('fExchange').value,
-    type:document.getElementById('fType').value,status,
-    date:document.getElementById('fDate').value||new Date().toISOString().split('T')[0],
-    exitDate:document.getElementById('fExitDate').value||'',
-    setupType:document.getElementById('fSetupType').value||'',
-    marketContext:document.getElementById('fMarketContext').value||'',
-    execution:document.getElementById('fExecution').value||'',
-    emotion:document.getElementById('fEmotion').value||'',
-    notes:document.getElementById('fNotes').value||''
-  };
-  Object.values(chartInstances).forEach(c=>{try{c.destroy();}catch(e){}});chartInstances={};
-  if(editingId){const t=trades.find(x=>x.id===editingId);if(t)Object.assign(t,trade);}
-  else{trade.id=Math.max(...trades.map(t=>t.id||0),0)+1;trades.push(trade);}
-  save();closeModal();renderSummary();renderCards();showToast(editingId?'Trade updated ✓':'Trade logged ✓','success');
-  if(trade.ticker)setTimeout(()=>fetchAllPrices(),500);
+  const name=document.getElementById('fName').value.trim();
+  const entry=parseFloat(document.getElementById('fEntry').value);
+  const qty=parseFloat(document.getElementById('fQty').value);
+  let cmp=parseFloat(document.getElementById('fCmp').value);
+  const status=document.getElementById('fStatus').value;
+  const exitPrice=parseFloat(document.getElementById('fExitPrice').value)||null;
+  if(status==='closed'&&exitPrice&&isNaN(cmp))cmp=exitPrice;
+  if(!name||isNaN(entry)||isNaN(qty)||isNaN(cmp)){showToast('Fill in Name, Entry, Qty, and CMP','error');return;}
+  const trade={
+    name,entry,qty,cmp,
+    ticker:(document.getElementById('fTicker').value.trim().toUpperCase())||'',
+    sl:parseFloat(document.getElementById('fSL').value)||null,
+    target:parseFloat(document.getElementById('fTarget').value)||null,
+    exitPrice,exchange:document.getElementById('fExchange').value,
+    type:document.getElementById('fType').value,status,
+    date:document.getElementById('fDate').value||new Date().toISOString().split('T')[0],
+    exitDate:document.getElementById('fExitDate').value||'',
+    setupType:document.getElementById('fSetupType').value||'',
+    marketContext:document.getElementById('fMarketContext').value||'',
+    execution:document.getElementById('fExecution').value||'',
+    emotion:document.getElementById('fEmotion').value||'',
+    notes:document.getElementById('fNotes').value||''
+  };
+  Object.values(chartInstances).forEach(c=>{try{c.destroy();}catch(e){}});chartInstances={};
+  if(editingId){const t=trades.find(x=>x.id===editingId);if(t)Object.assign(t,trade);}
+  else{trade.id=Math.max(...trades.map(t=>t.id||0),0)+1;trades.push(trade);}
+  save();closeModal();renderSummary();renderCards();showToast(editingId?'Trade updated ✓':'Trade logged ✓','success');
+  if(trade.ticker)setTimeout(()=>fetchAllPrices(),500);
 }
 function closeModal(){document.getElementById('tradeOverlay').classList.remove('open');editingId=null;}
 function closeModalBackdrop(e){if(e.target.id==='tradeOverlay')closeModal();}
 
 /* ── AI TRADE ANALYSIS ── */
 async function analyzeTradeWithAI(){
-  if(!detailId)return;
-  const t=trades.find(x=>x.id===detailId);if(!t)return;
-  const btn=document.getElementById('aiAnalyzeBtn');
-  const box=document.getElementById('aiTradeAnalysis');
-  btn.style.display='none';
-  box.style.display='block';
-  const isActive=t.status==='active';
-  const curPct=isActive?pct(t.entry,t.cmp):pct(t.entry,t.exitPrice||t.cmp);
-  const pnl=isActive?pnlVal(t):exitPnlVal(t);
-  const rr=rrRatio(t);
-  
-  box.innerHTML=`<div class="ai-response"><div class="ai-loading"><span style="color:var(--purple)">⬡</span> <span>AI analyzing trade<span class="dots"><span>.</span><span>.</span><span>.</span></span></span></div></div>`;
-  
-  const prompt=`You are an expert stock market trader and coach specializing in Indian equities and global markets. Analyze this trade and give concise, actionable insights.
+  if(!detailId)return;
+  const t=trades.find(x=>x.id===detailId);if(!t)return;
+  const btn=document.getElementById('aiAnalyzeBtn');
+  const box=document.getElementById('aiTradeAnalysis');
+  btn.style.display='none';
+  box.style.display='block';
+  const isActive=t.status==='active';
+  const curPct=isActive?pct(t.entry,t.cmp):pct(t.entry,t.exitPrice||t.cmp);
+  const pnl=isActive?pnlVal(t):exitPnlVal(t);
+  const rr=rrRatio(t);
+  
+  box.innerHTML=`<div class="ai-response"><div class="ai-loading"><span style="color:var(--purple)">⬡</span> <span>AI analyzing trade<span class="dots"><span>.</span><span>.</span><span>.</span></span></span></div></div>`;
+  
+  const prompt=`You are an expert stock market trader and coach specializing in Indian equities and global markets. Analyze this trade and give concise, actionable insights.
 
 TRADE DATA:
 - Stock: ${t.name} (${t.ticker||'no ticker'})
@@ -1177,67 +1187,67 @@ Provide a structured analysis covering:
 
 Be specific, honest, and direct. Use INR amounts. Keep it under 250 words.`;
 
-  try{
-    const res=await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]})
-    });
-    const data=await res.json();
-    const text=data.content?.map(b=>b.text||'').join('')||'Unable to analyze trade.';
-    const formatted=text.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>');
-    box.innerHTML=`<div class="ai-response">
-      <div class="ai-header">⬡ BREAKOUTCHARTS AI ANALYSIS</div>
-      ${formatted}
-    </div>`;
-  }catch(e){
-    box.innerHTML=`<div class="ai-response" style="color:var(--red);">⬡ AI analysis failed. Check your connection.</div>`;
-  }
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]})
+    });
+    const data=await res.json();
+    const text=data.content?.map(b=>b.text||'').join('')||'Unable to analyze trade.';
+    const formatted=text.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>');
+    box.innerHTML=`<div class="ai-response">
+      <div class="ai-header">⬡ NEXUS AI ANALYSIS</div>
+      ${formatted}
+    </div>`;
+  }catch(e){
+    box.innerHTML=`<div class="ai-response" style="color:var(--red);">⬡ AI analysis failed. Check your connection.</div>`;
+  }
 }
 
 /* ── AI COACH ── */
 function openAICoach(){
-  document.getElementById('aiCoachOverlay').classList.add('open');
-  if(!document.getElementById('coachHistory').children.length){
-    appendCoachMsg('assistant','Hello! I\'m your Breakoutcharts AI trading coach. I have full context of your portfolio — '+trades.length+' trades logged. What would you like to analyze or discuss?');
-  }
+  document.getElementById('aiCoachOverlay').classList.add('open');
+  if(!document.getElementById('coachHistory').children.length){
+    appendCoachMsg('assistant','Hello! I\'m your Nexus AI trading coach. I have full context of your portfolio — '+trades.length+' trades logged. What would you like to analyze or discuss?');
+  }
 }
 function closeAICoach(){document.getElementById('aiCoachOverlay').classList.remove('open');}
 function appendCoachMsg(role,text){
-  const div=document.createElement('div');
-  div.style.cssText=`padding:12px 14px;border-radius:10px;font-size:12px;line-height:1.7;font-family:var(--font);`;
-  if(role==='user'){
-    div.style.cssText+=`background:var(--blue-dim);border:1px solid rgba(77,124,255,0.15);color:var(--text);margin-left:10%;`;
-  } else {
-    div.style.cssText+=`background:var(--bg3);border:1px solid var(--border);color:var(--text2);`;
-    const header=document.createElement('div');
-    header.style.cssText=`font-family:var(--mono);font-size:9px;color:var(--purple);font-weight:700;letter-spacing:0.1em;margin-bottom:8px;`;
-    header.textContent='⬡ BREAKOUTCHARTS AI COACH';
-    div.prepend(header);
-  }
-  const formatted=text.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>');
-  div.innerHTML+=(role==='assistant'?'<div class="ai-header">⬡ BREAKOUTCHARTS AI COACH</div>':'')+formatted;
-  if(role==='user') div.textContent=text;
-  document.getElementById('coachHistory').appendChild(div);
-  div.scrollIntoView({behavior:'smooth'});
+  const div=document.createElement('div');
+  div.style.cssText=`padding:12px 14px;border-radius:10px;font-size:12px;line-height:1.7;font-family:var(--font);`;
+  if(role==='user'){
+    div.style.cssText+=`background:var(--blue-dim);border:1px solid rgba(77,124,255,0.15);color:var(--text);margin-left:10%;`;
+  } else {
+    div.style.cssText+=`background:var(--bg3);border:1px solid var(--border);color:var(--text2);`;
+    const header=document.createElement('div');
+    header.style.cssText=`font-family:var(--mono);font-size:9px;color:var(--purple);font-weight:700;letter-spacing:0.1em;margin-bottom:8px;`;
+    header.textContent='⬡ NEXUS AI COACH';
+    div.prepend(header);
+  }
+  const formatted=text.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>');
+  div.innerHTML+=(role==='assistant'?'<div class="ai-header">⬡ NEXUS AI COACH</div>':'')+formatted;
+  if(role==='user') div.textContent=text;
+  document.getElementById('coachHistory').appendChild(div);
+  div.scrollIntoView({behavior:'smooth'});
 }
 async function askCoach(q){
-  document.getElementById('coachInput').value=q;
-  await sendCoachMessage();
+  document.getElementById('coachInput').value=q;
+  await sendCoachMessage();
 }
 async function sendCoachMessage(){
-  const input=document.getElementById('coachInput');
-  const msg=input.value.trim();if(!msg)return;
-  input.value='';
-  appendCoachMsg('user',msg);
-  
-  const thinkDiv=document.createElement('div');
-  thinkDiv.style.cssText='padding:12px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;font-family:var(--mono);font-size:11px;color:var(--text3);';
-  thinkDiv.innerHTML='<span style="color:var(--purple)">⬡</span> Analyzing your portfolio<span class="dots"><span>.</span><span>.</span><span>.</span></span>';
-  document.getElementById('coachHistory').appendChild(thinkDiv);
-  
-  const s=computeSummary();
-  const systemPrompt=`You are an expert trading coach analyzing an Indian retail trader's portfolio. You are direct, specific, and use data to back up every point. You understand Indian market structures (NSE/BSE), F&O, and technical trading setups.
+  const input=document.getElementById('coachInput');
+  const msg=input.value.trim();if(!msg)return;
+  input.value='';
+  appendCoachMsg('user',msg);
+  
+  const thinkDiv=document.createElement('div');
+  thinkDiv.style.cssText='padding:12px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;font-family:var(--mono);font-size:11px;color:var(--text3);';
+  thinkDiv.innerHTML='<span style="color:var(--purple)">⬡</span> Analyzing your portfolio<span class="dots"><span>.</span><span>.</span><span>.</span></span>';
+  document.getElementById('coachHistory').appendChild(thinkDiv);
+  
+  const s=computeSummary();
+  const systemPrompt=`You are an expert trading coach analyzing an Indian retail trader's portfolio. You are direct, specific, and use data to back up every point. You understand Indian market structures (NSE/BSE), F&O, and technical trading setups.
 
 CURRENT PORTFOLIO SNAPSHOT:
 - Open Positions: ${s.positions}
@@ -1250,146 +1260,146 @@ CURRENT PORTFOLIO SNAPSHOT:
 
 ALL TRADES:
 ${trades.map(t=>{
-  const pnl=t.status==='closed'?exitPnlVal(t):pnlVal(t);
-  return `[${t.status.toUpperCase()}] ${t.name} | Entry ₹${t.entry} → ${t.status==='closed'?'Exit ₹'+(t.exitPrice||t.cmp):'CMP ₹'+t.cmp} | P&L: ${pnl>=0?'+':''}${fmtINR(pnl)} | Setup: ${t.setupType||'—'} | Exec: ${t.execution||'—'} | Emotion: ${t.emotion||'—'} | RR: ${rrRatio(t)||'—'} | Hold: ${holdDays(t)}d`;
+  const pnl=t.status==='closed'?exitPnlVal(t):pnlVal(t);
+  return `[${t.status.toUpperCase()}] ${t.name} | Entry ₹${t.entry} → ${t.status==='closed'?'Exit ₹'+(t.exitPrice||t.cmp):'CMP ₹'+t.cmp} | P&L: ${pnl>=0?'+':''}${fmtINR(pnl)} | Setup: ${t.setupType||'—'} | Exec: ${t.execution||'—'} | Emotion: ${t.emotion||'—'} | RR: ${rrRatio(t)||'—'} | Hold: ${holdDays(t)}d`;
 }).join('\n')}
 
 Respond in under 200 words. Be specific with stock names and rupee amounts. Format key points clearly.`;
-  
-  coachHistory.push({role:'user',content:msg});
-  
-  try{
-    const res=await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:systemPrompt,messages:coachHistory.slice(-8)})
-    });
-    const data=await res.json();
-    const reply=data.content?.map(b=>b.text||'').join('')||'Sorry, I could not process that.';
-    coachHistory.push({role:'assistant',content:reply});
-    thinkDiv.remove();
-    appendCoachMsg('assistant',reply);
-  }catch(e){
-    thinkDiv.remove();
-    appendCoachMsg('assistant','Connection error. Please try again.');
-  }
+  
+  coachHistory.push({role:'user',content:msg});
+  
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:systemPrompt,messages:coachHistory.slice(-8)})
+    });
+    const data=await res.json();
+    const reply=data.content?.map(b=>b.text||'').join('')||'Sorry, I could not process that.';
+    coachHistory.push({role:'assistant',content:reply});
+    thinkDiv.remove();
+    appendCoachMsg('assistant',reply);
+  }catch(e){
+    thinkDiv.remove();
+    appendCoachMsg('assistant','Connection error. Please try again.');
+  }
 }
 
 /* ── RISK MODAL ── */
 function openRisk(){
-  const active=trades.filter(t=>t.status==='active');
-  const invested=active.reduce((a,t)=>a+t.entry*t.qty,0);
-  
-  const riskItems=active.map(t=>{
-    const riskAmt=t.sl?Math.max(0,(t.entry-t.sl)*t.qty):0;
-    const pctOfPortfolio=invested?riskAmt/invested*100:0;
-    const slDist=t.sl?((t.entry-t.sl)/t.entry*100):0;
-    return{t,riskAmt,pctOfPortfolio,slDist};
-  }).sort((a,b)=>b.pctOfPortfolio-a.pctOfPortfolio);
-  
-  const totalRisk=riskItems.reduce((a,x)=>a+x.riskAmt,0);
-  const maxPctRisk=Math.max(...riskItems.map(x=>x.pctOfPortfolio),1);
-  
-  let html=`<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px;">
-    <div class="detail-stat"><div class="detail-stat-label">Total Open Risk</div><div class="detail-stat-val r">${fmtINR(totalRisk)}</div></div>
-    <div class="detail-stat"><div class="detail-stat-label">% of Capital at Risk</div><div class="detail-stat-val ${totalRisk/invested*100>10?'r':totalRisk/invested*100>5?'a':'g'}">${invested?(totalRisk/invested*100).toFixed(2):0}%</div></div>
-    <div class="detail-stat"><div class="detail-stat-label">Positions without SL</div><div class="detail-stat-val a">${active.filter(t=>!t.sl).length}</div></div>
-  </div>
-  <div class="section-header"><h3>RISK BY POSITION</h3><div class="section-line"></div></div>
-  <div class="risk-panel">`;
-  
-  riskItems.forEach(({t,riskAmt,pctOfPortfolio,slDist})=>{
-    const color=pctOfPortfolio>3?'var(--red)':pctOfPortfolio>1.5?'var(--amber)':'var(--green)';
-    html+=`<div class="risk-bar-row">
-      <div class="risk-bar-label" style="font-family:var(--mono);font-size:10px;">${t.name.substring(0,16)}</div>
-      <div class="risk-bar-track"><div class="risk-bar-fill" style="width:${(pctOfPortfolio/maxPctRisk*100).toFixed(0)}%;background:${color};"></div></div>
-      <div class="risk-bar-val" style="color:${color};font-family:var(--mono);font-size:10px;">${pctOfPortfolio.toFixed(2)}%</div>
-      <div style="font-family:var(--mono);font-size:10px;color:var(--text3);width:80px;text-align:right;">SL: ${slDist?slDist.toFixed(1)+'%':'Not set'}</div>
-    </div>`;
-  });
-  html+='</div>';
-  
-  // Position sizing calculator
-  html+=`<div class="section-header" style="margin-top:18px;"><h3>POSITION SIZER</h3><div class="section-line"></div></div>
-  <div class="risk-panel">
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px;">
-      <div class="form-group"><label>Account Size (₹)</label><input id="psCapital" type="number" value="${Math.round(invested)}" style="background:var(--bg4);border:1px solid var(--border2);border-radius:var(--r);padding:8px 10px;color:var(--text);font-family:var(--mono);font-size:12px;outline:none;"/></div>
-      <div class="form-group"><label>Risk % per Trade</label><input id="psRiskPct" type="number" value="1" step="0.1" style="background:var(--bg4);border:1px solid var(--border2);border-radius:var(--r);padding:8px 10px;color:var(--text);font-family:var(--mono);font-size:12px;outline:none;"/></div>
-      <div class="form-group"><label>Entry Price</label><input id="psEntry" type="number" placeholder="0.00" style="background:var(--bg4);border:1px solid var(--border2);border-radius:var(--r);padding:8px 10px;color:var(--text);font-family:var(--mono);font-size:12px;outline:none;"/></div>
-      <div class="form-group"><label>Stop Loss Price</label><input id="psSL" type="number" placeholder="0.00" style="background:var(--bg4);border:1px solid var(--border2);border-radius:var(--r);padding:8px 10px;color:var(--text);font-family:var(--mono);font-size:12px;outline:none;"/></div>
-    </div>
-    <button class="btn btn-primary" onclick="calcPositionSize()" style="margin-bottom:10px;">Calculate Optimal Size</button>
-    <div id="psResult" style="font-family:var(--mono);font-size:12px;color:var(--text2);"></div>
-  </div>`;
-  
-  document.getElementById('riskContent').innerHTML=html;
-  document.getElementById('riskOverlay').classList.add('open');
+  const active=trades.filter(t=>t.status==='active');
+  const invested=active.reduce((a,t)=>a+t.entry*t.qty,0);
+  
+  const riskItems=active.map(t=>{
+    const riskAmt=t.sl?Math.max(0,(t.entry-t.sl)*t.qty):0;
+    const pctOfPortfolio=invested?riskAmt/invested*100:0;
+    const slDist=t.sl?((t.entry-t.sl)/t.entry*100):0;
+    return{t,riskAmt,pctOfPortfolio,slDist};
+  }).sort((a,b)=>b.pctOfPortfolio-a.pctOfPortfolio);
+  
+  const totalRisk=riskItems.reduce((a,x)=>a+x.riskAmt,0);
+  const maxPctRisk=Math.max(...riskItems.map(x=>x.pctOfPortfolio),1);
+  
+  let html=`<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px;">
+    <div class="detail-stat"><div class="detail-stat-label">Total Open Risk</div><div class="detail-stat-val r">${fmtINR(totalRisk)}</div></div>
+    <div class="detail-stat"><div class="detail-stat-label">% of Capital at Risk</div><div class="detail-stat-val ${totalRisk/invested*100>10?'r':totalRisk/invested*100>5?'a':'g'}">${invested?(totalRisk/invested*100).toFixed(2):0}%</div></div>
+    <div class="detail-stat"><div class="detail-stat-label">Positions without SL</div><div class="detail-stat-val a">${active.filter(t=>!t.sl).length}</div></div>
+  </div>
+  <div class="section-header"><h3>RISK BY POSITION</h3><div class="section-line"></div></div>
+  <div class="risk-panel">`;
+  
+  riskItems.forEach(({t,riskAmt,pctOfPortfolio,slDist})=>{
+    const color=pctOfPortfolio>3?'var(--red)':pctOfPortfolio>1.5?'var(--amber)':'var(--green)';
+    html+=`<div class="risk-bar-row">
+      <div class="risk-bar-label" style="font-family:var(--mono);font-size:10px;">${t.name.substring(0,16)}</div>
+      <div class="risk-bar-track"><div class="risk-bar-fill" style="width:${(pctOfPortfolio/maxPctRisk*100).toFixed(0)}%;background:${color};"></div></div>
+      <div class="risk-bar-val" style="color:${color};font-family:var(--mono);font-size:10px;">${pctOfPortfolio.toFixed(2)}%</div>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--text3);width:80px;text-align:right;">SL: ${slDist?slDist.toFixed(1)+'%':'Not set'}</div>
+    </div>`;
+  });
+  html+='</div>';
+  
+  // Position sizing calculator
+  html+=`<div class="section-header" style="margin-top:18px;"><h3>POSITION SIZER</h3><div class="section-line"></div></div>
+  <div class="risk-panel">
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px;">
+      <div class="form-group"><label>Account Size (₹)</label><input id="psCapital" type="number" value="${Math.round(invested)}" style="background:var(--bg4);border:1px solid var(--border2);border-radius:var(--r);padding:8px 10px;color:var(--text);font-family:var(--mono);font-size:12px;outline:none;"/></div>
+      <div class="form-group"><label>Risk % per Trade</label><input id="psRiskPct" type="number" value="1" step="0.1" style="background:var(--bg4);border:1px solid var(--border2);border-radius:var(--r);padding:8px 10px;color:var(--text);font-family:var(--mono);font-size:12px;outline:none;"/></div>
+      <div class="form-group"><label>Entry Price</label><input id="psEntry" type="number" placeholder="0.00" style="background:var(--bg4);border:1px solid var(--border2);border-radius:var(--r);padding:8px 10px;color:var(--text);font-family:var(--mono);font-size:12px;outline:none;"/></div>
+      <div class="form-group"><label>Stop Loss Price</label><input id="psSL" type="number" placeholder="0.00" style="background:var(--bg4);border:1px solid var(--border2);border-radius:var(--r);padding:8px 10px;color:var(--text);font-family:var(--mono);font-size:12px;outline:none;"/></div>
+    </div>
+    <button class="btn btn-primary" onclick="calcPositionSize()" style="margin-bottom:10px;">Calculate Optimal Size</button>
+    <div id="psResult" style="font-family:var(--mono);font-size:12px;color:var(--text2);"></div>
+  </div>`;
+  
+  document.getElementById('riskContent').innerHTML=html;
+  document.getElementById('riskOverlay').classList.add('open');
 }
 function closeRisk(){document.getElementById('riskOverlay').classList.remove('open');}
 function calcPositionSize(){
-  const capital=parseFloat(document.getElementById('psCapital').value);
-  const riskPct=parseFloat(document.getElementById('psRiskPct').value)/100;
-  const entry=parseFloat(document.getElementById('psEntry').value);
-  const sl=parseFloat(document.getElementById('psSL').value);
-  if(isNaN(capital)||isNaN(entry)||isNaN(sl)||sl>=entry){
-    document.getElementById('psResult').innerHTML='<span style="color:var(--red)">Enter valid entry and SL (SL must be below entry)</span>';return;
-  }
-  const riskAmt=capital*riskPct;
-  const riskPerShare=entry-sl;
-  const shares=Math.floor(riskAmt/riskPerShare);
-  const totalCost=shares*entry;
-  const pctOfCapital=totalCost/capital*100;
-  document.getElementById('psResult').innerHTML=`
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:8px;">
-      <div class="detail-stat"><div class="detail-stat-label">Shares to Buy</div><div class="detail-stat-val g">${shares.toLocaleString()}</div></div>
-      <div class="detail-stat"><div class="detail-stat-label">Risk Amount</div><div class="detail-stat-val r">${fmtINR(riskAmt)}</div></div>
-      <div class="detail-stat"><div class="detail-stat-label">Position Value</div><div class="detail-stat-val b">${fmtINR(totalCost)}</div></div>
-      <div class="detail-stat"><div class="detail-stat-label">% of Capital</div><div class="detail-stat-val a">${pctOfCapital.toFixed(1)}%</div></div>
-    </div>`;
+  const capital=parseFloat(document.getElementById('psCapital').value);
+  const riskPct=parseFloat(document.getElementById('psRiskPct').value)/100;
+  const entry=parseFloat(document.getElementById('psEntry').value);
+  const sl=parseFloat(document.getElementById('psSL').value);
+  if(isNaN(capital)||isNaN(entry)||isNaN(sl)||sl>=entry){
+    document.getElementById('psResult').innerHTML='<span style="color:var(--red)">Enter valid entry and SL (SL must be below entry)</span>';return;
+  }
+  const riskAmt=capital*riskPct;
+  const riskPerShare=entry-sl;
+  const shares=Math.floor(riskAmt/riskPerShare);
+  const totalCost=shares*entry;
+  const pctOfCapital=totalCost/capital*100;
+  document.getElementById('psResult').innerHTML=`
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:8px;">
+      <div class="detail-stat"><div class="detail-stat-label">Shares to Buy</div><div class="detail-stat-val g">${shares.toLocaleString()}</div></div>
+      <div class="detail-stat"><div class="detail-stat-label">Risk Amount</div><div class="detail-stat-val r">${fmtINR(riskAmt)}</div></div>
+      <div class="detail-stat"><div class="detail-stat-label">Position Value</div><div class="detail-stat-val b">${fmtINR(totalCost)}</div></div>
+      <div class="detail-stat"><div class="detail-stat-label">% of Capital</div><div class="detail-stat-val a">${pctOfCapital.toFixed(1)}%</div></div>
+    </div>`;
 }
 
 /* ── WATCHLIST ── */
 function openWatchlist(){
-  document.getElementById('watchlistOverlay').classList.add('open');
-  renderWatchlist();
+  document.getElementById('watchlistOverlay').classList.add('open');
+  renderWatchlist();
 }
 function closeWatchlist(){document.getElementById('watchlistOverlay').classList.remove('open');}
 function addToWatchlist(){
-  const v=document.getElementById('wlInput').value.trim().toUpperCase();
-  if(!v)return;
-  if(!watchlist.includes(v)){watchlist.push(v);save();}
-  document.getElementById('wlInput').value='';
-  renderWatchlist();
+  const v=document.getElementById('wlInput').value.trim().toUpperCase();
+  if(!v)return;
+  if(!watchlist.includes(v)){watchlist.push(v);save();}
+  document.getElementById('wlInput').value='';
+  renderWatchlist();
 }
 function removeFromWatchlist(ticker){
-  watchlist=watchlist.filter(w=>w!==ticker);save();renderWatchlist();
+  watchlist=watchlist.filter(w=>w!==ticker);save();renderWatchlist();
 }
 function renderWatchlist(){
-  const el=document.getElementById('watchlistItems');
-  if(!watchlist.length){el.innerHTML='<div style="text-align:center;padding:30px;color:var(--text3);font-family:var(--mono);font-size:11px;">No tickers. Add some above.</div>';return;}
-  el.innerHTML=watchlist.map(ticker=>{
-    const data=wlData[ticker]||{};
-    const chg=data.chg;
-    return`<div class="watchlist-item">
-      <div class="wl-ticker">${ticker}</div>
-      <div style="flex:1;font-family:var(--font);font-size:11px;color:var(--text3);">${data.name||''}</div>
-      <div class="wl-price" style="color:${data.price?'var(--text)':'var(--text3)'};">${data.price?'₹'+data.price.toFixed(2):'—'}</div>
-      <div class="wl-chg" style="color:${chg==null?'var(--text3)':chg>=0?'var(--green)':'var(--red)'};">${chg!=null?(chg>=0?'+':'')+chg.toFixed(2)+'%':'—'}</div>
-      <div class="wl-alert" style="cursor:pointer;color:var(--text3);" onclick="removeFromWatchlist('${ticker}')" title="Remove">✕</div>
-    </div>`;
-  }).join('');
+  const el=document.getElementById('watchlistItems');
+  if(!watchlist.length){el.innerHTML='<div style="text-align:center;padding:30px;color:var(--text3);font-family:var(--mono);font-size:11px;">No tickers. Add some above.</div>';return;}
+  el.innerHTML=watchlist.map(ticker=>{
+    const data=wlData[ticker]||{};
+    const chg=data.chg;
+    return`<div class="watchlist-item">
+      <div class="wl-ticker">${ticker}</div>
+      <div style="flex:1;font-family:var(--font);font-size:11px;color:var(--text3);">${data.name||''}</div>
+      <div class="wl-price" style="color:${data.price?'var(--text)':'var(--text3)'};">${data.price?'₹'+data.price.toFixed(2):'—'}</div>
+      <div class="wl-chg" style="color:${chg==null?'var(--text3)':chg>=0?'var(--green)':'var(--red)'};">${chg!=null?(chg>=0?'+':'')+chg.toFixed(2)+'%':'—'}</div>
+      <div class="wl-alert" style="cursor:pointer;color:var(--text3);" onclick="removeFromWatchlist('${ticker}')" title="Remove">✕</div>
+    </div>`;
+  }).join('');
 }
 let wlData={};
 async function fetchWatchlistPrices(){
-  showToast('Fetching watchlist...','info');
-  for(const ticker of watchlist){
-    try{
-      const r=await fetchPrice(ticker);
-      wlData[ticker]={price:r.price,chg:r.prevClose?((r.price-r.prevClose)/r.prevClose*100):null};
-    }catch(e){}
-  }
-  renderWatchlist();
-  showToast('Watchlist updated ✓','success');
+  showToast('Fetching watchlist...','info');
+  for(const ticker of watchlist){
+    try{
+      const r=await fetchPrice(ticker);
+      wlData[ticker]={price:r.price,chg:r.prevClose?((r.price-r.prevClose)/r.prevClose*100):null};
+    }catch(e){}
+  }
+  renderWatchlist();
+  showToast('Watchlist updated ✓','success');
 }
 
 /* ── ANALYTICS ── */
@@ -1398,193 +1408,193 @@ function closeAnalytics(){document.getElementById('analyticsOverlay').classList.
 function closeAnalyticsBackdrop(e){if(e.target.id==='analyticsOverlay')closeAnalytics();}
 
 function switchAnalyticsTab(tab){
-  ['curve','setups','heatmap','calendar'].forEach(t=>{
-    document.getElementById('view'+t.charAt(0).toUpperCase()+t.slice(1)).style.display=t===tab?'block':'none';
-    document.getElementById('tab'+t.charAt(0).toUpperCase()+t.slice(1)).classList.toggle('active',t===tab);
-  });
-  if(tab==='curve'){renderEquityCurve();renderAdvancedStats();}
-  else if(tab==='setups')renderSetupAnalytics();
-  else if(tab==='heatmap')renderHeatmap();
-  else if(tab==='calendar')renderCalendar();
+  ['curve','setups','heatmap','calendar'].forEach(t=>{
+    document.getElementById('view'+t.charAt(0).toUpperCase()+t.slice(1)).style.display=t===tab?'block':'none';
+    document.getElementById('tab'+t.charAt(0).toUpperCase()+t.slice(1)).classList.toggle('active',t===tab);
+  });
+  if(tab==='curve'){renderEquityCurve();renderAdvancedStats();}
+  else if(tab==='setups')renderSetupAnalytics();
+  else if(tab==='heatmap')renderHeatmap();
+  else if(tab==='calendar')renderCalendar();
 }
 
 function renderAdvancedStats(){
-  const closed=trades.filter(t=>t.status==='closed'&&t.exitDate).sort((a,b)=>new Date(a.exitDate)-new Date(b.exitDate));
-  if(!closed.length){document.getElementById('advancedStatsGrid').innerHTML=`<div style="grid-column:1/-1;text-align:center;padding:20px;color:var(--text3);font-family:var(--mono);font-size:11px;">No closed trades yet.</div>`;return;}
-  let wDays=0,wCount=0,lDays=0,lCount=0,currStreak=0,maxWS=0,maxLS=0,isWin=null,eq=0,peak=0,maxDd=0,gProfit=0,gLoss=0;
-  closed.forEach(t=>{
-    const pnl=exitPnlVal(t);const w=pnl>=0;const days=holdDays(t);
-    if(w){wDays+=days;wCount++;gProfit+=pnl;}else{lDays+=days;lCount++;gLoss+=Math.abs(pnl);}
-    if(isWin===null){isWin=w;currStreak=1;}else if(w===isWin){currStreak++;}else{isWin=w;currStreak=1;}
-    if(isWin&&currStreak>maxWS)maxWS=currStreak;if(!isWin&&currStreak>maxLS)maxLS=currStreak;
-    eq+=pnl;if(eq>peak)peak=eq;const dd=peak-eq;if(dd>maxDd)maxDd=dd;
-  });
-  const total=closed.length,winRate=((wCount/total)*100).toFixed(1);
-  const pf=gLoss===0?(gProfit>0?'∞':'0.0'):(gProfit/gLoss).toFixed(2);
-  const avgWin=wCount?gProfit/wCount:0,avgLoss=lCount?gLoss/lCount:0;
-  const exp=((wCount/total)*avgWin)-((lCount/total)*avgLoss);
-  document.getElementById('advancedStatsGrid').innerHTML=`
-    <div class="detail-stat"><div class="detail-stat-label">Win Rate</div><div class="detail-stat-val ${winRate>=50?'g':'r'}">${winRate}%</div></div>
-    <div class="detail-stat"><div class="detail-stat-label">Profit Factor</div><div class="detail-stat-val ${parseFloat(pf)>=1.5?'g':parseFloat(pf)>=1?'a':'r'}">${pf}</div></div>
-    <div class="detail-stat"><div class="detail-stat-label">Expectancy</div><div class="detail-stat-val ${exp>=0?'g':'r'}">${exp>=0?'+':''}${fmtINR(exp)}</div></div>
-    <div class="detail-stat"><div class="detail-stat-label">Avg Win / Loss</div><div class="detail-stat-val"><span class="g">${fmtINR(avgWin)}</span> <span style="color:var(--text3)">/</span> <span class="r">${fmtINR(avgLoss)}</span></div></div>
-    <div class="detail-stat"><div class="detail-stat-label">Avg Hold W / L</div><div class="detail-stat-val"><span class="g">${wCount?(wDays/wCount).toFixed(1):0}d</span> <span style="color:var(--text3)">/</span> <span class="r">${lCount?(lDays/lCount).toFixed(1):0}d</span></div></div>
-    <div class="detail-stat"><div class="detail-stat-label">Max Drawdown</div><div class="detail-stat-val r">-${fmtINR(maxDd)}</div></div>
-    <div class="detail-stat"><div class="detail-stat-label">Best Streak</div><div class="detail-stat-val g">${maxWS} wins</div></div>
-    <div class="detail-stat"><div class="detail-stat-label">Worst Streak</div><div class="detail-stat-val r">${maxLS} losses</div></div>`;
+  const closed=trades.filter(t=>t.status==='closed'&&t.exitDate).sort((a,b)=>new Date(a.exitDate)-new Date(b.exitDate));
+  if(!closed.length){document.getElementById('advancedStatsGrid').innerHTML=`<div style="grid-column:1/-1;text-align:center;padding:20px;color:var(--text3);font-family:var(--mono);font-size:11px;">No closed trades yet.</div>`;return;}
+  let wDays=0,wCount=0,lDays=0,lCount=0,currStreak=0,maxWS=0,maxLS=0,isWin=null,eq=0,peak=0,maxDd=0,gProfit=0,gLoss=0;
+  closed.forEach(t=>{
+    const pnl=exitPnlVal(t);const w=pnl>=0;const days=holdDays(t);
+    if(w){wDays+=days;wCount++;gProfit+=pnl;}else{lDays+=days;lCount++;gLoss+=Math.abs(pnl);}
+    if(isWin===null){isWin=w;currStreak=1;}else if(w===isWin){currStreak++;}else{isWin=w;currStreak=1;}
+    if(isWin&&currStreak>maxWS)maxWS=currStreak;if(!isWin&&currStreak>maxLS)maxLS=currStreak;
+    eq+=pnl;if(eq>peak)peak=eq;const dd=peak-eq;if(dd>maxDd)maxDd=dd;
+  });
+  const total=closed.length,winRate=((wCount/total)*100).toFixed(1);
+  const pf=gLoss===0?(gProfit>0?'∞':'0.0'):(gProfit/gLoss).toFixed(2);
+  const avgWin=wCount?gProfit/wCount:0,avgLoss=lCount?gLoss/lCount:0;
+  const exp=((wCount/total)*avgWin)-((lCount/total)*avgLoss);
+  document.getElementById('advancedStatsGrid').innerHTML=`
+    <div class="detail-stat"><div class="detail-stat-label">Win Rate</div><div class="detail-stat-val ${winRate>=50?'g':'r'}">${winRate}%</div></div>
+    <div class="detail-stat"><div class="detail-stat-label">Profit Factor</div><div class="detail-stat-val ${parseFloat(pf)>=1.5?'g':parseFloat(pf)>=1?'a':'r'}">${pf}</div></div>
+    <div class="detail-stat"><div class="detail-stat-label">Expectancy</div><div class="detail-stat-val ${exp>=0?'g':'r'}">${exp>=0?'+':''}${fmtINR(exp)}</div></div>
+    <div class="detail-stat"><div class="detail-stat-label">Avg Win / Loss</div><div class="detail-stat-val"><span class="g">${fmtINR(avgWin)}</span> <span style="color:var(--text3)">/</span> <span class="r">${fmtINR(avgLoss)}</span></div></div>
+    <div class="detail-stat"><div class="detail-stat-label">Avg Hold W / L</div><div class="detail-stat-val"><span class="g">${wCount?(wDays/wCount).toFixed(1):0}d</span> <span style="color:var(--text3)">/</span> <span class="r">${lCount?(lDays/lCount).toFixed(1):0}d</span></div></div>
+    <div class="detail-stat"><div class="detail-stat-label">Max Drawdown</div><div class="detail-stat-val r">-${fmtINR(maxDd)}</div></div>
+    <div class="detail-stat"><div class="detail-stat-label">Best Streak</div><div class="detail-stat-val g">${maxWS} wins</div></div>
+    <div class="detail-stat"><div class="detail-stat-label">Worst Streak</div><div class="detail-stat-val r">${maxLS} losses</div></div>`;
 }
 
 function renderEquityCurve(){
-  if(equityChartInstance){try{equityChartInstance.destroy();}catch(e){}}
-  const closed=trades.filter(t=>t.status==='closed'&&t.exitDate).sort((a,b)=>new Date(a.exitDate)-new Date(b.exitDate));
-  let eq=0;let daily={};
-  closed.forEach(t=>{if(!daily[t.exitDate])daily[t.exitDate]=0;daily[t.exitDate]+=exitPnlVal(t);});
-  const dates=Object.keys(daily).sort((a,b)=>new Date(a)-new Date(b));
-  let series=[];
-  if(dates.length){const f=new Date(dates[0]);f.setDate(f.getDate()-1);series.push({x:f.getTime(),y:0});}
-  dates.forEach(d=>{eq+=daily[d];series.push({x:new Date(d).getTime(),y:+eq.toFixed(2)});});
-  if(!series.length)series.push({x:new Date().getTime(),y:0});
-  const isPositive=eq>=0;
-  const opts={
-    series:[{name:'Cumulative P&L',data:series}],
-    chart:{type:'area',height:280,background:'transparent',toolbar:{show:false},animations:{enabled:false}},
-    theme:{mode:'dark'},colors:[isPositive?'#00e5a0':'#ff4d6a'],
-    fill:{type:'gradient',gradient:{shadeIntensity:1,opacityFrom:0.3,opacityTo:0.0,stops:[0,100]}},
-    stroke:{curve:'straight',width:2},
-    xaxis:{type:'datetime',labels:{style:{colors:'var(--text3)',fontFamily:'Space Mono',fontSize:'9px'}},axisBorder:{show:false},axisTicks:{show:false},tooltip:{enabled:false}},
-    yaxis:{labels:{style:{colors:'var(--text3)',fontFamily:'Space Mono',fontSize:'9px'},formatter:v=>'₹'+v.toFixed(0)}},
-    grid:{borderColor:'rgba(77,124,255,0.05)',strokeDashArray:4},
-    tooltip:{theme:'dark',x:{format:'dd MMM yyyy'},y:{formatter:v=>'₹'+v.toFixed(2)}}
-  };
-  equityChartInstance=new ApexCharts(document.querySelector('#equityChart'),opts);
-  equityChartInstance.render();
+  if(equityChartInstance){try{equityChartInstance.destroy();}catch(e){}}
+  const closed=trades.filter(t=>t.status==='closed'&&t.exitDate).sort((a,b)=>new Date(a.exitDate)-new Date(b.exitDate));
+  let eq=0;let daily={};
+  closed.forEach(t=>{if(!daily[t.exitDate])daily[t.exitDate]=0;daily[t.exitDate]+=exitPnlVal(t);});
+  const dates=Object.keys(daily).sort((a,b)=>new Date(a)-new Date(b));
+  let series=[];
+  if(dates.length){const f=new Date(dates[0]);f.setDate(f.getDate()-1);series.push({x:f.getTime(),y:0});}
+  dates.forEach(d=>{eq+=daily[d];series.push({x:new Date(d).getTime(),y:+eq.toFixed(2)});});
+  if(!series.length)series.push({x:new Date().getTime(),y:0});
+  const isPositive=eq>=0;
+  const opts={
+    series:[{name:'Cumulative P&L',data:series}],
+    chart:{type:'area',height:280,background:'transparent',toolbar:{show:false},animations:{enabled:false}},
+    theme:{mode:'dark'},colors:[isPositive?'#00e5a0':'#ff4d6a'],
+    fill:{type:'gradient',gradient:{shadeIntensity:1,opacityFrom:0.3,opacityTo:0.0,stops:[0,100]}},
+    stroke:{curve:'straight',width:2},
+    xaxis:{type:'datetime',labels:{style:{colors:'var(--text3)',fontFamily:'Space Mono',fontSize:'9px'}},axisBorder:{show:false},axisTicks:{show:false},tooltip:{enabled:false}},
+    yaxis:{labels:{style:{colors:'var(--text3)',fontFamily:'Space Mono',fontSize:'9px'},formatter:v=>'₹'+v.toFixed(0)}},
+    grid:{borderColor:'rgba(77,124,255,0.05)',strokeDashArray:4},
+    tooltip:{theme:'dark',x:{format:'dd MMM yyyy'},y:{formatter:v=>'₹'+v.toFixed(2)}}
+  };
+  equityChartInstance=new ApexCharts(document.querySelector('#equityChart'),opts);
+  equityChartInstance.render();
 }
 
 function renderSetupAnalytics(){
-  const grouping=document.getElementById('analyticsGroupSelect').value;
-  const map={setupType:'Setup Type',marketContext:'Market Context',execution:'Execution Grade',type:'Asset Type'};
-  document.getElementById('analyticsGroupHeader').textContent=map[grouping];
-  const setups={};
-  trades.forEach(t=>{
-    const s=(t[grouping]||'Uncategorized').trim();if(!s)return;
-    if(!setups[s])setups[s]={count:0,wins:0,pnl:0,gProfit:0,gLoss:0,rrSum:0,rrCount:0};
-    setups[s].count++;
-    const p=t.status==='closed'?exitPnlVal(t):pnlVal(t);setups[s].pnl+=p;
-    if(p>=0){setups[s].wins++;setups[s].gProfit+=p;}else{setups[s].gLoss+=Math.abs(p);}
-    const rr=parseFloat(rrRatio(t)||0);if(rr>0){setups[s].rrSum+=rr;setups[s].rrCount++;}
-  });
-  const sorted=Object.keys(setups).sort((a,b)=>setups[b].pnl-setups[a].pnl);
-  if(!sorted.length){document.getElementById('setupTableBody').innerHTML=`<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text3);">No tagged trades yet.</td></tr>`;return;}
-  document.getElementById('setupTableBody').innerHTML=sorted.map(s=>{
-    const st=setups[s];const wr=((st.wins/st.count)*100).toFixed(1);
-    const pf=st.gLoss===0?(st.gProfit>0?'∞':'0'):( st.gProfit/st.gLoss).toFixed(2);
-    const avgRR=st.rrCount?(st.rrSum/st.rrCount).toFixed(1):'—';
-    return`<tr>
-      <td style="color:var(--text);font-weight:600;">${s}</td>
-      <td>${st.count}</td>
-      <td style="color:${parseFloat(wr)>=50?'var(--green)':'var(--red)'}">${wr}%</td>
-      <td style="color:${parseFloat(pf)>=1.5?'var(--green)':parseFloat(pf)>=1?'var(--amber)':'var(--red)'}">${pf}</td>
-      <td>${avgRR}</td>
-      <td class="${st.pnl>=0?'g':'r'}">${st.pnl>=0?'+':''}${fmtINR(st.pnl)}</td>
-    </tr>`;
-  }).join('');
+  const grouping=document.getElementById('analyticsGroupSelect').value;
+  const map={setupType:'Setup Type',marketContext:'Market Context',execution:'Execution Grade',type:'Asset Type'};
+  document.getElementById('analyticsGroupHeader').textContent=map[grouping];
+  const setups={};
+  trades.forEach(t=>{
+    const s=(t[grouping]||'Uncategorized').trim();if(!s)return;
+    if(!setups[s])setups[s]={count:0,wins:0,pnl:0,gProfit:0,gLoss:0,rrSum:0,rrCount:0};
+    setups[s].count++;
+    const p=t.status==='closed'?exitPnlVal(t):pnlVal(t);setups[s].pnl+=p;
+    if(p>=0){setups[s].wins++;setups[s].gProfit+=p;}else{setups[s].gLoss+=Math.abs(p);}
+    const rr=parseFloat(rrRatio(t)||0);if(rr>0){setups[s].rrSum+=rr;setups[s].rrCount++;}
+  });
+  const sorted=Object.keys(setups).sort((a,b)=>setups[b].pnl-setups[a].pnl);
+  if(!sorted.length){document.getElementById('setupTableBody').innerHTML=`<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text3);">No tagged trades yet.</td></tr>`;return;}
+  document.getElementById('setupTableBody').innerHTML=sorted.map(s=>{
+    const st=setups[s];const wr=((st.wins/st.count)*100).toFixed(1);
+    const pf=st.gLoss===0?(st.gProfit>0?'∞':'0'):( st.gProfit/st.gLoss).toFixed(2);
+    const avgRR=st.rrCount?(st.rrSum/st.rrCount).toFixed(1):'—';
+    return`<tr>
+      <td style="color:var(--text);font-weight:600;">${s}</td>
+      <td>${st.count}</td>
+      <td style="color:${parseFloat(wr)>=50?'var(--green)':'var(--red)'}">${wr}%</td>
+      <td style="color:${parseFloat(pf)>=1.5?'var(--green)':parseFloat(pf)>=1?'var(--amber)':'var(--red)'}">${pf}</td>
+      <td>${avgRR}</td>
+      <td class="${st.pnl>=0?'g':'r'}">${st.pnl>=0?'+':''}${fmtINR(st.pnl)}</td>
+    </tr>`;
+  }).join('');
 }
 
 function renderHeatmap(){
-  const all=trades.filter(t=>t.ticker);
-  if(!all.length){document.getElementById('heatmapGrid').innerHTML='<div style="color:var(--text3);font-family:var(--mono);font-size:11px;">No trades with tickers yet.</div>';return;}
-  const cells=all.map(t=>{
-    const p=t.status==='closed'?pct(t.entry,t.exitPrice||t.cmp):pct(t.entry,t.cmp);
-    const intensity=Math.min(Math.abs(p)/15,1);
-    const bg=p>=0?`rgba(0,229,160,${0.1+intensity*0.4})`:`rgba(255,77,106,${0.1+intensity*0.4})`;
-    const color=p>=0?'var(--green)':'var(--red)';
-    return`<div class="heatmap-cell" style="background:${bg};" onclick="">
-      <div class="hm-ticker" style="color:${color};">${(t.ticker||t.name).replace('.NS','')}</div>
-      <div class="hm-pct" style="color:${color};">${p>=0?'+':''}${p.toFixed(1)}%</div>
-    </div>`;
-  }).join('');
-  document.getElementById('heatmapGrid').innerHTML=cells;
+  const all=trades.filter(t=>t.ticker);
+  if(!all.length){document.getElementById('heatmapGrid').innerHTML='<div style="color:var(--text3);font-family:var(--mono);font-size:11px;">No trades with tickers yet.</div>';return;}
+  const cells=all.map(t=>{
+    const p=t.status==='closed'?pct(t.entry,t.exitPrice||t.cmp):pct(t.entry,t.cmp);
+    const intensity=Math.min(Math.abs(p)/15,1);
+    const bg=p>=0?`rgba(0,229,160,${0.1+intensity*0.4})`:`rgba(255,77,106,${0.1+intensity*0.4})`;
+    const color=p>=0?'var(--green)':'var(--red)';
+    return`<div class="heatmap-cell" style="background:${bg};" onclick="">
+      <div class="hm-ticker" style="color:${color};">${(t.ticker||t.name).replace('.NS','')}</div>
+      <div class="hm-pct" style="color:${color};">${p>=0?'+':''}${p.toFixed(1)}%</div>
+    </div>`;
+  }).join('');
+  document.getElementById('heatmapGrid').innerHTML=cells;
 }
 
 function renderCalendar(){
-  const daily={};
-  trades.filter(t=>t.status==='closed'&&t.exitDate).forEach(t=>{
-    if(!daily[t.exitDate])daily[t.exitDate]={pnl:0,count:0};
-    daily[t.exitDate].pnl+=exitPnlVal(t);daily[t.exitDate].count++;
-  });
-  const now=new Date();const year=now.getFullYear();const month=now.getMonth();
-  const firstDay=new Date(year,month,1).getDay();
-  const daysInMonth=new Date(year,month+1,0).getDate();
-  const monthNames=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const dayNames=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-  let html=`<div style="font-family:var(--display);font-size:16px;font-weight:700;margin-bottom:14px;">${monthNames[month]} ${year}</div>`;
-  html+=`<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;">`;
-  dayNames.forEach(d=>html+=`<div style="font-family:var(--mono);font-size:9px;color:var(--text3);text-align:center;padding:6px 0;font-weight:700;">${d}</div>`);
-  for(let i=0;i<firstDay;i++)html+=`<div></div>`;
-  for(let d=1;d<=daysInMonth;d++){
-    const key=`${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-    const data=daily[key];
-    const isToday=d===now.getDate();
-    const bg=data?(data.pnl>=0?'var(--green-dim)':'var(--red-dim)'):(isToday?'var(--blue-dim)':'transparent');
-    const border=isToday?'1px solid var(--blue)':data?`1px solid ${data.pnl>=0?'rgba(0,229,160,0.2)':'rgba(255,77,106,0.2)'}`:'1px solid var(--border)';
-    html+=`<div style="background:${bg};border:${border};border-radius:6px;padding:8px 4px;text-align:center;min-height:50px;">
-      <div style="font-family:var(--mono);font-size:11px;color:${isToday?'var(--blue)':'var(--text2)'};">${d}</div>
-      ${data?`<div style="font-family:var(--mono);font-size:9px;color:${data.pnl>=0?'var(--green)':'var(--red)'};margin-top:4px;">${data.pnl>=0?'+':''}${fmtINR(data.pnl)}</div>`:''}
-    </div>`;
-  }
-  html+='</div>';
-  document.getElementById('calendarView').innerHTML=html;
+  const daily={};
+  trades.filter(t=>t.status==='closed'&&t.exitDate).forEach(t=>{
+    if(!daily[t.exitDate])daily[t.exitDate]={pnl:0,count:0};
+    daily[t.exitDate].pnl+=exitPnlVal(t);daily[t.exitDate].count++;
+  });
+  const now=new Date();const year=now.getFullYear();const month=now.getMonth();
+  const firstDay=new Date(year,month,1).getDay();
+  const daysInMonth=new Date(year,month+1,0).getDate();
+  const monthNames=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const dayNames=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  let html=`<div style="font-family:var(--display);font-size:16px;font-weight:700;margin-bottom:14px;">${monthNames[month]} ${year}</div>`;
+  html+=`<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;">`;
+  dayNames.forEach(d=>html+=`<div style="font-family:var(--mono);font-size:9px;color:var(--text3);text-align:center;padding:6px 0;font-weight:700;">${d}</div>`);
+  for(let i=0;i<firstDay;i++)html+=`<div></div>`;
+  for(let d=1;d<=daysInMonth;d++){
+    const key=`${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const data=daily[key];
+    const isToday=d===now.getDate();
+    const bg=data?(data.pnl>=0?'var(--green-dim)':'var(--red-dim)'):(isToday?'var(--blue-dim)':'transparent');
+    const border=isToday?'1px solid var(--blue)':data?`1px solid ${data.pnl>=0?'rgba(0,229,160,0.2)':'rgba(255,77,106,0.2)'}`:'1px solid var(--border)';
+    html+=`<div style="background:${bg};border:${border};border-radius:6px;padding:8px 4px;text-align:center;min-height:50px;">
+      <div style="font-family:var(--mono);font-size:11px;color:${isToday?'var(--blue)':'var(--text2)'};">${d}</div>
+      ${data?`<div style="font-family:var(--mono);font-size:9px;color:${data.pnl>=0?'var(--green)':'var(--red)'};margin-top:4px;">${data.pnl>=0?'+':''}${fmtINR(data.pnl)}</div>`:''}
+    </div>`;
+  }
+  html+='</div>';
+  document.getElementById('calendarView').innerHTML=html;
 }
 
 /* ── CSV ── */
 function exportCSV(){
-  const header=['Name','Ticker','Exchange','Type','Entry','Qty','SL','Target','CMP','ExitPrice','Status','EntryDate','ExitDate','SetupType','MarketContext','Execution','Emotion','Notes'];
-  const rows=trades.map(t=>[t.name,t.ticker,t.exchange||'NSE',t.type||'Equity',t.entry,t.qty,t.sl||'',t.target||'',t.cmp,t.exitPrice||'',t.status,t.date,t.exitDate||'',t.setupType||'',t.marketContext||'',t.execution||'',t.emotion||'',t.notes||'']);
-  const csv=[header,...rows].map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
-  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
-  a.download=`breakoutcharts_${new Date().toISOString().split('T')[0]}.csv`;a.click();
-  showToast('Export complete ✓','success');
+  const header=['Name','Ticker','Exchange','Type','Entry','Qty','SL','Target','CMP','ExitPrice','Status','EntryDate','ExitDate','SetupType','MarketContext','Execution','Emotion','Notes'];
+  const rows=trades.map(t=>[t.name,t.ticker,t.exchange||'NSE',t.type||'Equity',t.entry,t.qty,t.sl||'',t.target||'',t.cmp,t.exitPrice||'',t.status,t.date,t.exitDate||'',t.setupType||'',t.marketContext||'',t.execution||'',t.emotion||'',t.notes||'']);
+  const csv=[header,...rows].map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download=`nexus_trade_${new Date().toISOString().split('T')[0]}.csv`;a.click();
+  showToast('Export complete ✓','success');
 }
 function parseCSVLine(line){
-  const r=[];let cur='';let inQ=false;
-  for(let i=0;i<line.length;i++){
-    if(line[i]==='"'){if(inQ&&line[i+1]==='"'){cur+='"';i++;}else inQ=!inQ;}
-    else if(line[i]===','&&!inQ){r.push(cur);cur='';}
-    else cur+=line[i];
-  }r.push(cur);return r;
+  const r=[];let cur='';let inQ=false;
+  for(let i=0;i<line.length;i++){
+    if(line[i]==='"'){if(inQ&&line[i+1]==='"'){cur+='"';i++;}else inQ=!inQ;}
+    else if(line[i]===','&&!inQ){r.push(cur);cur='';}
+    else cur+=line[i];
+  }r.push(cur);return r;
 }
 function handleCSVImport(e){
-  const file=e.target.files[0];if(!file)return;
-  const reader=new FileReader();
-  reader.onload=function(evt){
-    const lines=evt.target.result.split(/\r?\n/);
-    if(lines.length<=1){showToast('CSV is empty','error');return;}
-    const header=parseCSVLine(lines[0]);
-    const getV=(row,col)=>{const i=header.indexOf(col);return i!==-1?row[i]:''};
-    const newTrades=[];let maxId=0;
-    for(let i=1;i<lines.length;i++){
-      if(!lines[i].trim())continue;const row=parseCSVLine(lines[i]);
-      const entry=parseFloat(getV(row,'Entry')),qty=parseFloat(getV(row,'Qty'));
-      if(isNaN(entry)||isNaN(qty))continue;
-      maxId++;
-      newTrades.push({id:maxId,name:getV(row,'Name'),ticker:getV(row,'Ticker').toUpperCase(),exchange:getV(row,'Exchange')||'NSE',type:getV(row,'Type')||'Equity',entry,qty,sl:parseFloat(getV(row,'SL'))||null,target:parseFloat(getV(row,'Target'))||null,cmp:parseFloat(getV(row,'CMP'))||entry,exitPrice:parseFloat(getV(row,'ExitPrice'))||null,status:getV(row,'Status').toLowerCase()==='closed'?'closed':'active',date:getV(row,'EntryDate')||new Date().toISOString().split('T')[0],exitDate:getV(row,'ExitDate')||'',setupType:getV(row,'SetupType')||'',marketContext:getV(row,'MarketContext')||'',execution:getV(row,'Execution')||'',emotion:getV(row,'Emotion')||'',notes:getV(row,'Notes')||'',dailyData:[]});
-    }
-    if(!newTrades.length){showToast('No valid data found in CSV','error');return;}
-    if(confirm(`Import ${newTrades.length} trades? This will overwrite current data.`)){
-      Object.values(chartInstances).forEach(c=>{try{c.destroy();}catch(e){}});chartInstances={};
-      trades=newTrades;save();renderSummary();renderCards();showToast(`Imported ${newTrades.length} trades ✓`,'success');fetchAllPrices();
-    }
-  };
-  reader.readAsText(file);e.target.value='';
+  const file=e.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=function(evt){
+    const lines=evt.target.result.split(/\r?\n/);
+    if(lines.length<=1){showToast('CSV is empty','error');return;}
+    const header=parseCSVLine(lines[0]);
+    const getV=(row,col)=>{const i=header.indexOf(col);return i!==-1?row[i]:''};
+    const newTrades=[];let maxId=0;
+    for(let i=1;i<lines.length;i++){
+      if(!lines[i].trim())continue;const row=parseCSVLine(lines[i]);
+      const entry=parseFloat(getV(row,'Entry')),qty=parseFloat(getV(row,'Qty'));
+      if(isNaN(entry)||isNaN(qty))continue;
+      maxId++;
+      newTrades.push({id:maxId,name:getV(row,'Name'),ticker:getV(row,'Ticker').toUpperCase(),exchange:getV(row,'Exchange')||'NSE',type:getV(row,'Type')||'Equity',entry,qty,sl:parseFloat(getV(row,'SL'))||null,target:parseFloat(getV(row,'Target'))||null,cmp:parseFloat(getV(row,'CMP'))||entry,exitPrice:parseFloat(getV(row,'ExitPrice'))||null,status:getV(row,'Status').toLowerCase()==='closed'?'closed':'active',date:getV(row,'EntryDate')||new Date().toISOString().split('T')[0],exitDate:getV(row,'ExitDate')||'',setupType:getV(row,'SetupType')||'',marketContext:getV(row,'MarketContext')||'',execution:getV(row,'Execution')||'',emotion:getV(row,'Emotion')||'',notes:getV(row,'Notes')||'',dailyData:[]});
+    }
+    if(!newTrades.length){showToast('No valid data found in CSV','error');return;}
+    if(confirm(`Import ${newTrades.length} trades? This will overwrite current data.`)){
+      Object.values(chartInstances).forEach(c=>{try{c.destroy();}catch(e){}});chartInstances={};
+      trades=newTrades;save();renderSummary();renderCards();showToast(`Imported ${newTrades.length} trades ✓`,'success');fetchAllPrices();
+    }
+  };
+  reader.readAsText(file);e.target.value='';
 }
 
 /* ── TOAST ── */
 let toastTimer;
 function showToast(msg,type='info'){
-  const t=document.getElementById('toast');
-  t.textContent=msg;t.className=`toast ${type}`;
-  void t.offsetWidth;t.classList.add('show');
-  clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),3000);
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.className=`toast ${type}`;
+  void t.offsetWidth;t.classList.add('show');
+  clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),3000);
 }
 
 /* ── INIT ── */
