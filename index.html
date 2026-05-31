@@ -195,18 +195,20 @@ select.nano{background:var(--bg3);border:1px solid var(--border2);border-radius:
 .ticker-result{font-family:var(--mono);font-size:11px;padding:3px 0;min-height:18px;}
 
 /* DETAIL PANEL */
-.detail-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:300;align-items:center;justify-content:center;backdrop-filter:blur(6px);}
+.detail-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:300;align-items:center;justify-content:center;backdrop-filter:blur(8px);padding:16px;}
 .detail-overlay.open{display:flex;}
-.detail-panel{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--rl);padding:28px;width:700px;max-width:96vw;max-height:92vh;overflow-y:auto;pointer-events:auto;position:relative;}
+.detail-panel{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--rl);padding:24px 28px;width:880px;max-width:96vw;max-height:94vh;overflow-y:auto;pointer-events:auto;position:relative;display:flex;flex-direction:column;gap:0;}
 .detail-panel::before{content:'';position:absolute;top:0;left:20%;right:20%;height:1px;background:linear-gradient(90deg,transparent,var(--purple),transparent);}
-.detail-chart-wrap{height:300px;margin:14px 0;}
-.detail-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px;}
-.detail-stat{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:12px;}
-.detail-stat-label{font-family:var(--mono);font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px;}
+/* Chart lives in its own fixed-height block, never bleeds */
+.detail-chart-wrap{height:340px;min-height:340px;flex-shrink:0;border-radius:var(--r);overflow:hidden;background:var(--bg3);border:1px solid var(--border);margin:14px 0 0;}
+.detail-chart-wrap .apexcharts-canvas{display:block!important;}
+.detail-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:14px;}
+.detail-stat{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;}
+.detail-stat-label{font-family:var(--mono);font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;}
 .detail-stat-val{font-family:var(--mono);font-size:14px;font-weight:700;}
-.notes-box{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:14px;font-size:12px;color:var(--text2);line-height:1.7;margin-top:12px;min-height:44px;font-family:var(--font);}
-.tag-container{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;}
-.detail-actions{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;}
+.notes-box{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:14px;font-size:12px;color:var(--text2);line-height:1.7;margin-top:10px;min-height:44px;font-family:var(--font);}
+.tag-container{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px;}
+.detail-actions{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;}
 .detail-actions .btn{flex:1;min-width:80px;justify-content:center;}
 
 /* AI PANEL */
@@ -564,20 +566,31 @@ select option{background:var(--bg3);}
 <!-- ── DETAIL PANEL ── -->
 <div class="detail-overlay" id="detailOverlay" onclick="closeDetailBackdrop(event)">
   <div class="detail-panel">
-    <div class="modal-title">
+    <div class="modal-title" style="margin-bottom:0;">
       <div>
-        <div id="detailName" style="font-size:17px;font-family:var(--display);font-weight:800;"></div>
-        <div id="detailTicker" style="font-size:10px;color:var(--text3);font-family:var(--mono);margin-top:2px;letter-spacing:0.1em;"></div>
+        <div id="detailName" style="font-size:18px;font-family:var(--display);font-weight:800;"></div>
+        <div id="detailTicker" style="font-size:10px;color:var(--text3);font-family:var(--mono);margin-top:3px;letter-spacing:0.12em;"></div>
       </div>
-      <button class="modal-close" onclick="closeDetail()">✕</button>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div id="detailPnlBadge" style="font-family:var(--mono);font-size:22px;font-weight:700;"></div>
+        <button class="modal-close" onclick="closeDetail()">✕</button>
+      </div>
     </div>
-    <div class="detail-chart-wrap" id="detailChart"></div>
+    
+    <!-- Tags right below header -->
     <div id="detailTags" class="tag-container"></div>
+    
+    <!-- Chart: fixed height block, completely isolated -->
+    <div class="detail-chart-wrap" id="detailChart"></div>
+    
+    <!-- Stats grid: always below chart, never overlaps -->
     <div class="detail-grid" id="detailGrid"></div>
+    
+    <!-- Notes -->
     <div class="notes-box" id="detailNotes"></div>
     
-    <!-- AI Analysis Section -->
-    <div style="margin-top:14px;">
+    <!-- AI Analysis -->
+    <div style="margin-top:12px;">
       <button class="btn btn-ai" style="width:100%;justify-content:center;" id="aiAnalyzeBtn" onclick="analyzeTradeWithAI()">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10H12V2z"/><path d="M12 2a10 10 0 0 1 10 10"/><circle cx="12" cy="12" r="3"/></svg>
         Analyze This Trade with AI
@@ -903,25 +916,62 @@ function drawCandleChart(containerId,trade,isDetail=false){
   const el=document.getElementById(containerId);
   if(!el)return;
   const data=trade.dailyData||[];
-  if(!data.length){el.innerHTML=`<div style="height:100%;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:10px;color:var(--text3);">No chart data — fetch prices</div>`;return;}
+  if(!data.length){
+    el.innerHTML=`<div style="height:100%;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:10px;color:var(--text3);flex-direction:column;gap:8px;"><div style="font-size:24px;opacity:0.3;">📈</div>No chart data — fetch live prices</div>`;
+    return;
+  }
   
   const series=data.map(d=>({x:new Date(d.time).getTime(),y:[d.open,d.high,d.low,d.close]}));
-  const entryLine={value:trade.entry,borderColor:'var(--blue)',strokeDashArray:3,label:{text:'Entry',style:{background:'var(--blue)',color:'#fff',fontSize:'9px',fontFamily:'Space Mono'}}};
-  const annotations={yaxis:[entryLine]};
-  if(trade.sl)annotations.yaxis.push({value:trade.sl,borderColor:'var(--red)',strokeDashArray:3,label:{text:'SL',style:{background:'var(--red)',color:'#fff',fontSize:'9px',fontFamily:'Space Mono'}}});
-  if(trade.target)annotations.yaxis.push({value:trade.target,borderColor:'var(--green)',strokeDashArray:3,label:{text:'Target',style:{background:'var(--green)',color:'#000',fontSize:'9px',fontFamily:'Space Mono'}}});
+  const annotations={yaxis:[]};
+  annotations.yaxis.push({value:trade.entry,borderColor:'#4d7cff',strokeDashArray:4,label:{text:'Entry ₹'+trade.entry,position:'right',style:{background:'#4d7cff',color:'#fff',fontSize:'9px',fontFamily:'Space Mono',padding:{top:3,bottom:3,left:6,right:6}}}});
+  if(trade.sl)annotations.yaxis.push({value:trade.sl,borderColor:'#ff4d6a',strokeDashArray:4,label:{text:'SL ₹'+trade.sl,position:'right',style:{background:'#ff4d6a',color:'#fff',fontSize:'9px',fontFamily:'Space Mono',padding:{top:3,bottom:3,left:6,right:6}}}});
+  if(trade.target)annotations.yaxis.push({value:trade.target,borderColor:'#00e5a0',strokeDashArray:4,label:{text:'Target ₹'+trade.target,position:'right',style:{background:'#00e5a0',color:'#000',fontSize:'9px',fontFamily:'Space Mono',padding:{top:3,bottom:3,left:6,right:6}}}});
   
   const opts={
     series:[{data:series}],
-    chart:{type:'candlestick',height:'100%',background:'transparent',toolbar:{show:isDetail},animations:{enabled:false},sparkline:{enabled:!isDetail}},
+    chart:{
+      type:'candlestick',
+      height:isDetail?320:100,
+      background:'transparent',
+      toolbar:{show:isDetail,tools:{download:false,selection:true,zoom:true,zoomin:true,zoomout:true,pan:true,reset:true}},
+      animations:{enabled:false},
+      sparkline:{enabled:false},
+      parentHeightOffset:0
+    },
     theme:{mode:'dark'},
-    colors:['#4d7cff'],
-    plotOptions:{candlestick:{colors:{upward:'var(--green)',downward:'var(--red)'}}},
-    annotations,
-    xaxis:{type:'datetime',labels:{show:isDetail,style:{colors:'var(--text3)',fontFamily:'Space Mono',fontSize:'9px'}},axisBorder:{show:false},axisTicks:{show:false},tooltip:{enabled:false}},
-    yaxis:{labels:{show:isDetail,style:{colors:'var(--text3)',fontFamily:'Space Mono',fontSize:'9px'},formatter:v=>'₹'+v.toFixed(0)}},
-    grid:{show:isDetail,borderColor:'rgba(77,124,255,0.05)',strokeDashArray:4},
-    tooltip:{theme:'dark',x:{format:'dd MMM yy'},y:{formatter:v=>v?'₹'+v.toFixed(2):''}}
+    plotOptions:{candlestick:{colors:{upward:'#00e5a0',downward:'#ff4d6a'},wick:{useFillColor:true}}},
+    annotations:isDetail?annotations:{yaxis:[]},
+    xaxis:{
+      type:'datetime',
+      labels:{show:isDetail,style:{colors:'#454d75',fontFamily:'Space Mono',fontSize:'9px'}},
+      axisBorder:{show:false},axisTicks:{show:false},tooltip:{enabled:false}
+    },
+    yaxis:{
+      show:isDetail,
+      labels:{style:{colors:'#454d75',fontFamily:'Space Mono',fontSize:'9px'},formatter:v=>v?'₹'+v.toFixed(0):''},
+      opposite:false
+    },
+    grid:{show:isDetail,borderColor:'rgba(77,124,255,0.06)',strokeDashArray:4,padding:isDetail?{top:10,right:80,bottom:0,left:10}:{top:0,right:0,bottom:0,left:0}},
+    tooltip:{
+      theme:'dark',
+      x:{format:'dd MMM yy'},
+      y:{formatter:v=>v?'₹'+v.toFixed(2):''},
+      custom:isDetail?function({seriesIndex,dataPointIndex,w}){
+        const o=w.globals.seriesCandleO[0][dataPointIndex];
+        const h=w.globals.seriesCandleH[0][dataPointIndex];
+        const l=w.globals.seriesCandleL[0][dataPointIndex];
+        const c=w.globals.seriesCandleC[0][dataPointIndex];
+        if(o==null)return'';
+        const clr=c>=o?'#00e5a0':'#ff4d6a';
+        return`<div style="padding:10px 14px;font-family:'Space Mono',monospace;font-size:11px;background:#111527;border:1px solid rgba(100,120,255,0.18);">
+          <div style="color:${clr};font-weight:700;margin-bottom:6px;">${c>=o?'▲ Bullish':'▼ Bearish'}</div>
+          <div style="color:#8b96c8;">Open  <span style="color:#e2e8ff;float:right;margin-left:20px;">₹${o.toFixed(2)}</span></div>
+          <div style="color:#8b96c8;">High  <span style="color:#00e5a0;float:right;">₹${h.toFixed(2)}</span></div>
+          <div style="color:#8b96c8;">Low   <span style="color:#ff4d6a;float:right;">₹${l.toFixed(2)}</span></div>
+          <div style="color:#8b96c8;">Close <span style="color:${clr};float:right;">₹${c.toFixed(2)}</span></div>
+        </div>`;
+      }:undefined
+    }
   };
   try{
     const chart=new ApexCharts(el,opts);
@@ -1022,6 +1072,8 @@ function openDetail(id){
   
   document.getElementById('detailName').textContent=t.name;
   document.getElementById('detailTicker').textContent=`${t.ticker||'MANUAL'} · ${t.exchange} · ${t.type}`;
+  document.getElementById('detailPnlBadge').textContent=(pnl>=0?'+':'')+fmtINR(pnl);
+  document.getElementById('detailPnlBadge').style.color=pnl>=0?'var(--green)':'var(--red)';
   
   let tags='';
   if(t.setupType)tags+=`<span class="badge badge-tag">${t.setupType}</span>`;
@@ -1051,12 +1103,14 @@ function openDetail(id){
   document.getElementById('aiTradeAnalysis').style.display='none';
   document.getElementById('aiAnalyzeBtn').style.display='flex';
   
+  // Fresh chart container every time to avoid ApexCharts re-render issues
+  const chartWrap=document.getElementById('detailChart');
+  chartWrap.innerHTML='<div id="detailChartInner" style="width:100%;height:320px;"></div>';
+  if(chartInstances['detailChartInner']){try{chartInstances['detailChartInner'].destroy();}catch(e){}}
+  delete chartInstances['detailChartInner'];
+  
   document.getElementById('detailOverlay').classList.add('open');
-  setTimeout(()=>{
-    if(chartInstances['detailChartInner']){try{chartInstances['detailChartInner'].destroy();}catch(e){}}
-    drawCandleChart('detailChart',t,true);
-    chartInstances['detailChartInner']=chartInstances['detailChart'];
-  },50);
+  setTimeout(()=>drawCandleChart('detailChartInner',t,true),80);
 }
 function closeDetail(){document.getElementById('detailOverlay').classList.remove('open');detailId=null;}
 function closeDetailBackdrop(e){if(e.target.id==='detailOverlay')closeDetail();}
