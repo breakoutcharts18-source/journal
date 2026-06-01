@@ -942,20 +942,24 @@ function drawCandleChart(containerId,trade,isDetail=false){
     label:{text:'TARGET ₹'+trade.target,position:'right',offsetX:-4,style:{background:'#00e5a0',color:'#000',fontSize:'9px',fontFamily:'Space Mono',padding:{top:3,bottom:3,left:6,right:6}}}
   });
 
-  // Vertical date lines — entry and exit
+  // Entry & exit: tiny bottom label, NO vertical line (borderWidth:0)
   if(trade.date){
     annotations.xaxis.push({
       x:new Date(trade.date).getTime(),
-      borderColor:'#4d7cff',strokeDashArray:0,borderWidth:2,
-      label:{text:'▲ ENTRY',orientation:'horizontal',position:'top',offsetY:6,style:{background:'#4d7cff',color:'#fff',fontSize:'9px',fontFamily:'Space Mono',padding:{top:3,bottom:3,left:6,right:6}}}
+      borderColor:'transparent',borderWidth:0,strokeDashArray:0,
+      label:{text:'▲ B',orientation:'horizontal',position:'bottom',offsetY:-4,
+        style:{background:'#4d7cff',color:'#fff',fontSize:'8px',fontFamily:'Space Mono',
+          padding:{top:2,bottom:2,left:5,right:5}}}
     });
   }
   if(trade.status==='closed'&&trade.exitDate){
     const exitPnl=((trade.exitPrice||trade.cmp)-trade.entry)*trade.qty;
     annotations.xaxis.push({
       x:new Date(trade.exitDate).getTime(),
-      borderColor:exitPnl>=0?'#00e5a0':'#ff4d6a',strokeDashArray:0,borderWidth:2,
-      label:{text:exitPnl>=0?'★ EXIT +':'✕ EXIT',orientation:'horizontal',position:'top',offsetY:6,style:{background:exitPnl>=0?'#00e5a0':'#ff4d6a',color:exitPnl>=0?'#000':'#fff',fontSize:'9px',fontFamily:'Space Mono',padding:{top:3,bottom:3,left:6,right:6}}}
+      borderColor:'transparent',borderWidth:0,strokeDashArray:0,
+      label:{text:'▼ S',orientation:'horizontal',position:'bottom',offsetY:-4,
+        style:{background:exitPnl>=0?'#00e5a0':'#ff4d6a',color:exitPnl>=0?'#000':'#fff',fontSize:'8px',fontFamily:'Space Mono',
+          padding:{top:2,bottom:2,left:5,right:5}}}
     });
   }
   
@@ -1616,34 +1620,55 @@ function renderHeatmap(){
   document.getElementById('heatmapGrid').innerHTML=cells;
 }
 
-function renderCalendar(){
+function renderCalendar(year,month){
+  const now=new Date();
+  if(year===undefined)year=now.getFullYear();
+  if(month===undefined)month=now.getMonth();
   const daily={};
   trades.filter(t=>t.status==='closed'&&t.exitDate).forEach(t=>{
     if(!daily[t.exitDate])daily[t.exitDate]={pnl:0,count:0};
     daily[t.exitDate].pnl+=exitPnlVal(t);daily[t.exitDate].count++;
   });
-  const now=new Date();const year=now.getFullYear();const month=now.getMonth();
   const firstDay=new Date(year,month,1).getDay();
   const daysInMonth=new Date(year,month+1,0).getDate();
   const monthNames=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   const dayNames=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-  let html=`<div style="font-family:var(--display);font-size:16px;font-weight:700;margin-bottom:14px;">${monthNames[month]} ${year}</div>`;
+  const prevY=month===0?year-1:year, prevM=month===0?11:month-1;
+  const nextY=month===11?year+1:year, nextM=month===11?0:month+1;
+  let html=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+    <button onclick="renderCalendar(${prevY},${prevM})" class="btn" style="padding:5px 12px;font-size:12px;">‹ ${monthNames[prevM]}</button>
+    <div style="font-family:var(--display);font-size:16px;font-weight:700;">${monthNames[month]} ${year}</div>
+    <button onclick="renderCalendar(${nextY},${nextM})" class="btn" style="padding:5px 12px;font-size:12px;">${monthNames[nextM]} ›</button>
+  </div>`;
   html+=`<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;">`;
   dayNames.forEach(d=>html+=`<div style="font-family:var(--mono);font-size:9px;color:var(--text3);text-align:center;padding:6px 0;font-weight:700;">${d}</div>`);
   for(let i=0;i<firstDay;i++)html+=`<div></div>`;
   for(let d=1;d<=daysInMonth;d++){
     const key=`${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
     const data=daily[key];
-    const isToday=d===now.getDate();
+    const isToday=(d===now.getDate()&&month===now.getMonth()&&year===now.getFullYear());
     const bg=data?(data.pnl>=0?'var(--green-dim)':'var(--red-dim)'):(isToday?'var(--blue-dim)':'transparent');
     const border=isToday?'1px solid var(--blue)':data?`1px solid ${data.pnl>=0?'rgba(0,229,160,0.2)':'rgba(255,77,106,0.2)'}`:'1px solid var(--border)';
     html+=`<div style="background:${bg};border:${border};border-radius:6px;padding:8px 4px;text-align:center;min-height:50px;">
       <div style="font-family:var(--mono);font-size:11px;color:${isToday?'var(--blue)':'var(--text2)'};">${d}</div>
-      ${data?`<div style="font-family:var(--mono);font-size:9px;color:${data.pnl>=0?'var(--green)':'var(--red)'};margin-top:4px;">${data.pnl>=0?'+':''}${fmtINR(data.pnl)}</div>`:''}
+      ${data?`<div style="font-family:var(--mono);font-size:9px;color:${data.pnl>=0?'var(--green)':'var(--red)'};margin-top:4px;">${data.pnl>=0?'+':''}${fmtINR(data.pnl)}</div><div style="font-family:var(--mono);font-size:8px;color:var(--text3);margin-top:2px;">${data.count} trade${data.count>1?'s':''}</div>`:''}
     </div>`;
   }
   html+='</div>';
   document.getElementById('calendarView').innerHTML=html;
+}
+
+/* ── CLEAR ALL ── */
+function clearAllTrades(){
+  if(!trades.length){showToast('No trades to clear','info');return;}
+  if(!confirm(`Delete ALL ${trades.length} trade logs permanently? This cannot be undone.`))return;
+  Object.values(chartInstances).forEach(c=>{try{c.destroy();}catch(e){}});
+  chartInstances={};
+  trades=[];
+  save();
+  renderSummary();
+  renderCards();
+  showToast('All trades cleared','error');
 }
 
 /* ── CSV ── */
