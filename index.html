@@ -329,6 +329,10 @@ select option{background:var(--bg3);}
     </button>
     <button class="btn btn-green" onclick="exportCSV()" title="Export CSV">↑ CSV</button>
     <button class="btn btn-green" onclick="document.getElementById('csvFileInput').click()" title="Import CSV">↓ CSV</button>
+    <button class="btn" onclick="openZerodha()" style="background:linear-gradient(135deg,rgba(255,87,34,0.15),rgba(255,152,0,0.12));border-color:rgba(255,87,34,0.35);color:#ff8a50;font-weight:600;">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+      Zerodha
+    </button>
     <button class="btn btn-red" onclick="clearAllTrades()">
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
       Clear All
@@ -674,6 +678,99 @@ select option{background:var(--bg3);}
     <div id="watchlistItems"></div>
   </div>
 </div>
+
+<!-- ── ZERODHA TRADEBOOK CSV IMPORT ── -->
+<div class="overlay" id="zerodhaOverlay" onclick="if(event.target.id==='zerodhaOverlay')closeZerodha()">
+  <div class="modal" style="width:780px;">
+    <div class="modal-title">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div style="width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,#ff5722,#ff9800);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:15px;color:#fff;flex-shrink:0;">Z</div>
+        <div>
+          <div style="font-size:16px;font-weight:700;">Zerodha Tradebook Import</div>
+          <div style="font-family:var(--mono);font-size:10px;color:var(--text3);font-weight:400;margin-top:2px;">Download CSV from console.zerodha.com → Reports → Tradebook → CSV</div>
+        </div>
+      </div>
+      <button class="modal-close" onclick="closeZerodha()">✕</button>
+    </div>
+
+    <!-- HOW TO -->
+    <div style="background:rgba(255,87,34,0.06);border:1px solid rgba(255,87,34,0.2);border-radius:var(--r);padding:14px 16px;margin-bottom:18px;font-size:11px;line-height:1.9;color:var(--text2);">
+      <div style="font-family:var(--mono);font-weight:700;color:#ff8a50;margin-bottom:6px;font-size:9px;letter-spacing:.1em;">HOW TO GET YOUR CSV</div>
+      <div style="display:grid;grid-template-columns:auto 1fr;gap:4px 12px;align-items:start;">
+        <span style="color:#ff8a50;font-weight:700;font-family:var(--mono);">1</span><span>Go to <a href="https://console.zerodha.com/reports/tradebook" target="_blank" style="color:#ff8a50;text-decoration:none;">console.zerodha.com/reports/tradebook</a></span>
+        <span style="color:#ff8a50;font-weight:700;font-family:var(--mono);">2</span><span>Select your date range (up to 1 year per download)</span>
+        <span style="color:#ff8a50;font-weight:700;font-family:var(--mono);">3</span><span>Click <strong style="color:var(--text);">Download → CSV</strong> in the top-right</span>
+        <span style="color:#ff8a50;font-weight:700;font-family:var(--mono);">4</span><span>Upload the file below — all buy/sell fills are paired automatically</span>
+      </div>
+    </div>
+
+    <!-- DROP ZONE -->
+    <div id="zdDropZone" style="border:2px dashed rgba(255,87,34,0.3);border-radius:var(--rl);padding:36px 20px;text-align:center;cursor:pointer;transition:all 0.2s;margin-bottom:16px;background:rgba(255,87,34,0.03);"
+      onclick="document.getElementById('zdFileInput').click()"
+      ondragover="event.preventDefault();this.style.borderColor='#ff5722';this.style.background='rgba(255,87,34,0.08)'"
+      ondragleave="this.style.borderColor='rgba(255,87,34,0.3)';this.style.background='rgba(255,87,34,0.03)'"
+      ondrop="event.preventDefault();this.style.borderColor='rgba(255,87,34,0.3)';this.style.background='rgba(255,87,34,0.03)';zdHandleFile(event.dataTransfer.files[0])">
+      <div style="font-size:32px;margin-bottom:10px;opacity:0.5;">📂</div>
+      <div style="font-family:var(--display);font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px;">Drop Zerodha CSV here</div>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--text3);">or click to browse · tradebook-XXXXXX-EQ.csv</div>
+    </div>
+    <input type="file" id="zdFileInput" accept=".csv" style="display:none;" onchange="zdHandleFile(this.files[0])"/>
+
+    <!-- OPTIONS -->
+    <div style="display:flex;gap:16px;align-items:center;margin-bottom:16px;flex-wrap:wrap;">
+      <label style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text2);cursor:pointer;">
+        <input type="checkbox" id="zdSkipDupes" checked style="accent-color:var(--blue);width:13px;height:13px;cursor:pointer;"/>
+        Skip duplicates (same symbol + date already in journal)
+      </label>
+      <label style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text2);cursor:pointer;">
+        <input type="checkbox" id="zdMergeMultiFills" checked style="accent-color:var(--blue);width:13px;height:13px;cursor:pointer;"/>
+        Merge multiple fills → weighted avg price
+      </label>
+    </div>
+
+    <!-- PREVIEW TABLE -->
+    <div id="zdPreview" style="display:none;margin-bottom:16px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <div style="font-family:var(--mono);font-size:9px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.1em;">
+          PREVIEW · <span id="zdPreviewCount">0</span> POSITIONS · <span id="zdPreviewWins" style="color:var(--green);">0 wins</span> · <span id="zdPreviewLoss" style="color:var(--red);">0 losses</span> · <span id="zdPreviewOpen" style="color:var(--blue);">0 open</span>
+        </div>
+        <div id="zdPreviewPnl" style="font-family:var(--mono);font-size:13px;font-weight:700;"></div>
+      </div>
+      <div style="max-height:260px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--r);">
+        <table style="width:100%;border-collapse:collapse;font-size:11px;font-family:var(--mono);">
+          <thead style="position:sticky;top:0;background:var(--bg3);z-index:1;">
+            <tr>
+              <th style="padding:8px 10px;text-align:left;color:var(--text3);font-size:9px;text-transform:uppercase;border-bottom:1px solid var(--border);">Symbol</th>
+              <th style="padding:8px 10px;text-align:left;color:var(--text3);font-size:9px;text-transform:uppercase;border-bottom:1px solid var(--border);">Date</th>
+              <th style="padding:8px 10px;text-align:right;color:var(--text3);font-size:9px;text-transform:uppercase;border-bottom:1px solid var(--border);">Avg Entry</th>
+              <th style="padding:8px 10px;text-align:right;color:var(--text3);font-size:9px;text-transform:uppercase;border-bottom:1px solid var(--border);">Avg Exit</th>
+              <th style="padding:8px 10px;text-align:right;color:var(--text3);font-size:9px;text-transform:uppercase;border-bottom:1px solid var(--border);">Qty</th>
+              <th style="padding:8px 10px;text-align:right;color:var(--text3);font-size:9px;text-transform:uppercase;border-bottom:1px solid var(--border);">P&L</th>
+              <th style="padding:8px 10px;text-align:center;color:var(--text3);font-size:9px;text-transform:uppercase;border-bottom:1px solid var(--border);">Status</th>
+              <th style="padding:8px 4px;text-align:center;color:var(--text3);font-size:9px;text-transform:uppercase;border-bottom:1px solid var(--border);">Skip</th>
+            </tr>
+          </thead>
+          <tbody id="zdPreviewBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ACTIONS -->
+    <div style="display:flex;gap:10px;align-items:center;" id="zdActions">
+      <button class="btn" onclick="closeZerodha()" style="flex:1;justify-content:center;">Cancel</button>
+      <button class="btn btn-primary" id="zdImportBtn" onclick="zdImportTrades()" style="flex:3;justify-content:center;display:none;font-size:13px;padding:11px;">
+        ✓ Import <span id="zdImportCount">0</span> Positions into Journal
+      </button>
+    </div>
+
+    <!-- LOG -->
+    <div id="zdLog" style="margin-top:10px;font-family:var(--mono);font-size:10px;color:var(--text3);max-height:80px;overflow-y:auto;display:none;"></div>
+  </div>
+</div>
+
+<style>
+.zd-step-num{width:22px;height:22px;border-radius:50%;background:var(--bg4);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--text3);transition:all 0.2s;}
+</style>
 
 <div class="toast" id="toast"></div>
 
@@ -1757,7 +1854,290 @@ function handleCSVImport(e){
   reader.readAsText(file);e.target.value='';
 }
 
-/* ── TOAST ── */
+/* ══════════════════════════════════════════════
+   ZERODHA TRADEBOOK CSV IMPORT
+   Columns: symbol, isin, trade_date, exchange,
+   segment, series, trade_type, auction,
+   quantity, price, trade_id, order_id,
+   order_execution_time
+══════════════════════════════════════════════ */
+
+let zdPendingTrades = [];
+
+function openZerodha(){
+  zdPendingTrades = [];
+  document.getElementById('zdPreview').style.display = 'none';
+  document.getElementById('zdImportBtn').style.display = 'none';
+  document.getElementById('zdLog').style.display = 'none';
+  document.getElementById('zdLog').innerHTML = '';
+  document.getElementById('zdFileInput').value = '';
+  document.getElementById('zerodhaOverlay').classList.add('open');
+}
+function closeZerodha(){ document.getElementById('zerodhaOverlay').classList.remove('open'); }
+
+function zdHandleFile(file){
+  if(!file) return;
+  if(!file.name.endsWith('.csv')){ showToast('Please upload a .csv file','error'); return; }
+
+  // Update dropzone label
+  document.getElementById('zdDropZone').innerHTML = `
+    <div style="font-size:28px;margin-bottom:8px;">✅</div>
+    <div style="font-family:var(--display);font-size:14px;font-weight:700;color:var(--green);margin-bottom:3px;">${file.name}</div>
+    <div style="font-family:var(--mono);font-size:10px;color:var(--text3);">${(file.size/1024).toFixed(1)} KB · click to change</div>`;
+
+  const reader = new FileReader();
+  reader.onload = e => zdParseCSV(e.target.result);
+  reader.readAsText(file);
+}
+
+function zdParseCSV(text){
+  const lines = text.trim().split('\n').map(l => l.trim()).filter(Boolean);
+  if(lines.length < 2){ showToast('CSV appears empty','error'); return; }
+
+  // Parse header → find column indices
+  const header = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/"/g,''));
+  const col = k => header.indexOf(k);
+  const C = {
+    symbol:  col('symbol'),
+    date:    col('trade_date'),
+    exch:    col('exchange'),
+    type:    col('trade_type'),
+    qty:     col('quantity'),
+    price:   col('price'),
+    time:    col('order_execution_time')
+  };
+
+  if(C.symbol < 0 || C.date < 0 || C.type < 0){
+    showToast('Not a valid Zerodha tradebook CSV','error'); return;
+  }
+
+  // Parse all fills
+  const fills = [];
+  for(let i = 1; i < lines.length; i++){
+    const parts = lines[i].split(',').map(p => p.trim().replace(/"/g,''));
+    if(parts.length < 6) continue;
+    fills.push({
+      symbol:   parts[C.symbol],
+      date:     parts[C.date],          // YYYY-MM-DD
+      exchange: parts[C.exch] || 'NSE',
+      type:     parts[C.type].toLowerCase(), // buy / sell
+      qty:      parseFloat(parts[C.qty]) || 0,
+      price:    parseFloat(parts[C.price]) || 0,
+      time:     parts[C.time] || parts[C.date]
+    });
+  }
+
+  zdLog(`Parsed ${fills.length} fills for ${new Set(fills.map(f=>f.symbol)).size} symbols.`);
+  zdBuildPositions(fills);
+}
+
+function zdBuildPositions(fills){
+  const skipDupes = document.getElementById('zdSkipDupes').checked;
+  const mergeFills = document.getElementById('zdMergeMultiFills').checked;
+
+  // Group by symbol, sort each group chronologically
+  const bySymbol = {};
+  fills.forEach(f => {
+    if(!bySymbol[f.symbol]) bySymbol[f.symbol] = [];
+    bySymbol[f.symbol].push(f);
+  });
+
+  const existingKeys = new Set(trades.map(t => `${t.symbol||t.ticker?.replace('.NS','').replace('.BO','')}_${t.date}`));
+  const positions = [];
+
+  Object.entries(bySymbol).forEach(([sym, symFills]) => {
+    symFills.sort((a,b) => new Date(a.time) - new Date(b.time));
+
+    // FIFO matching: queue of buy lots
+    const buyQueue = []; // {qty, price, date, exchange}
+    const closed = [];   // fully matched positions
+    let openQty = 0, openVal = 0, openDate = '', openExch = 'NSE';
+
+    symFills.forEach(f => {
+      if(f.type === 'buy'){
+        buyQueue.push({qty: f.qty, price: f.price, date: f.date, exchange: f.exchange});
+        openQty += f.qty;
+        openVal += f.qty * f.price;
+        if(!openDate) openDate = f.date;
+        openExch = f.exchange;
+      } else if(f.type === 'sell'){
+        let sellQtyLeft = f.qty;
+        let sellVal = 0;
+
+        while(sellQtyLeft > 0 && buyQueue.length){
+          const lot = buyQueue[0];
+          const matched = Math.min(lot.qty, sellQtyLeft);
+          sellVal += matched * f.price;
+          const buyVal = matched * lot.price;
+
+          if(matched === lot.qty){
+            buyQueue.shift();
+          } else {
+            buyQueue[0].qty -= matched;
+          }
+          sellQtyLeft -= matched;
+          openQty -= matched;
+          openVal -= buyVal;
+
+          closed.push({
+            symbol: sym,
+            exchange: lot.exchange,
+            entryDate: lot.date,
+            exitDate: f.date,
+            entryPrice: lot.price,
+            exitPrice: f.price,
+            qty: matched
+          });
+        }
+      }
+    });
+
+    // Merge closed lots by (entryDate, exitDate) if option enabled
+    let closedMerged = closed;
+    if(mergeFills){
+      const map = {};
+      closed.forEach(c => {
+        const k = `${c.symbol}_${c.entryDate}_${c.exitDate}`;
+        if(!map[k]){
+          map[k] = {...c, totalEntryVal: c.qty * c.entryPrice, totalExitVal: c.qty * c.exitPrice};
+        } else {
+          map[k].qty += c.qty;
+          map[k].totalEntryVal += c.qty * c.entryPrice;
+          map[k].totalExitVal += c.qty * c.exitPrice;
+        }
+      });
+      closedMerged = Object.values(map).map(m => ({
+        ...m,
+        entryPrice: m.totalEntryVal / m.qty,
+        exitPrice: m.totalExitVal / m.qty
+      }));
+    }
+
+    // Add closed positions
+    closedMerged.forEach(c => {
+      const key = `${c.symbol}_${c.entryDate}`;
+      if(skipDupes && existingKeys.has(key)){ zdLog(`SKIP (dupe): ${c.symbol} ${c.entryDate}`); return; }
+      positions.push(zdMakeTrade(c.symbol, c.exchange, c.entryDate, c.exitDate, c.entryPrice, c.exitPrice, c.qty, 'closed'));
+    });
+
+    // Add open position (remaining buy queue)
+    if(buyQueue.length > 0){
+      const totalQty = buyQueue.reduce((s,l) => s+l.qty, 0);
+      const avgEntry = buyQueue.reduce((s,l) => s+l.qty*l.price, 0) / totalQty;
+      const firstDate = buyQueue[0].date;
+      const key = `${sym}_${firstDate}`;
+      if(skipDupes && existingKeys.has(key)){ zdLog(`SKIP (dupe open): ${sym} ${firstDate}`); return; }
+      positions.push(zdMakeTrade(sym, buyQueue[0].exchange, firstDate, '', avgEntry, null, totalQty, 'active'));
+    }
+  });
+
+  zdLog(`Built ${positions.length} positions (${positions.filter(p=>p.status==='closed').length} closed, ${positions.filter(p=>p.status==='active').length} open).`);
+  zdPendingTrades = positions;
+  zdRenderPreview(positions);
+}
+
+function zdMakeTrade(sym, exchange, entryDate, exitDate, entryPrice, exitPrice, qty, status){
+  const ticker = sym + (exchange === 'BSE' ? '.BO' : '.NS');
+  const pnl = status === 'closed' ? (exitPrice - entryPrice) * qty : 0;
+  return {
+    _skip: false,
+    name: sym,
+    ticker,
+    exchange,
+    type: 'Equity',
+    entry: +entryPrice.toFixed(2),
+    cmp: exitPrice ? +exitPrice.toFixed(2) : +entryPrice.toFixed(2),
+    qty,
+    exitPrice: exitPrice ? +exitPrice.toFixed(2) : null,
+    status,
+    date: entryDate,
+    exitDate: exitDate || '',
+    sl: null, target: null,
+    setupType: '', marketContext: '', execution: '', emotion: '',
+    notes: `Imported from Zerodha tradebook.`
+  };
+}
+
+function zdRenderPreview(list){
+  if(!list.length){
+    showToast('No new positions to import','info'); return;
+  }
+
+  const wins = list.filter(t => t.status==='closed' && t.exitPrice > t.entry).length;
+  const losses = list.filter(t => t.status==='closed' && t.exitPrice <= t.entry).length;
+  const open = list.filter(t => t.status==='active').length;
+  const totalPnl = list.filter(t=>t.status==='closed').reduce((s,t)=>(t.exitPrice-t.entry)*t.qty+s, 0);
+
+  document.getElementById('zdPreviewCount').textContent = list.length;
+  document.getElementById('zdPreviewWins').textContent = `${wins} wins`;
+  document.getElementById('zdPreviewLoss').textContent = `${losses} losses`;
+  document.getElementById('zdPreviewOpen').textContent = `${open} open`;
+  document.getElementById('zdPreviewPnl').textContent = (totalPnl>=0?'+':'')+fmtINR(totalPnl);
+  document.getElementById('zdPreviewPnl').style.color = totalPnl>=0?'var(--green)':'var(--red)';
+
+  const body = document.getElementById('zdPreviewBody');
+  body.innerHTML = list.map((t,i) => {
+    const pnl = t.status==='closed' ? (t.exitPrice - t.entry)*t.qty : 0;
+    return `<tr id="zdRow${i}" style="border-bottom:1px solid var(--border);">
+      <td style="padding:7px 10px;font-weight:600;color:var(--text);">${t.ticker}</td>
+      <td style="padding:7px 10px;color:var(--text2);">${t.date}</td>
+      <td style="padding:7px 10px;text-align:right;">₹${t.entry.toFixed(2)}</td>
+      <td style="padding:7px 10px;text-align:right;">${t.exitPrice ? '₹'+t.exitPrice.toFixed(2) : '—'}</td>
+      <td style="padding:7px 10px;text-align:right;">${t.qty}</td>
+      <td style="padding:7px 10px;text-align:right;color:${pnl>=0?'var(--green)':'var(--red)'};">${t.status==='closed'?(pnl>=0?'+':'')+fmtINR(pnl):'<span style="color:var(--blue)">Open</span>'}</td>
+      <td style="padding:7px 10px;text-align:center;">
+        <span class="badge ${t.status==='active'?'badge-live':'badge-closed'}">${t.status.toUpperCase()}</span>
+      </td>
+      <td style="padding:7px 4px;text-align:center;">
+        <input type="checkbox" onchange="zdToggleSkip(${i},this.checked)" style="accent-color:var(--red);cursor:pointer;" title="Skip this row"/>
+      </td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('zdPreview').style.display = 'block';
+  document.getElementById('zdImportBtn').style.display = 'flex';
+  document.getElementById('zdImportCount').textContent = list.length;
+  document.getElementById('zdLog').style.display = 'block';
+}
+
+function zdToggleSkip(i, checked){
+  zdPendingTrades[i]._skip = checked;
+  const row = document.getElementById('zdRow'+i);
+  if(row) row.style.opacity = checked ? '0.35' : '1';
+  const toImport = zdPendingTrades.filter(t=>!t._skip).length;
+  document.getElementById('zdImportCount').textContent = toImport;
+}
+
+function zdImportTrades(){
+  const toImport = zdPendingTrades.filter(t => !t._skip);
+  if(!toImport.length){ showToast('Nothing to import','info'); return; }
+
+  const maxId = Math.max(...trades.map(t=>t.id||0), 0);
+  toImport.forEach((t,i) => {
+    const {_skip, ...trade} = t;
+    trade.id = maxId + i + 1;
+    trades.push(trade);
+  });
+
+  Object.values(chartInstances).forEach(c=>{try{c.destroy();}catch(e){}});
+  chartInstances = {};
+  save();
+  renderSummary();
+  renderCards();
+  closeZerodha();
+  showToast(`✓ ${toImport.length} positions imported from Zerodha!`, 'success');
+  setTimeout(() => fetchAllPrices(), 600);
+}
+
+function zdLog(msg){
+  const el = document.getElementById('zdLog');
+  if(!el) return;
+  el.style.display = 'block';
+  el.innerHTML += `<div>› ${msg}</div>`;
+  el.scrollTop = el.scrollHeight;
+}
+
+
 let toastTimer;
 function showToast(msg,type='info'){
   const t=document.getElementById('toast');
