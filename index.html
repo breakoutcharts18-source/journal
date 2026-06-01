@@ -266,6 +266,10 @@ select.nano{background:var(--bg3);border:1px solid var(--border2);border-radius:
 /* APEX OVERRIDES */
 .apexcharts-tooltip{background:var(--bg3)!important;border:1px solid var(--border2)!important;box-shadow:0 8px 24px rgba(0,0,0,0.5)!important;color:#fff;font-family:var(--mono)!important;}
 .apexcharts-tooltip-title{background:var(--bg4)!important;border-bottom:1px solid var(--border)!important;font-family:var(--display)!important;font-weight:700!important;padding:6px 12px!important;}
+/* Buy marker ▲ sits below candle, sell marker ▼ sits above — rotate the exit triangle */
+.apexcharts-point-annotation-marker.exit-marker{transform:rotate(180deg);transform-box:fill-box;transform-origin:center;}
+/* Annotation labels */
+.apexcharts-point-annotations text{font-family:'Space Mono',monospace!important;font-size:8px!important;font-weight:700!important;}
 
 select option{background:var(--bg3);}
 
@@ -921,48 +925,68 @@ function drawCandleChart(containerId,trade,isDetail=false){
   if(!el)return;
   const data=trade.dailyData||[];
   if(!data.length){
-    el.innerHTML=`<div style="height:100%;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:10px;color:var(--text3);flex-direction:column;gap:8px;"><div style="font-size:24px;opacity:0.3;">📈</div>No chart data — fetch live prices</div>`;
+    el.innerHTML=`<div style="height:100%;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:10px;color:var(--text3);flex-direction:column;gap:8px;"><div style="font-size:24px;opacity:0.3;">📈</div>No chart data — fetch prices</div>`;
     return;
   }
-  
+
   const series=data.map(d=>({x:new Date(d.time).getTime(),y:[d.open,d.high,d.low,d.close]}));
-  const annotations={yaxis:[],xaxis:[]};
+  const annotations={yaxis:[],xaxis:[],points:[]};
 
-  // Horizontal price lines
-  annotations.yaxis.push({
-    value:trade.entry,borderColor:'#4d7cff',strokeDashArray:5,
-    label:{text:'ENTRY ₹'+trade.entry,position:'right',offsetX:-4,style:{background:'#4d7cff',color:'#fff',fontSize:'9px',fontFamily:'Space Mono',padding:{top:3,bottom:3,left:6,right:6}}}
-  });
-  if(trade.sl)annotations.yaxis.push({
-    value:trade.sl,borderColor:'#ff4d6a',strokeDashArray:5,
-    label:{text:'SL ₹'+trade.sl,position:'right',offsetX:-4,style:{background:'#ff4d6a',color:'#fff',fontSize:'9px',fontFamily:'Space Mono',padding:{top:3,bottom:3,left:6,right:6}}}
-  });
-  if(trade.target)annotations.yaxis.push({
-    value:trade.target,borderColor:'#00e5a0',strokeDashArray:5,
-    label:{text:'TARGET ₹'+trade.target,position:'right',offsetX:-4,style:{background:'#00e5a0',color:'#000',fontSize:'9px',fontFamily:'Space Mono',padding:{top:3,bottom:3,left:6,right:6}}}
-  });
+  if(isDetail){
+    // ── Price level lines (dashed horizontal)
+    annotations.yaxis.push({
+      value:trade.entry,borderColor:'#4d7cff',strokeDashArray:4,borderWidth:1,
+      label:{text:'ENTRY  ₹'+trade.entry,position:'right',offsetX:0,
+        style:{background:'#4d7cff',color:'#fff',fontSize:'8px',fontFamily:'Space Mono',padding:{top:2,bottom:2,left:6,right:6}}}
+    });
+    if(trade.sl)annotations.yaxis.push({
+      value:trade.sl,borderColor:'#ff4d6a',strokeDashArray:4,borderWidth:1,
+      label:{text:'SL  ₹'+trade.sl,position:'right',offsetX:0,
+        style:{background:'#ff4d6a',color:'#fff',fontSize:'8px',fontFamily:'Space Mono',padding:{top:2,bottom:2,left:6,right:6}}}
+    });
+    if(trade.target)annotations.yaxis.push({
+      value:trade.target,borderColor:'#00e5a0',strokeDashArray:4,borderWidth:1,
+      label:{text:'TARGET  ₹'+trade.target,position:'right',offsetX:0,
+        style:{background:'#00e5a0',color:'#000',fontSize:'8px',fontFamily:'Space Mono',padding:{top:2,bottom:2,left:6,right:6}}}
+    });
 
-  // Entry & exit: tiny bottom label, NO vertical line (borderWidth:0)
-  if(trade.date){
-    annotations.xaxis.push({
-      x:new Date(trade.date).getTime(),
-      borderColor:'transparent',borderWidth:0,strokeDashArray:0,
-      label:{text:'▲ B',orientation:'horizontal',position:'bottom',offsetY:-4,
-        style:{background:'#4d7cff',color:'#fff',fontSize:'8px',fontFamily:'Space Mono',
-          padding:{top:2,bottom:2,left:5,right:5}}}
-    });
+    // ── Point markers: upward triangle at entry candle low, downward at exit candle high
+    const entryCandle=data.find(d=>d.time===trade.date)||data.reduce((best,d)=>{
+      return Math.abs(new Date(d.time)-new Date(trade.date))<Math.abs(new Date(best.time)-new Date(trade.date))?d:best;
+    },data[0]);
+
+    if(entryCandle){
+      annotations.points.push({
+        x:new Date(entryCandle.time).getTime(),
+        y:entryCandle.low,
+        yAxisIndex:0,
+        marker:{size:6,fillColor:'#4d7cff',strokeColor:'#fff',strokeWidth:1.5,shape:'triangle',offsetY:8},
+        label:{text:'B',borderColor:'transparent',borderWidth:0,
+          style:{background:'#4d7cff',color:'#fff',fontSize:'8px',fontFamily:'Space Mono',padding:{top:1,bottom:1,left:4,right:4}},
+          offsetY:26,offsetX:0}
+      });
+    }
+
+    if(trade.status==='closed'&&trade.exitDate){
+      const exitCandle=data.find(d=>d.time===trade.exitDate)||data.reduce((best,d)=>{
+        return Math.abs(new Date(d.time)-new Date(trade.exitDate))<Math.abs(new Date(best.time)-new Date(trade.exitDate))?d:best;
+      },data[0]);
+      const exitPnl=((trade.exitPrice||trade.cmp)-trade.entry)*trade.qty;
+      const exitColor=exitPnl>=0?'#00e5a0':'#ff4d6a';
+      if(exitCandle){
+        annotations.points.push({
+          x:new Date(exitCandle.time).getTime(),
+          y:exitCandle.high,
+          yAxisIndex:0,
+          marker:{size:6,fillColor:exitColor,strokeColor:'#fff',strokeWidth:1.5,shape:'triangle',offsetY:-8,cssClass:'exit-marker'},
+          label:{text:'S',borderColor:'transparent',borderWidth:0,
+            style:{background:exitColor,color:exitPnl>=0?'#000':'#fff',fontSize:'8px',fontFamily:'Space Mono',padding:{top:1,bottom:1,left:4,right:4}},
+            offsetY:-24,offsetX:0}
+        });
+      }
+    }
   }
-  if(trade.status==='closed'&&trade.exitDate){
-    const exitPnl=((trade.exitPrice||trade.cmp)-trade.entry)*trade.qty;
-    annotations.xaxis.push({
-      x:new Date(trade.exitDate).getTime(),
-      borderColor:'transparent',borderWidth:0,strokeDashArray:0,
-      label:{text:'▼ S',orientation:'horizontal',position:'bottom',offsetY:-4,
-        style:{background:exitPnl>=0?'#00e5a0':'#ff4d6a',color:exitPnl>=0?'#000':'#fff',fontSize:'8px',fontFamily:'Space Mono',
-          padding:{top:2,bottom:2,left:5,right:5}}}
-    });
-  }
-  
+
   const opts={
     series:[{data:series}],
     chart:{
@@ -971,12 +995,16 @@ function drawCandleChart(containerId,trade,isDetail=false){
       background:'transparent',
       toolbar:{show:isDetail,tools:{download:false,selection:true,zoom:true,zoomin:true,zoomout:true,pan:true,reset:true}},
       animations:{enabled:false},
-      sparkline:{enabled:false},
-      parentHeightOffset:0
+      sparkline:{enabled:!isDetail},
+      parentHeightOffset:0,
+      events:{
+        mounted:(ctx)=>{ if(isDetail) styleExitMarker(ctx); },
+        updated:(ctx)=>{ if(isDetail) styleExitMarker(ctx); }
+      }
     },
     theme:{mode:'dark'},
     plotOptions:{candlestick:{colors:{upward:'#00e5a0',downward:'#ff4d6a'},wick:{useFillColor:true}}},
-    annotations:isDetail?annotations:{yaxis:[]},
+    annotations:isDetail?annotations:{},
     xaxis:{
       type:'datetime',
       labels:{show:isDetail,style:{colors:'#454d75',fontFamily:'Space Mono',fontSize:'9px'}},
@@ -985,34 +1013,50 @@ function drawCandleChart(containerId,trade,isDetail=false){
     yaxis:{
       show:isDetail,
       labels:{style:{colors:'#454d75',fontFamily:'Space Mono',fontSize:'9px'},formatter:v=>v?'₹'+v.toFixed(0):''},
-      opposite:false
     },
-    grid:{show:isDetail,borderColor:'rgba(77,124,255,0.06)',strokeDashArray:4,padding:isDetail?{top:10,right:80,bottom:0,left:10}:{top:0,right:0,bottom:0,left:0}},
+    grid:{show:isDetail,borderColor:'rgba(77,124,255,0.05)',strokeDashArray:4,
+      padding:isDetail?{top:8,right:90,bottom:8,left:4}:{top:0,right:0,bottom:0,left:0}},
     tooltip:{
       theme:'dark',
       x:{format:'dd MMM yy'},
-      y:{formatter:v=>v?'₹'+v.toFixed(2):''},
-      custom:isDetail?function({seriesIndex,dataPointIndex,w}){
+      custom:isDetail?function({dataPointIndex,w}){
         const o=w.globals.seriesCandleO[0][dataPointIndex];
         const h=w.globals.seriesCandleH[0][dataPointIndex];
         const l=w.globals.seriesCandleL[0][dataPointIndex];
         const c=w.globals.seriesCandleC[0][dataPointIndex];
         if(o==null)return'';
         const clr=c>=o?'#00e5a0':'#ff4d6a';
-        return`<div style="padding:10px 14px;font-family:'Space Mono',monospace;font-size:11px;background:#111527;border:1px solid rgba(100,120,255,0.18);">
-          <div style="color:${clr};font-weight:700;margin-bottom:6px;">${c>=o?'▲ Bullish':'▼ Bearish'}</div>
-          <div style="color:#8b96c8;">Open  <span style="color:#e2e8ff;float:right;margin-left:20px;">₹${o.toFixed(2)}</span></div>
-          <div style="color:#8b96c8;">High  <span style="color:#00e5a0;float:right;">₹${h.toFixed(2)}</span></div>
-          <div style="color:#8b96c8;">Low   <span style="color:#ff4d6a;float:right;">₹${l.toFixed(2)}</span></div>
-          <div style="color:#8b96c8;">Close <span style="color:${clr};float:right;">₹${c.toFixed(2)}</span></div>
+        const chg=((c-o)/o*100).toFixed(2);
+        return`<div style="padding:10px 14px;font-family:'Space Mono',monospace;font-size:11px;background:#0c0f1a;border:1px solid rgba(77,124,255,0.2);min-width:160px;">
+          <div style="color:${clr};font-weight:700;margin-bottom:8px;font-size:10px;">${c>=o?'▲':'▼'} ${chg}%</div>
+          <div style="display:grid;grid-template-columns:auto auto;gap:3px 16px;color:#8b96c8;">
+            <span>Open</span><span style="color:#e2e8ff;text-align:right;">₹${o.toFixed(2)}</span>
+            <span>High</span><span style="color:#00e5a0;text-align:right;">₹${h.toFixed(2)}</span>
+            <span>Low</span><span style="color:#ff4d6a;text-align:right;">₹${l.toFixed(2)}</span>
+            <span>Close</span><span style="color:${clr};text-align:right;">₹${c.toFixed(2)}</span>
+          </div>
         </div>`;
       }:undefined
     }
   };
+
   try{
     const chart=new ApexCharts(el,opts);
     chart.render();
     chartInstances[containerId]=chart;
+  }catch(e){console.warn('Chart error',e);}
+}
+
+// Flip the exit marker triangle to point downward via CSS transform
+function styleExitMarker(ctx){
+  try{
+    const exitMarkers=ctx.el.querySelectorAll('.exit-marker');
+    exitMarkers.forEach(m=>{
+      const use=m.querySelector('use')||m;
+      use.style.transform='rotate(180deg)';
+      use.style.transformBox='fill-box';
+      use.style.transformOrigin='center';
+    });
   }catch(e){}
 }
 
