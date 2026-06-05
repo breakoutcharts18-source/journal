@@ -49,6 +49,9 @@ body::after{content:'';position:fixed;inset:0;background:radial-gradient(ellipse
 .btn-cyan{background:var(--cyan-dim);border-color:rgba(0,212,255,0.2);color:var(--cyan);}
 .btn-ai{background:linear-gradient(135deg,rgba(180,109,255,0.15),rgba(77,124,255,0.15));border-color:rgba(180,109,255,0.35);color:var(--purple);font-weight:600;}
 .btn-ai:hover{background:linear-gradient(135deg,rgba(180,109,255,0.25),rgba(77,124,255,0.25));box-shadow:0 0 20px rgba(180,109,255,0.2);}
+/* Tax button style */
+.btn-tax{background:linear-gradient(135deg,rgba(255,179,64,0.12),rgba(255,87,34,0.1));border-color:rgba(255,179,64,0.35);color:var(--amber);font-weight:600;}
+.btn-tax:hover{background:linear-gradient(135deg,rgba(255,179,64,0.22),rgba(255,87,34,0.18));box-shadow:0 0 20px rgba(255,179,64,0.2);}
 .main{padding:20px 24px;max-width:1560px;margin:0 auto;position:relative;z-index:1;}
 @media(max-width:1200px){.topbar{gap:6px;padding:0 14px;}.logo-sub{display:none;}.btn{padding:5px 9px;font-size:11px;}}
 @media(max-width:900px){.live-pulse span:not(.dot){display:none;}.live-pulse{padding:4px 6px;}}
@@ -109,11 +112,11 @@ select.nano{background:var(--bg3);border:1px solid var(--border2);border-radius:
 .badge-safe{background:var(--green-dim);color:var(--green);border:1px solid rgba(0,229,160,0.2);}
 .badge-risk{background:var(--red-dim);color:var(--red);border:1px solid rgba(255,77,106,0.2);}
 .badge-tag{background:var(--bg3);color:var(--text3);border:1px solid var(--border);}
+.badge-stcg{background:rgba(255,179,64,0.12);color:var(--amber);border:1px solid rgba(255,179,64,0.25);}
+.badge-ltcg{background:rgba(0,212,255,0.08);color:var(--cyan);border:1px solid rgba(0,212,255,0.2);}
 .card-pct{font-family:var(--display);font-size:22px;font-weight:800;line-height:1;margin-bottom:2px;}
 .card-pnl{font-family:var(--mono);font-size:10px;color:var(--text3);}
 .chart-wrap{height:100px;margin:10px 0;}
-
-/* ── CARD FOOTER: R:R BADGE BETWEEN ENTRY AND EXIT ── */
 .card-footer{display:flex;align-items:stretch;border-top:1px solid var(--border);padding-top:10px;margin-top:2px;gap:0;}
 .price-col{display:flex;flex-direction:column;gap:2px;flex:1;}
 .price-label{font-family:var(--mono);font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;}
@@ -125,7 +128,6 @@ select.nano{background:var(--bg3);border:1px solid var(--border2);border-radius:
 .rr-badge-label{font-family:var(--mono);font-size:8px;color:var(--text3);letter-spacing:0.06em;text-transform:uppercase;}
 .rr-badge-val{font-family:var(--mono);font-size:12px;font-weight:700;}
 .rr-great{color:var(--green);}.rr-good{color:var(--amber);}.rr-bad{color:var(--red);}
-
 .risk-meter{height:3px;background:var(--border);border-radius:2px;margin-top:6px;overflow:hidden;}
 .risk-fill{height:100%;border-radius:2px;transition:width 0.5s;}
 .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:300;align-items:center;justify-content:center;backdrop-filter:blur(8px);}
@@ -149,8 +151,6 @@ select.nano{background:var(--bg3);border:1px solid var(--border2);border-radius:
 .ticker-test-row{display:flex;gap:8px;align-items:flex-end;}
 .ticker-test-row input{flex:1;}
 .ticker-result{font-family:var(--mono);font-size:11px;padding:3px 0;min-height:18px;}
-
-/* ── POSITION SIZER INBUILT IN NEW TRADE FORM ── */
 .sizer-box{grid-column:1/-1;background:var(--bg3);border:1px solid rgba(77,124,255,0.22);border-radius:var(--r);padding:14px 16px;margin-top:4px;}
 .sizer-box-title{font-family:var(--mono);font-size:9px;color:var(--blue);font-weight:700;letter-spacing:.12em;text-transform:uppercase;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;}
 .sizer-inputs{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
@@ -164,7 +164,6 @@ select.nano{background:var(--bg3);border:1px solid var(--border2);border-radius:
 .sizer-rr-bar-fill{height:100%;border-radius:3px;transition:width .3s,background .3s;}
 .sizer-rr-val{font-family:var(--mono);font-size:14px;font-weight:700;min-width:44px;text-align:right;}
 .auto-fill-hint{font-family:var(--mono);font-size:9px;color:var(--text3);margin-top:4px;font-style:italic;}
-
 .detail-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:300;align-items:center;justify-content:center;backdrop-filter:blur(8px);padding:16px;}
 .detail-overlay.open{display:flex;}
 .detail-panel{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--rl);padding:24px 28px;width:880px;max-width:96vw;max-height:94vh;overflow-y:auto;pointer-events:auto;position:relative;display:flex;flex-direction:column;gap:0;}
@@ -187,27 +186,13 @@ select.nano{background:var(--bg3);border:1px solid var(--border2);border-radius:
 .ai-loading .dots span:nth-child(2){animation-delay:0.2s;}
 .ai-loading .dots span:nth-child(3){animation-delay:0.4s;}
 @keyframes blink{0%,80%,100%{opacity:0;}40%{opacity:1;}}
-.analytics-tabs{display:flex;gap:4px;margin-bottom:20px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:3px;width:fit-content;}
-.analytics-tab{padding:6px 18px;border-radius:7px;font-family:var(--mono);font-size:11px;cursor:pointer;color:var(--text3);background:transparent;border:none;font-weight:700;transition:all 0.15s;letter-spacing:.05em;}
-.analytics-tab.active{background:var(--bg4);color:var(--text);border:1px solid var(--border2);}
 .stat-grid-2{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:14px 0;}
-.analytics-chart{height:300px;margin:10px 0;}
-.setup-table{width:100%;border-collapse:collapse;font-size:11px;font-family:var(--mono);}
-.setup-table th{text-align:left;color:var(--text3);font-weight:700;padding:8px 10px;border-bottom:1px solid var(--border);letter-spacing:.06em;font-size:9px;text-transform:uppercase;}
-.setup-table td{padding:8px 10px;border-bottom:1px solid var(--border);}
-.setup-table tr:hover td{background:var(--bg3);}
 .risk-panel{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin:12px 0;}
 .risk-bar-row{display:flex;align-items:center;gap:12px;margin:8px 0;}
 .risk-bar-label{font-family:var(--mono);font-size:10px;color:var(--text2);width:120px;flex-shrink:0;}
 .risk-bar-track{flex:1;height:6px;background:var(--bg4);border-radius:3px;overflow:hidden;}
 .risk-bar-fill{height:100%;border-radius:3px;transition:width 0.6s;}
 .risk-bar-val{font-family:var(--mono);font-size:10px;width:60px;text-align:right;}
-.watchlist-item{display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);margin-bottom:6px;cursor:pointer;transition:border-color 0.15s;}
-.watchlist-item:hover{border-color:var(--border2);}
-.wl-ticker{font-family:var(--mono);font-size:12px;font-weight:700;width:90px;}
-.wl-price{font-family:var(--mono);font-size:13px;margin-left:auto;}
-.wl-chg{font-family:var(--mono);font-size:11px;width:70px;text-align:right;}
-.wl-alert{width:20px;text-align:center;font-size:12px;}
 .toast{position:fixed;bottom:28px;right:28px;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);padding:13px 20px;font-size:12px;font-family:var(--mono);z-index:999;opacity:0;transform:translateY(16px);transition:all 0.3s;max-width:340px;}
 .toast.show{opacity:1;transform:translateY(0);}
 .toast.success{border-color:rgba(0,229,160,0.35);color:var(--green);}
@@ -220,20 +205,51 @@ select.nano{background:var(--bg3);border:1px solid var(--border2);border-radius:
 .empty-sub{font-size:12px;font-family:var(--mono);}
 .apexcharts-tooltip{background:var(--bg3)!important;border:1px solid var(--border2)!important;box-shadow:0 8px 24px rgba(0,0,0,0.5)!important;color:#fff;font-family:var(--mono)!important;}
 .apexcharts-tooltip-title{background:var(--bg4)!important;border-bottom:1px solid var(--border)!important;font-family:var(--display)!important;font-weight:700!important;padding:6px 12px!important;}
-.apexcharts-point-annotation-marker.exit-marker{transform:rotate(180deg);transform-box:fill-box;transform-origin:center;}
-.apexcharts-point-annotations text{font-family:'Space Mono',monospace!important;font-size:8px!important;font-weight:700!important;}
 select option{background:var(--bg3);}
 .section-header{display:flex;align-items:center;gap:12px;margin-bottom:12px;}
 .section-header h3{font-family:var(--display);font-size:13px;font-weight:700;color:var(--text2);letter-spacing:0.05em;}
 .section-line{flex:1;height:1px;background:var(--border);}
-.wl-add-row{display:flex;gap:8px;margin-bottom:14px;}
-.wl-add-row input{flex:1;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);padding:8px 12px;color:var(--text);font-family:var(--mono);font-size:12px;outline:none;}
-.wl-add-row input:focus{border-color:var(--blue);}
-.heatmap-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:6px;margin-top:12px;}
-.heatmap-cell{border-radius:8px;padding:10px 8px;text-align:center;cursor:pointer;transition:transform 0.15s;}
-.heatmap-cell:hover{transform:scale(1.04);}
-.heatmap-cell .hm-ticker{font-family:var(--mono);font-size:10px;font-weight:700;margin-bottom:4px;}
-.heatmap-cell .hm-pct{font-family:var(--mono);font-size:13px;font-weight:700;}
+
+/* ── TAX CALCULATOR STYLES ── */
+.tax-modal{width:1000px;}
+.tax-modal::before{background:linear-gradient(90deg,transparent,var(--amber),transparent);}
+.tax-summary-hero{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:20px;}
+.tax-hero-card{border-radius:var(--rl);padding:18px 16px;position:relative;overflow:hidden;}
+.tax-hero-card.stcg-card{background:linear-gradient(135deg,rgba(255,179,64,0.12),rgba(255,179,64,0.04));border:1px solid rgba(255,179,64,0.3);}
+.tax-hero-card.ltcg-card{background:linear-gradient(135deg,rgba(0,212,255,0.08),rgba(0,212,255,0.02));border:1px solid rgba(0,212,255,0.25);}
+.tax-hero-card.stt-card{background:linear-gradient(135deg,rgba(180,109,255,0.1),rgba(180,109,255,0.03));border:1px solid rgba(180,109,255,0.25);}
+.tax-hero-card.tax-card{background:linear-gradient(135deg,rgba(255,77,106,0.1),rgba(255,77,106,0.03));border:1px solid rgba(255,77,106,0.3);}
+.tax-hero-card.takehome-card{background:linear-gradient(135deg,rgba(0,229,160,0.1),rgba(0,229,160,0.03));border:1px solid rgba(0,229,160,0.3);}
+.tax-hero-label{font-family:var(--mono);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;margin-bottom:10px;}
+.tax-hero-val{font-family:var(--display);font-size:22px;font-weight:800;line-height:1;}
+.tax-hero-sub{font-family:var(--mono);font-size:9px;margin-top:6px;opacity:0.7;}
+.tax-breakdown-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;}
+.tax-section{background:var(--bg3);border:1px solid var(--border);border-radius:var(--rl);padding:18px;}
+.tax-section-title{font-family:var(--mono);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.tax-section-title .dot{width:7px;height:7px;border-radius:50%;}
+.tax-calc-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);}
+.tax-calc-row:last-child{border-bottom:none;}
+.tax-calc-label{font-family:var(--mono);font-size:11px;color:var(--text2);}
+.tax-calc-val{font-family:var(--mono);font-size:12px;font-weight:700;}
+.tax-calc-row.total{background:rgba(255,255,255,0.02);margin:4px -4px 0;padding:9px 4px;border-radius:6px;}
+.tax-calc-row.total .tax-calc-label{color:var(--text);font-weight:700;}
+.tax-trades-table{width:100%;border-collapse:collapse;font-size:11px;font-family:var(--mono);}
+.tax-trades-table th{text-align:left;color:var(--text3);font-weight:700;padding:8px 10px;border-bottom:1px solid var(--border);letter-spacing:.06em;font-size:9px;text-transform:uppercase;background:var(--bg4);}
+.tax-trades-table td{padding:8px 10px;border-bottom:1px solid var(--border);}
+.tax-trades-table tr:hover td{background:rgba(255,255,255,0.02);}
+.tax-trades-table .stcg-row td:first-child{border-left:2px solid var(--amber);}
+.tax-trades-table .ltcg-row td:first-child{border-left:2px solid var(--cyan);}
+.tax-note{background:rgba(77,124,255,0.05);border:1px solid rgba(77,124,255,0.15);border-radius:var(--r);padding:12px 14px;font-size:11px;font-family:var(--mono);color:var(--text3);line-height:1.7;margin-top:14px;}
+.tax-note strong{color:var(--blue);}
+.tax-rate-inputs{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:14px;}
+.tax-rate-label{font-family:var(--mono);font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px;display:block;}
+.tax-rate-input{background:var(--bg4);border:1px solid var(--border2);border-radius:8px;padding:8px 10px;color:var(--text);font-family:var(--mono);font-size:13px;outline:none;width:100%;text-align:center;font-weight:700;}
+.tax-rate-input:focus{border-color:var(--amber);}
+.takehome-banner{background:linear-gradient(135deg,rgba(0,229,160,0.08),rgba(0,229,160,0.02));border:1px solid rgba(0,229,160,0.25);border-radius:var(--rl);padding:20px 24px;display:flex;align-items:center;justify-content:space-between;margin-top:16px;}
+.takehome-label{font-family:var(--mono);font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.12em;margin-bottom:6px;}
+.takehome-val{font-family:var(--display);font-size:32px;font-weight:800;color:var(--green);}
+.takehome-breakdown{font-family:var(--mono);font-size:10px;color:var(--text3);text-align:right;}
+.takehome-breakdown span{display:block;margin-top:3px;}
 </style>
 </head>
 <body>
@@ -247,8 +263,7 @@ select option{background:var(--bg3);}
   <div class="live-pulse"><div class="dot"></div>LIVE</div>
   <div class="topbar-right">
     <button class="btn btn-ai" onclick="openAICoach()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10H12V2z"/><circle cx="12" cy="12" r="3"/></svg>AI Coach</button>
-    <button class="btn btn-cyan" onclick="openWatchlist()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>Watchlist</button>
-    <button class="btn btn-purple" onclick="openAnalytics()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>Analytics</button>
+    <button class="btn btn-tax" onclick="openTaxCalc()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>Tax P&amp;L</button>
     <button class="btn btn-amber" onclick="openRisk()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Risk</button>
     <button class="btn btn-amber" id="fetchBtn" onclick="fetchAllPrices()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>Fetch</button>
     <button class="btn btn-green" onclick="exportCSV()">↑ CSV</button>
@@ -293,31 +308,66 @@ select option{background:var(--bg3);}
   <div class="cards-grid" id="cardsGrid"></div>
 </div>
 
-<!-- ANALYTICS -->
-<div class="overlay" id="analyticsOverlay" onclick="closeAnalyticsBackdrop(event)">
-  <div class="modal" style="width:900px;">
-    <div class="modal-title">Performance Dashboard<button class="modal-close" onclick="closeAnalytics()">✕</button></div>
-    <div class="analytics-tabs">
-      <button class="analytics-tab active" id="tabCurve" onclick="switchAnalyticsTab('curve')">EQUITY CURVE</button>
-      <button class="analytics-tab" id="tabSetups" onclick="switchAnalyticsTab('setups')">SETUPS</button>
-      <button class="analytics-tab" id="tabHeatmap" onclick="switchAnalyticsTab('heatmap')">HEAT MAP</button>
-      <button class="analytics-tab" id="tabCalendar" onclick="switchAnalyticsTab('calendar')">CALENDAR</button>
-    </div>
-    <div id="viewCurve"><div id="advancedStatsGrid" class="stat-grid-2"></div><div class="analytics-chart" id="equityChart"></div></div>
-    <div id="viewSetups" style="display:none;">
-      <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px;">
-        <select class="sort-select" id="analyticsGroupSelect" onchange="renderSetupAnalytics()">
-          <option value="setupType">By Setup Type</option><option value="marketContext">By Market Context</option><option value="execution">By Execution Grade</option><option value="type">By Asset Type</option>
-        </select>
+<!-- TAX CALCULATOR MODAL -->
+<div class="overlay" id="taxOverlay" onclick="if(event.target.id==='taxOverlay')closeTaxCalc()">
+  <div class="modal tax-modal" style="width:1000px;">
+    <div class="modal-title">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,var(--amber),#ff6b35);display:flex;align-items:center;justify-content:center;font-size:15px;">₹</div>
+        <div>
+          <div>Capital Gains Tax Calculator</div>
+          <div style="font-family:var(--mono);font-size:10px;color:var(--text3);font-weight:400;margin-top:2px;">STCG · LTCG · STT · Net Take-Home · FY 2024-25</div>
+        </div>
       </div>
-      <table class="setup-table"><thead><tr><th id="analyticsGroupHeader">Setup Type</th><th>Trades</th><th>Win Rate</th><th>Prof. Factor</th><th>Avg RR</th><th>Total P&L</th></tr></thead><tbody id="setupTableBody"></tbody></table>
+      <button class="modal-close" onclick="closeTaxCalc()">✕</button>
     </div>
-    <div id="viewHeatmap" style="display:none;"><div class="heatmap-grid" id="heatmapGrid"></div></div>
-    <div id="viewCalendar" style="display:none;"><div id="calendarView"></div></div>
+
+    <!-- Editable Tax Rates -->
+    <div class="tax-rate-inputs">
+      <div>
+        <span class="tax-rate-label">STCG Tax Rate % <span style="color:var(--amber)">(held &lt; 12 months)</span></span>
+        <input class="tax-rate-input" id="stcgRate" type="number" value="20" min="0" max="100" step="0.5" oninput="renderTaxCalc()" />
+        <div style="font-family:var(--mono);font-size:9px;color:var(--text3);margin-top:4px;">Budget 2024: raised from 15% → 20%</div>
+      </div>
+      <div>
+        <span class="tax-rate-label">LTCG Tax Rate % <span style="color:var(--cyan)">(held ≥ 12 months)</span></span>
+        <input class="tax-rate-input" id="ltcgRate" type="number" value="12.5" min="0" max="100" step="0.5" oninput="renderTaxCalc()" />
+        <div style="font-family:var(--mono);font-size:9px;color:var(--text3);margin-top:4px;">Budget 2024: raised from 10% → 12.5%</div>
+      </div>
+      <div>
+        <span class="tax-rate-label">LTCG Exemption Limit (₹)</span>
+        <input class="tax-rate-input" id="ltcgExemption" type="number" value="125000" min="0" step="5000" oninput="renderTaxCalc()" />
+        <div style="font-family:var(--mono);font-size:9px;color:var(--text3);margin-top:4px;">Budget 2024: raised from ₹1L → ₹1.25L</div>
+      </div>
+    </div>
+
+    <!-- Summary Hero Cards -->
+    <div class="tax-summary-hero" id="taxHeroCards"></div>
+
+    <!-- Breakdown Grid -->
+    <div class="tax-breakdown-grid" id="taxBreakdownGrid"></div>
+
+    <!-- Per-Trade Table -->
+    <div class="section-header"><h3>TRADE-LEVEL BREAKDOWN</h3><div class="section-line"></div>
+      <select class="sort-select" id="taxTradeFilter" onchange="renderTaxCalc()" style="margin-left:8px;font-size:10px;padding:4px 8px;">
+        <option value="all">All Closed</option><option value="stcg">STCG Only</option><option value="ltcg">LTCG Only</option><option value="profit">Profits Only</option><option value="loss">Losses Only</option>
+      </select>
+    </div>
+    <div style="max-height:260px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--r);margin-bottom:14px;">
+      <table class="tax-trades-table"><thead><tr>
+        <th>Stock</th><th>Entry Date</th><th>Exit Date</th><th>Held</th><th>Type</th><th style="text-align:right">Qty</th><th style="text-align:right">Entry ₹</th><th style="text-align:right">Exit ₹</th><th style="text-align:right">Gross P&L</th><th style="text-align:right">STT</th><th style="text-align:right">Net P&L</th>
+      </tr></thead><tbody id="taxTradeBody"></tbody></table>
+    </div>
+
+    <!-- Take-Home Banner -->
+    <div class="takehome-banner" id="takehomeBanner"></div>
+
+    <!-- Disclaimer -->
+    <div class="tax-note" id="taxNote"></div>
   </div>
 </div>
 
-<!-- ADD/EDIT TRADE MODAL — with inbuilt Position Sizer -->
+<!-- ADD/EDIT TRADE MODAL -->
 <div class="overlay" id="tradeOverlay" onclick="closeModalBackdrop(event)">
   <div class="modal">
     <div class="modal-title"><span id="modalTitle">New Trade</span><button class="modal-close" onclick="closeModal()">✕</button></div>
@@ -332,10 +382,8 @@ select option{background:var(--bg3);}
       <div class="form-group"><label>Exchange</label><select id="fExchange"><option>NSE</option><option>BSE</option><option>NASDAQ</option><option>NYSE</option><option>F&O</option><option>Crypto</option></select></div>
       <div class="form-group"><label>Asset Type</label><select id="fType"><option>Equity</option><option>F&O Futures</option><option>F&O Options</option><option>ETF</option><option>Crypto</option><option>Currency</option></select></div>
       <div class="form-group"><label>Status</label><select id="fStatus"><option value="active">Active / Open</option><option value="closed">Closed</option></select></div>
-
       <div class="form-divider"></div>
       <div class="form-section-label">PRICE & SIZING</div>
-
       <div class="form-group"><label>Entry Price (₹)</label><input id="fEntry" type="number" step="0.01" placeholder="0.00" oninput="calcRR()" /></div>
       <div class="form-group">
         <label>Quantity / Lots <span id="qtyAutoHint" style="color:var(--green);font-size:9px;font-weight:700;display:none;">← auto-suggested</span></label>
@@ -345,8 +393,6 @@ select option{background:var(--bg3);}
       <div class="form-group"><label>Target (₹)</label><input id="fTarget" type="number" step="0.01" placeholder="0.00" oninput="calcRR()" /></div>
       <div class="form-group"><label>CMP / Current Price (₹)</label><input id="fCmp" type="number" step="0.01" placeholder="Auto-filled on fetch" /></div>
       <div class="form-group"><label>Exit Price (₹)</label><input id="fExitPrice" type="number" step="0.01" placeholder="Leave blank if open" /></div>
-
-      <!-- ══ POSITION SIZER — inbuilt, auto-suggests qty ══ -->
       <div class="sizer-box">
         <div class="sizer-box-title">
           <span>⬡ Position Sizer — Auto Qty Suggestion</span>
@@ -376,8 +422,6 @@ select option{background:var(--bg3);}
           <span class="sizer-rr-val" id="sizerRRVal">—</span>
         </div>
       </div>
-
-      <!-- legacy compact RR (shows once qty is set) -->
       <div class="form-group form-full">
         <div id="rrCalcBox" style="display:none;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);padding:12px;grid-template-columns:repeat(4,1fr);gap:10px;">
           <div><div class="price-label">Risk Amount</div><div id="rrRisk" class="price-val r" style="font-family:var(--mono);font-size:13px;">—</div></div>
@@ -386,13 +430,10 @@ select option{background:var(--bg3);}
           <div><div class="price-label">% at Risk</div><div id="rrPct" class="price-val a" style="font-family:var(--mono);font-size:13px;">—</div></div>
         </div>
       </div>
-
       <div class="form-group"><label>Entry Date</label><input id="fDate" type="date" /></div>
       <div class="form-group"><label>Exit Date</label><input id="fExitDate" type="date" /></div>
-
       <div class="form-divider"></div>
       <div class="form-section-label">TRADE METADATA & PSYCHOLOGY</div>
-
       <div class="form-group"><label>Setup Type</label><input id="fSetupType" placeholder="VCP, Breakout, Reversal..." list="setupSuggestions"/><datalist id="setupSuggestions"><option value="VCP Breakout"/><option value="Volume Breakout"/><option value="Trend Continuation"/><option value="Pullback Buy"/><option value="Reversal"/><option value="Gap & Go"/><option value="52W High Breakout"/><option value="Support Bounce"/><option value="IPO"/></datalist></div>
       <div class="form-group"><label>Market Context</label><input id="fMarketContext" placeholder="Trending, Choppy, Bear..." list="contextSuggestions"/><datalist id="contextSuggestions"><option value="Strong Bull"/><option value="Trending Up"/><option value="Sideways Chop"/><option value="Trending Down"/><option value="Strong Bear"/><option value="High VIX"/></datalist></div>
       <div class="form-group"><label>Execution Grade</label><select id="fExecution"><option value="">Ungraded</option><option value="A+ Perfect">A+ — Perfect</option><option value="A Good">A — Good</option><option value="B Slight Deviation">B — Slight Deviation</option><option value="C Late Entry">C — Late Entry</option><option value="D FOMO">D — FOMO / Rule Break</option></select></div>
@@ -469,19 +510,6 @@ select option{background:var(--bg3);}
   </div>
 </div>
 
-<!-- WATCHLIST -->
-<div class="overlay" id="watchlistOverlay" onclick="if(event.target.id==='watchlistOverlay')closeWatchlist()">
-  <div class="modal" style="width:640px;">
-    <div class="modal-title">Live Watchlist<button class="modal-close" onclick="closeWatchlist()">✕</button></div>
-    <div class="wl-add-row">
-      <input id="wlInput" placeholder="Add ticker (e.g. ZOMATO.NS, AAPL)" onkeydown="if(event.key==='Enter')addToWatchlist()"/>
-      <button class="btn btn-cyan" onclick="addToWatchlist()">+ Add</button>
-      <button class="btn btn-amber" onclick="fetchWatchlistPrices()">↻ Refresh All</button>
-    </div>
-    <div id="watchlistItems"></div>
-  </div>
-</div>
-
 <!-- ZERODHA IMPORT -->
 <div class="overlay" id="zerodhaOverlay" onclick="if(event.target.id==='zerodhaOverlay')closeZerodha()">
   <div class="modal" style="width:780px;">
@@ -549,16 +577,15 @@ select option{background:var(--bg3);}
 <script>
 const STORAGE_KEY='nexus_trade_v1';
 const PROXY='https://corsproxy.io/?url=';
-let trades=[],watchlist=[],currentFilter='active',editingId=null,detailId=null;
+let trades=[],currentFilter='active',editingId=null,detailId=null;
 let autoRefreshTimer=null,progressTimer=null,progressStart=null,progressDuration=0;
-let chartInstances={},equityChartInstance=null,coachHistory=[];
+let chartInstances={},coachHistory=[];
 
-function save(){localStorage.setItem(STORAGE_KEY,JSON.stringify({trades,watchlist}));}
+function save(){localStorage.setItem(STORAGE_KEY,JSON.stringify({trades}));}
 function load(){
-  try{const d=JSON.parse(localStorage.getItem(STORAGE_KEY))||{};trades=d.trades||[];watchlist=d.watchlist||[];}
-  catch{trades=[];watchlist=[];}
+  try{const d=JSON.parse(localStorage.getItem(STORAGE_KEY))||{};trades=d.trades||[];}
+  catch{trades=[];}
   if(!trades.length)loadDefaults();
-  if(!watchlist.length)watchlist=['NIFTY50.NS','BANKNIFTY.NS','AAPL','TSLA'];
 }
 function loadDefaults(){
   const d=(n)=>{const x=new Date();x.setDate(x.getDate()-n);return x.toISOString().split('T')[0];};
@@ -569,6 +596,7 @@ function loadDefaults(){
     {id:4,name:'HDFC Bank',ticker:'HDFCBANK.NS',exchange:'NSE',type:'Equity',entry:1620,cmp:1690,qty:15,sl:1590,target:1800,status:'active',date:d(20),setupType:'Support Bounce',marketContext:'Trending Up',execution:'B Slight Deviation',emotion:'Neutral',notes:'Bounced off 200 DMA with volume. Banking sector strength.'},
     {id:5,name:'Zomato',ticker:'ZOMATO.NS',exchange:'NSE',type:'Equity',entry:165,exitPrice:195,cmp:195,qty:100,sl:155,target:200,status:'closed',date:d(45),exitDate:d(20),setupType:'Gap & Go',marketContext:'Strong Bull',execution:'A+ Perfect',emotion:'Confident',notes:'Gapped up on earnings. Held for 25 days. Clean exit near target.'},
     {id:6,name:'IRFC',ticker:'IRFC.NS',exchange:'NSE',type:'Equity',entry:210,exitPrice:180,cmp:180,qty:50,sl:195,target:260,status:'closed',date:d(60),exitDate:d(30),setupType:'Trend Continuation',marketContext:'Sideways Chop',execution:'D FOMO',emotion:'Greedy',notes:'Stopped out. Lesson: trust the stop.'},
+    {id:7,name:'Asian Paints',ticker:'ASIANPAINT.NS',exchange:'NSE',type:'Equity',entry:2800,exitPrice:3250,cmp:3250,qty:8,sl:2700,target:3400,status:'closed',date:d(420),exitDate:d(30),setupType:'Trend Continuation',marketContext:'Strong Bull',execution:'A Good',emotion:'Patient / Disciplined',notes:'Long-term hold. Classic LTCG trade.'},
   ];save();
 }
 
@@ -579,6 +607,175 @@ const pnlVal=t=>(t.cmp-t.entry)*t.qty;
 const exitPnlVal=t=>((t.exitPrice||t.cmp)-t.entry)*t.qty;
 function holdDays(t){if(!t.date)return 0;const end=(t.status==='closed'&&t.exitDate)?new Date(t.exitDate):new Date();return Math.max(0,Math.floor((end-new Date(t.date))/86400000));}
 function rrRatio(t){if(!t.sl||!t.target||t.sl>=t.entry)return null;return((t.target-t.entry)/(t.entry-t.sl)).toFixed(1);}
+
+/* ══ TAX CALCULATION ENGINE ══ */
+function isEquityDelivery(t){
+  const tp=(t.type||'').toLowerCase();
+  return tp.includes('equity')||tp.includes('etf');
+}
+
+/**
+ * Classify a closed trade as STCG or LTCG.
+ * LTCG = equity delivery held ≥ 365 days (Indian tax law uses 12 months = 365 days for listed equity)
+ */
+function taxClassifyTrade(t){
+  if(t.status!=='closed')return null;
+  const gross=exitPnlVal(t);
+  const days=holdDays(t);
+  const isEq=isEquityDelivery(t);
+  // STT: 0.1% on sell-side value for equity delivery
+  const stt=isEq?+(t.qty*(t.exitPrice||t.cmp)*0.001).toFixed(2):0;
+  const isLTCG=isEq&&days>=365;
+  const type=isLTCG?'LTCG':'STCG';
+  return{trade:t,gross,stt,net:gross-stt,days,type,isEq};
+}
+
+function computeTaxSummary(){
+  const stcgRate=parseFloat(document.getElementById('stcgRate')?.value||20)/100;
+  const ltcgRate=parseFloat(document.getElementById('ltcgRate')?.value||12.5)/100;
+  const ltcgExemption=parseFloat(document.getElementById('ltcgExemption')?.value||125000);
+
+  const classified=trades.filter(t=>t.status==='closed').map(taxClassifyTrade).filter(Boolean);
+
+  const stcg=classified.filter(c=>c.type==='STCG');
+  const ltcg=classified.filter(c=>c.type==='LTCG');
+
+  const stcgGrossProfit=stcg.filter(c=>c.gross>0).reduce((a,c)=>a+c.gross,0);
+  const stcgGrossLoss=stcg.filter(c=>c.gross<0).reduce((a,c)=>a+c.gross,0);
+  const stcgNet=stcgGrossProfit+stcgGrossLoss; // can be negative
+  const stcgSTT=stcg.reduce((a,c)=>a+c.stt,0);
+
+  const ltcgGrossProfit=ltcg.filter(c=>c.gross>0).reduce((a,c)=>a+c.gross,0);
+  const ltcgGrossLoss=ltcg.filter(c=>c.gross<0).reduce((a,c)=>a+c.gross,0);
+  const ltcgNet=ltcgGrossProfit+ltcgGrossLoss;
+  const ltcgSTT=ltcg.reduce((a,c)=>a+c.stt,0);
+
+  const totalSTT=stcgSTT+ltcgSTT;
+
+  // Taxable amounts (losses reduce taxable gain; can't go below 0 for tax purposes in basic calc)
+  const stcgTaxable=Math.max(0,stcgNet);
+  const ltcgAfterExemption=Math.max(0,ltcgNet-ltcgExemption);
+
+  const stcgTaxAmt=stcgTaxable*stcgRate;
+  const ltcgTaxAmt=ltcgAfterExemption*ltcgRate;
+  const totalTax=stcgTaxAmt+ltcgTaxAmt;
+
+  const totalGross=stcgNet+ltcgNet;
+  const takeHome=totalGross-totalTax-totalSTT;
+
+  return{
+    classified,stcg,ltcg,
+    stcgGrossProfit,stcgGrossLoss,stcgNet,stcgSTT,stcgTaxable,stcgTaxAmt,
+    ltcgGrossProfit,ltcgGrossLoss,ltcgNet,ltcgSTT,ltcgAfterExemption,ltcgTaxAmt,ltcgExemption,
+    totalSTT,totalTax,totalGross,takeHome,
+    stcgRate,ltcgRate
+  };
+}
+
+function openTaxCalc(){
+  document.getElementById('taxOverlay').classList.add('open');
+  renderTaxCalc();
+}
+function closeTaxCalc(){document.getElementById('taxOverlay').classList.remove('open');}
+
+function renderTaxCalc(){
+  const s=computeTaxSummary();
+
+  // Hero cards
+  document.getElementById('taxHeroCards').innerHTML=`
+    <div class="tax-hero-card stcg-card">
+      <div class="tax-hero-label" style="color:var(--amber);">STCG Net Gain</div>
+      <div class="tax-hero-val" style="color:${s.stcgNet>=0?'var(--amber)':'var(--red)'};">${s.stcgNet>=0?'+':''}${fmtINR(s.stcgNet)}</div>
+      <div class="tax-hero-sub" style="color:var(--amber);">${s.stcg.length} trades · held &lt;12m</div>
+    </div>
+    <div class="tax-hero-card ltcg-card">
+      <div class="tax-hero-label" style="color:var(--cyan);">LTCG Net Gain</div>
+      <div class="tax-hero-val" style="color:${s.ltcgNet>=0?'var(--cyan)':'var(--red)'};">${s.ltcgNet>=0?'+':''}${fmtINR(s.ltcgNet)}</div>
+      <div class="tax-hero-sub" style="color:var(--cyan);">${s.ltcg.length} trades · held ≥12m</div>
+    </div>
+    <div class="tax-hero-card stt-card">
+      <div class="tax-hero-label" style="color:var(--purple);">Total STT Paid</div>
+      <div class="tax-hero-val" style="color:var(--purple);">-${fmtINR(s.totalSTT)}</div>
+      <div class="tax-hero-sub" style="color:var(--purple);">0.1% on exit value (equity)</div>
+    </div>
+    <div class="tax-hero-card tax-card">
+      <div class="tax-hero-label" style="color:var(--red);">Est. Tax Liability</div>
+      <div class="tax-hero-val" style="color:var(--red);">-${fmtINR(s.totalTax)}</div>
+      <div class="tax-hero-sub" style="color:var(--red);">STCG ${(s.stcgRate*100).toFixed(1)}% + LTCG ${(s.ltcgRate*100).toFixed(1)}%</div>
+    </div>
+    <div class="tax-hero-card takehome-card">
+      <div class="tax-hero-label" style="color:var(--green);">Net Take-Home</div>
+      <div class="tax-hero-val" style="color:${s.takeHome>=0?'var(--green)':'var(--red)'};">${s.takeHome>=0?'+':''}${fmtINR(s.takeHome)}</div>
+      <div class="tax-hero-sub" style="color:var(--green);">After tax + STT</div>
+    </div>`;
+
+  // Breakdown grid
+  document.getElementById('taxBreakdownGrid').innerHTML=`
+    <div class="tax-section">
+      <div class="tax-section-title"><div class="dot" style="background:var(--amber);"></div><span style="color:var(--amber);">STCG COMPUTATION</span><span style="color:var(--text3);font-weight:400;font-size:9px;">(Held &lt; 12 months)</span></div>
+      <div class="tax-calc-row"><div class="tax-calc-label">Gross Profits (winning trades)</div><div class="tax-calc-val g">+${fmtINR(s.stcgGrossProfit)}</div></div>
+      <div class="tax-calc-row"><div class="tax-calc-label">Gross Losses (losing trades)</div><div class="tax-calc-val r">${fmtINR(s.stcgGrossLoss)}</div></div>
+      <div class="tax-calc-row"><div class="tax-calc-label">Net STCG</div><div class="tax-calc-val" style="color:${s.stcgNet>=0?'var(--amber)':'var(--red)'};">${s.stcgNet>=0?'+':''}${fmtINR(s.stcgNet)}</div></div>
+      <div class="tax-calc-row"><div class="tax-calc-label">Exemption (STCG)</div><div class="tax-calc-val" style="color:var(--text3);">None</div></div>
+      <div class="tax-calc-row"><div class="tax-calc-label">Taxable STCG</div><div class="tax-calc-val a">${fmtINR(s.stcgTaxable)}</div></div>
+      <div class="tax-calc-row"><div class="tax-calc-label">STT on exits</div><div class="tax-calc-val p">-${fmtINR(s.stcgSTT)}</div></div>
+      <div class="tax-calc-row total"><div class="tax-calc-label">STCG Tax @ ${(s.stcgRate*100).toFixed(1)}%</div><div class="tax-calc-val r">-${fmtINR(s.stcgTaxAmt)}</div></div>
+    </div>
+    <div class="tax-section">
+      <div class="tax-section-title"><div class="dot" style="background:var(--cyan);"></div><span style="color:var(--cyan);">LTCG COMPUTATION</span><span style="color:var(--text3);font-weight:400;font-size:9px;">(Held ≥ 12 months)</span></div>
+      <div class="tax-calc-row"><div class="tax-calc-label">Gross Profits (winning trades)</div><div class="tax-calc-val g">+${fmtINR(s.ltcgGrossProfit)}</div></div>
+      <div class="tax-calc-row"><div class="tax-calc-label">Gross Losses (losing trades)</div><div class="tax-calc-val r">${fmtINR(s.ltcgGrossLoss)}</div></div>
+      <div class="tax-calc-row"><div class="tax-calc-label">Net LTCG</div><div class="tax-calc-val" style="color:${s.ltcgNet>=0?'var(--cyan)':'var(--red)'};">${s.ltcgNet>=0?'+':''}${fmtINR(s.ltcgNet)}</div></div>
+      <div class="tax-calc-row"><div class="tax-calc-label">Basic Exemption (₹1.25L)</div><div class="tax-calc-val g">-${fmtINR(Math.min(s.ltcgNet>0?s.ltcgNet:0,s.ltcgExemption))}</div></div>
+      <div class="tax-calc-row"><div class="tax-calc-label">Taxable LTCG</div><div class="tax-calc-val" style="color:var(--cyan);">${fmtINR(s.ltcgAfterExemption)}</div></div>
+      <div class="tax-calc-row"><div class="tax-calc-label">STT on exits</div><div class="tax-calc-val p">-${fmtINR(s.ltcgSTT)}</div></div>
+      <div class="tax-calc-row total"><div class="tax-calc-label">LTCG Tax @ ${(s.ltcgRate*100).toFixed(1)}%</div><div class="tax-calc-val r">-${fmtINR(s.ltcgTaxAmt)}</div></div>
+    </div>`;
+
+  // Per-trade table
+  const filterVal=document.getElementById('taxTradeFilter')?.value||'all';
+  let rows=s.classified;
+  if(filterVal==='stcg')rows=rows.filter(c=>c.type==='STCG');
+  else if(filterVal==='ltcg')rows=rows.filter(c=>c.type==='LTCG');
+  else if(filterVal==='profit')rows=rows.filter(c=>c.gross>0);
+  else if(filterVal==='loss')rows=rows.filter(c=>c.gross<0);
+  rows.sort((a,b)=>new Date(a.trade.date)-new Date(b.trade.date));
+
+  document.getElementById('taxTradeBody').innerHTML=rows.length?rows.map(c=>{
+    const rowCls=c.type==='LTCG'?'ltcg-row':'stcg-row';
+    const typeColor=c.type==='LTCG'?'var(--cyan)':'var(--amber)';
+    return`<tr class="${rowCls}">
+      <td style="color:var(--text);font-weight:600;">${c.trade.name}<div style="font-family:var(--mono);font-size:9px;color:var(--text3);">${c.trade.ticker||''}</div></td>
+      <td>${c.trade.date||'—'}</td>
+      <td>${c.trade.exitDate||'—'}</td>
+      <td style="color:${c.type==='LTCG'?'var(--cyan)':'var(--amber)'};">${c.days}d</td>
+      <td><span class="badge ${c.type==='LTCG'?'badge-ltcg':'badge-stcg'}">${c.type}</span></td>
+      <td style="text-align:right;">${c.trade.qty}</td>
+      <td style="text-align:right;">₹${c.trade.entry.toFixed(2)}</td>
+      <td style="text-align:right;">₹${(c.trade.exitPrice||c.trade.cmp).toFixed(2)}</td>
+      <td style="text-align:right;color:${c.gross>=0?'var(--green)':'var(--red)'};">${c.gross>=0?'+':''}${fmtINR(c.gross)}</td>
+      <td style="text-align:right;color:var(--purple);">-${fmtINR(c.stt)}</td>
+      <td style="text-align:right;font-weight:700;color:${c.net>=0?'var(--green)':'var(--red)'};">${c.net>=0?'+':''}${fmtINR(c.net)}</td>
+    </tr>`;
+  }).join(''):`<tr><td colspan="11" style="text-align:center;padding:24px;color:var(--text3);">No closed trades match this filter.</td></tr>`;
+
+  // Take-home banner
+  document.getElementById('takehomeBanner').innerHTML=`
+    <div>
+      <div class="takehome-label">💰 Net Take-Home Profit</div>
+      <div class="takehome-val">${s.takeHome>=0?'+':''}${fmtINR(s.takeHome)}</div>
+    </div>
+    <div class="takehome-breakdown">
+      <span>Gross P&L: <strong style="color:${s.totalGross>=0?'var(--green)':'var(--red)'};">${s.totalGross>=0?'+':''}${fmtINR(s.totalGross)}</strong></span>
+      <span>Less STT: <strong style="color:var(--purple);">-${fmtINR(s.totalSTT)}</strong></span>
+      <span>Less Tax: <strong style="color:var(--red);">-${fmtINR(s.totalTax)}</strong></span>
+      <span style="margin-top:4px;padding-top:4px;border-top:1px solid rgba(255,255,255,0.1);">Effective Tax Rate: <strong style="color:var(--amber);">${s.totalGross>0?((s.totalTax/s.totalGross)*100).toFixed(1):0}%</strong></span>
+    </div>`;
+
+  // Note
+  document.getElementById('taxNote').innerHTML=`<strong>⚠ Disclaimer &amp; Assumptions:</strong> This is an estimate for reference only — not professional tax advice. Assumptions: (1) Equity delivery STT = 0.1% on exit turnover; (2) LTCG = equity delivery held ≥ 365 days; (3) STCG losses offset STCG profits within the year; (4) F&O/Crypto/Intraday are excluded from this STCG/LTCG calculator; (5) Cess (4%), surcharge, and other charges are NOT included. Consult a CA for your actual ITR filing. Budget 2024 rates applied: STCG 20%, LTCG 12.5%, LTCG exemption ₹1.25L.`;
+}
+
 function computeSummary(){
   const active=trades.filter(t=>t.status==='active'),closed=trades.filter(t=>t.status==='closed');
   const invested=active.reduce((a,t)=>a+t.entry*t.qty,0);
@@ -652,7 +849,6 @@ async function testTicker(){
   }catch(e){res.textContent=`✗ Not found. Try finance.yahoo.com to verify.`;res.style.color='var(--red)';}
 }
 
-/* ══ UNIFIED calcRR — position sizer + legacy RR box ══ */
 function calcRR(){
   const entry=parseFloat(document.getElementById('fEntry').value);
   const qty=parseFloat(document.getElementById('fQty').value);
@@ -660,8 +856,6 @@ function calcRR(){
   const target=parseFloat(document.getElementById('fTarget').value);
   const capital=parseFloat(document.getElementById('sizerCapital').value);
   const riskPct=parseFloat(document.getElementById('sizerRiskPct').value)||1;
-
-  // Legacy RR box
   const box=document.getElementById('rrCalcBox');
   if(!isNaN(entry)&&!isNaN(qty)&&!isNaN(sl)){
     box.style.display='grid';
@@ -672,8 +866,6 @@ function calcRR(){
     document.getElementById('rrRatio').textContent=rr==='—'?'—':rr+'R';
     document.getElementById('rrPct').textContent=((entry-sl)/entry*100).toFixed(2)+'%';
   }else{box.style.display='none';}
-
-  // Position Sizer
   if(!isNaN(entry)&&!isNaN(sl)&&!isNaN(capital)&&entry>sl&&capital>0){
     const riskPerShare=entry-sl;
     const maxRiskRupees=capital*(riskPct/100);
@@ -684,13 +876,11 @@ function calcRR(){
     document.getElementById('srRisk').textContent=suggestedQty>0?fmtINR(maxRiskRupees):'—';
     document.getElementById('srVal').textContent=suggestedQty>0?fmtINR(positionValue):'—';
     document.getElementById('srSLDist').textContent=slDistPct+'%';
-    // Auto-fill qty if empty
     const qtyField=document.getElementById('fQty');
     if((!qtyField.value||qtyField.value==='0')&&suggestedQty>0){
       qtyField.value=suggestedQty;
       document.getElementById('qtyAutoHint').style.display='inline';
     }
-    // RR bar
     if(!isNaN(target)&&target>entry){
       const rr=(target-entry)/riskPerShare;
       const col=rr>=2?'var(--green)':rr>=1?'var(--amber)':'var(--red)';
@@ -770,7 +960,6 @@ function drawCandleChart(containerId,trade,isDetail=false){
 function styleExitMarker(ctx){try{ctx.el.querySelectorAll('.exit-marker').forEach(m=>{const u=m.querySelector('use')||m;u.style.transform='rotate(180deg)';u.style.transformBox='fill-box';u.style.transformOrigin='center';});}catch(e){}}
 
 function setFilter(f,el){currentFilter=f;document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));if(el)el.classList.add('active');renderCards();}
-
 function rrClass(rr){const n=parseFloat(rr);if(n>=2)return'rr-great';if(n>=1)return'rr-good';return'rr-bad';}
 
 function renderCards(){
@@ -797,9 +986,12 @@ function renderCards(){
     const pnl=isActive?pnlVal(t):exitPnlVal(t);
     const positive=pnl>=0,rr=rrRatio(t),score=tradeScore(t);
     const{g:grade,cls}=scoreGrade(score),hd=holdDays(t);
+    // Tax classification badge for closed trades
+    const taxInfo=t.status==='closed'?taxClassifyTrade(t):null;
     let badges='';
     if(isActive&&t.ticker)badges+=`<span class="badge badge-live">LIVE</span>`;
     else if(!isActive)badges+=`<span class="badge badge-closed">CLOSED</span>`;
+    if(taxInfo)badges+=`<span class="badge ${taxInfo.type==='LTCG'?'badge-ltcg':'badge-stcg'}">${taxInfo.type}</span>`;
     if(t.sl&&isActive){const rp=((t.entry-t.sl)/t.entry*100);badges+=rp<3?`<span class="badge badge-safe">SL ${rp.toFixed(1)}%</span>`:`<span class="badge badge-risk">SL ${rp.toFixed(1)}%</span>`;}
     if(t.setupType)badges+=`<span class="badge badge-tag">${t.setupType}</span>`;
     if(t.emotion&&(t.emotion==='FOMO'||t.emotion==='Revenge Trading'))badges+=`<span class="badge badge-risk">${t.emotion}</span>`;
@@ -807,21 +999,10 @@ function renderCards(){
     const exitLabel=isActive?'CMP':'Exit';
     const exitVal=isActive?'₹'+(t.cmp||'—'):'₹'+(t.exitPrice||t.cmp||'—');
     const dayChg=t.liveChange!=null&&isActive?`<div class="price-change" style="color:${t.liveChange>=0?'var(--green)':'var(--red)'}">${t.liveChange>=0?'+':''}${t.liveChange.toFixed(2)}% today</div>`:'';
-
-    /* ── R:R BADGE between entry and exit ── */
     const rrSection=rr
-      ?`<div class="rr-divider">
-          <div class="rr-divider-line"></div>
-          <div class="rr-badge-pill">
-            <span class="rr-badge-label">R:R</span>
-            <span class="rr-badge-val ${rrClass(rr)}">${rr}R</span>
-          </div>
-          <div class="rr-divider-line"></div>
-        </div>`
+      ?`<div class="rr-divider"><div class="rr-divider-line"></div><div class="rr-badge-pill"><span class="rr-badge-label">R:R</span><span class="rr-badge-val ${rrClass(rr)}">${rr}R</span></div><div class="rr-divider-line"></div></div>`
       :`<div style="flex:0 0 8px;"></div>`;
-
     const targetCol=t.target?`<div class="price-col" style="text-align:right;"><div class="price-label">Target</div><div class="price-val g">₹${t.target}</div></div>`:'';
-
     const div=document.createElement('div');
     div.className=`trade-card ${cardClass}`;
     div.onclick=()=>openDetail(t.id);
@@ -834,16 +1015,9 @@ function renderCards(){
       <div class="card-pnl" style="color:${positive?'var(--green)':'var(--red)'};">${positive?'+':''}${fmtINR(pnl)} · ${hd}d</div>
       <div class="chart-wrap" id="chart_${t.id}"></div>
       <div class="card-footer">
-        <div class="price-col">
-          <div class="price-label">Entry</div>
-          <div class="price-val">₹${t.entry.toFixed(2)}</div>
-        </div>
+        <div class="price-col"><div class="price-label">Entry</div><div class="price-val">₹${t.entry.toFixed(2)}</div></div>
         ${rrSection}
-        <div class="price-col" style="text-align:right;">
-          <div class="price-label">${exitLabel}</div>
-          <div class="price-val">${exitVal}</div>
-          ${dayChg}
-        </div>
+        <div class="price-col" style="text-align:right;"><div class="price-label">${exitLabel}</div><div class="price-val">${exitVal}</div>${dayChg}</div>
         ${targetCol}
       </div>
       ${t.sl&&isActive?`<div class="risk-meter"><div class="risk-fill" style="width:${Math.min(100,Math.max(0,((t.cmp||t.entry)-t.sl)/(t.entry-t.sl)*100))}%;background:${positive?'var(--green)':'var(--red)'};"></div></div>`:''}`;
@@ -859,6 +1033,7 @@ function openDetail(id){
   const curPct=isActive?pct(t.entry,t.cmp):pct(t.entry,t.exitPrice||t.cmp);
   const pnl=isActive?pnlVal(t):exitPnlVal(t);
   const rr=rrRatio(t),score=tradeScore(t);const{g:grade}=scoreGrade(score);
+  const taxInfo=t.status==='closed'?taxClassifyTrade(t):null;
   document.getElementById('detailName').textContent=t.name;
   document.getElementById('detailTicker').textContent=`${t.ticker||'MANUAL'} · ${t.exchange} · ${t.type}`;
   document.getElementById('detailPnlBadge').textContent=(pnl>=0?'+':'')+fmtINR(pnl);
@@ -869,6 +1044,7 @@ function openDetail(id){
   if(t.execution)tags+=`<span class="badge badge-tag">${t.execution}</span>`;
   if(t.emotion)tags+=`<span class="badge ${t.emotion==='FOMO'||t.emotion==='Revenge Trading'?'badge-risk':'badge-live'}">${t.emotion}</span>`;
   tags+=`<span class="badge" style="background:var(--purple-dim);color:var(--purple);border-color:rgba(180,109,255,0.2);">AI Score: ${grade} (${score})</span>`;
+  if(taxInfo)tags+=`<span class="badge ${taxInfo.type==='LTCG'?'badge-ltcg':'badge-stcg'}">${taxInfo.type} · STT -${fmtINR(taxInfo.stt)}</span>`;
   document.getElementById('detailTags').innerHTML=tags;
   document.getElementById('detailGrid').innerHTML=`
     <div class="detail-stat"><div class="detail-stat-label">Entry</div><div class="detail-stat-val">₹${t.entry.toFixed(2)}</div></div>
@@ -882,7 +1058,8 @@ function openDetail(id){
     <div class="detail-stat"><div class="detail-stat-label">R:R Ratio</div><div class="detail-stat-val b">${rr?rr+'R':'—'}</div></div>
     <div class="detail-stat"><div class="detail-stat-label">Holding Days</div><div class="detail-stat-val">${holdDays(t)}d</div></div>
     <div class="detail-stat"><div class="detail-stat-label">Entry Date</div><div class="detail-stat-val" style="font-size:12px;">${t.date||'—'}</div></div>
-    <div class="detail-stat"><div class="detail-stat-label">${isActive?'Day Change':'Exit Date'}</div><div class="detail-stat-val ${!isActive?'':(t.liveChange>=0?'g':'r')}">${isActive?(t.liveChange!=null?fmtPct(t.liveChange):'—'):(t.exitDate||'—')}</div></div>`;
+    <div class="detail-stat"><div class="detail-stat-label">${isActive?'Day Change':'Exit Date'}</div><div class="detail-stat-val ${!isActive?'':(t.liveChange>=0?'g':'r')}">${isActive?(t.liveChange!=null?fmtPct(t.liveChange):'—'):(t.exitDate||'—')}</div></div>
+    ${taxInfo?`<div class="detail-stat"><div class="detail-stat-label">Tax Bucket</div><div class="detail-stat-val" style="color:${taxInfo.type==='LTCG'?'var(--cyan)':'var(--amber)'};">${taxInfo.type}</div></div><div class="detail-stat"><div class="detail-stat-label">STT (0.1%)</div><div class="detail-stat-val p">-${fmtINR(taxInfo.stt)}</div></div>`:''}`;
   document.getElementById('detailNotes').textContent=t.notes||'No notes recorded for this trade.';
   document.getElementById('btnCloseTrade').style.display=isActive?'flex':'none';
   document.getElementById('btnPartialExit').style.display=isActive?'flex':'none';
@@ -986,8 +1163,9 @@ async function analyzeTradeWithAI(){
   btn.style.display='none';box.style.display='block';
   const isActive=t.status==='active',curPct=isActive?pct(t.entry,t.cmp):pct(t.entry,t.exitPrice||t.cmp);
   const pnl=isActive?pnlVal(t):exitPnlVal(t),rr=rrRatio(t);
+  const taxInfo=t.status==='closed'?taxClassifyTrade(t):null;
   box.innerHTML=`<div class="ai-response"><div class="ai-loading"><span style="color:var(--purple)">⬡</span> <span>AI analyzing trade<span class="dots"><span>.</span><span>.</span><span>.</span></span></span></div></div>`;
-  const prompt=`You are an expert stock market trader and coach specializing in Indian equities. Analyze this trade concisely.\n\nTRADE: ${t.name} (${t.ticker||'no ticker'}) | ${t.exchange} ${t.type} | ${t.status}\nEntry: ₹${t.entry} Qty: ${t.qty} | ${isActive?`CMP: ₹${t.cmp}`:`Exit: ₹${t.exitPrice||t.cmp}`}\nP&L: ${pnl>=0?'+':''}₹${pnl.toFixed(0)} (${fmtPct(curPct)}) | SL: ${t.sl?'₹'+t.sl:'Not set'} | Target: ${t.target?'₹'+t.target:'Not set'}\nR:R: ${rr||'N/A'} | Setup: ${t.setupType||'—'} | Market: ${t.marketContext||'—'}\nExecution: ${t.execution||'—'} | Emotion: ${t.emotion||'—'} | Hold: ${holdDays(t)}d\nNotes: ${t.notes||'None'}\n\nProvide:\n1. **Trade Quality** (setup, entry, risk mgmt)\n2. **What's working / What's not**\n3. **Key Risks**\n4. **Next Steps** (hold/add/exit with reasoning)\n5. **Key Lesson**\n\nBe specific, direct, under 250 words.`;
+  const prompt=`You are an expert stock market trader and coach specializing in Indian equities. Analyze this trade concisely.\n\nTRADE: ${t.name} (${t.ticker||'no ticker'}) | ${t.exchange} ${t.type} | ${t.status}\nEntry: ₹${t.entry} Qty: ${t.qty} | ${isActive?`CMP: ₹${t.cmp}`:`Exit: ₹${t.exitPrice||t.cmp}`}\nP&L: ${pnl>=0?'+':''}₹${pnl.toFixed(0)} (${fmtPct(curPct)}) | SL: ${t.sl?'₹'+t.sl:'Not set'} | Target: ${t.target?'₹'+t.target:'Not set'}\nR:R: ${rr||'N/A'} | Setup: ${t.setupType||'—'} | Market: ${t.marketContext||'—'}\nExecution: ${t.execution||'—'} | Emotion: ${t.emotion||'—'} | Hold: ${holdDays(t)}d\n${taxInfo?`Tax: ${taxInfo.type} (${taxInfo.days}d held) | STT paid: ₹${taxInfo.stt.toFixed(2)}`:''}\nNotes: ${t.notes||'None'}\n\nProvide:\n1. **Trade Quality** (setup, entry, risk mgmt)\n2. **What's working / What's not**\n3. **Key Risks**\n4. **Next Steps** (hold/add/exit with reasoning)\n5. **Key Lesson**\n\nBe specific, direct, under 250 words.`;
   try{
     const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]})});
     const data=await res.json();
@@ -1063,114 +1241,6 @@ function calcPositionSize(){
     <div class="detail-stat"><div class="detail-stat-label">Position Value</div><div class="detail-stat-val b">${fmtINR(totalCost)}</div></div>
     <div class="detail-stat"><div class="detail-stat-label">% of Capital</div><div class="detail-stat-val a">${pctOfCapital.toFixed(1)}%</div></div>
   </div>`;
-}
-
-function openWatchlist(){document.getElementById('watchlistOverlay').classList.add('open');renderWatchlist();}
-function closeWatchlist(){document.getElementById('watchlistOverlay').classList.remove('open');}
-function addToWatchlist(){const v=document.getElementById('wlInput').value.trim().toUpperCase();if(!v)return;if(!watchlist.includes(v)){watchlist.push(v);save();}document.getElementById('wlInput').value='';renderWatchlist();}
-function removeFromWatchlist(ticker){watchlist=watchlist.filter(w=>w!==ticker);save();renderWatchlist();}
-function renderWatchlist(){
-  const el=document.getElementById('watchlistItems');
-  if(!watchlist.length){el.innerHTML='<div style="text-align:center;padding:30px;color:var(--text3);font-family:var(--mono);font-size:11px;">No tickers. Add some above.</div>';return;}
-  el.innerHTML=watchlist.map(ticker=>{const data=wlData[ticker]||{},chg=data.chg;
-    return`<div class="watchlist-item"><div class="wl-ticker">${ticker}</div><div style="flex:1;font-size:11px;color:var(--text3);">${data.name||''}</div><div class="wl-price" style="color:${data.price?'var(--text)':'var(--text3)'};">${data.price?'₹'+data.price.toFixed(2):'—'}</div><div class="wl-chg" style="color:${chg==null?'var(--text3)':chg>=0?'var(--green)':'var(--red)'};">${chg!=null?(chg>=0?'+':'')+chg.toFixed(2)+'%':'—'}</div><div class="wl-alert" style="cursor:pointer;color:var(--text3);" onclick="removeFromWatchlist('${ticker}')" title="Remove">✕</div></div>`;
-  }).join('');
-}
-let wlData={};
-async function fetchWatchlistPrices(){
-  showToast('Fetching watchlist...','info');
-  for(const ticker of watchlist){try{const r=await fetchPrice(ticker);wlData[ticker]={price:r.price,chg:r.prevClose?((r.price-r.prevClose)/r.prevClose*100):null};}catch(e){}}
-  renderWatchlist();showToast('Watchlist updated ✓','success');
-}
-
-function openAnalytics(){document.getElementById('analyticsOverlay').classList.add('open');switchAnalyticsTab('curve');}
-function closeAnalytics(){document.getElementById('analyticsOverlay').classList.remove('open');if(equityChartInstance){try{equityChartInstance.destroy();}catch(e){}}equityChartInstance=null;}
-function closeAnalyticsBackdrop(e){if(e.target.id==='analyticsOverlay')closeAnalytics();}
-function switchAnalyticsTab(tab){
-  ['curve','setups','heatmap','calendar'].forEach(t=>{
-    document.getElementById('view'+t.charAt(0).toUpperCase()+t.slice(1)).style.display=t===tab?'block':'none';
-    document.getElementById('tab'+t.charAt(0).toUpperCase()+t.slice(1)).classList.toggle('active',t===tab);
-  });
-  if(tab==='curve'){renderEquityCurve();renderAdvancedStats();}
-  else if(tab==='setups')renderSetupAnalytics();
-  else if(tab==='heatmap')renderHeatmap();
-  else if(tab==='calendar')renderCalendar();
-}
-function renderAdvancedStats(){
-  const closed=trades.filter(t=>t.status==='closed'&&t.exitDate).sort((a,b)=>new Date(a.exitDate)-new Date(b.exitDate));
-  if(!closed.length){document.getElementById('advancedStatsGrid').innerHTML=`<div style="grid-column:1/-1;text-align:center;padding:20px;color:var(--text3);font-family:var(--mono);font-size:11px;">No closed trades yet.</div>`;return;}
-  let wDays=0,wCount=0,lDays=0,lCount=0,currStreak=0,maxWS=0,maxLS=0,isWin=null,eq=0,peak=0,maxDd=0,gProfit=0,gLoss=0;
-  closed.forEach(t=>{const p=exitPnlVal(t),w=p>=0,days=holdDays(t);
-    if(w){wDays+=days;wCount++;gProfit+=p;}else{lDays+=days;lCount++;gLoss+=Math.abs(p);}
-    if(isWin===null){isWin=w;currStreak=1;}else if(w===isWin){currStreak++;}else{isWin=w;currStreak=1;}
-    if(isWin&&currStreak>maxWS)maxWS=currStreak;if(!isWin&&currStreak>maxLS)maxLS=currStreak;
-    eq+=p;if(eq>peak)peak=eq;const dd=peak-eq;if(dd>maxDd)maxDd=dd;
-  });
-  const total=closed.length,winRate=((wCount/total)*100).toFixed(1),pf=gLoss===0?(gProfit>0?'∞':'0.0'):(gProfit/gLoss).toFixed(2);
-  const avgWin=wCount?gProfit/wCount:0,avgLoss=lCount?gLoss/lCount:0,exp=((wCount/total)*avgWin)-((lCount/total)*avgLoss);
-  document.getElementById('advancedStatsGrid').innerHTML=`
-    <div class="detail-stat"><div class="detail-stat-label">Win Rate</div><div class="detail-stat-val ${winRate>=50?'g':'r'}">${winRate}%</div></div>
-    <div class="detail-stat"><div class="detail-stat-label">Profit Factor</div><div class="detail-stat-val ${parseFloat(pf)>=1.5?'g':parseFloat(pf)>=1?'a':'r'}">${pf}</div></div>
-    <div class="detail-stat"><div class="detail-stat-label">Expectancy</div><div class="detail-stat-val ${exp>=0?'g':'r'}">${exp>=0?'+':''}${fmtINR(exp)}</div></div>
-    <div class="detail-stat"><div class="detail-stat-label">Avg Win / Loss</div><div class="detail-stat-val"><span class="g">${fmtINR(avgWin)}</span> / <span class="r">${fmtINR(avgLoss)}</span></div></div>
-    <div class="detail-stat"><div class="detail-stat-label">Avg Hold W / L</div><div class="detail-stat-val"><span class="g">${wCount?(wDays/wCount).toFixed(1):0}d</span> / <span class="r">${lCount?(lDays/lCount).toFixed(1):0}d</span></div></div>
-    <div class="detail-stat"><div class="detail-stat-label">Max Drawdown</div><div class="detail-stat-val r">-${fmtINR(maxDd)}</div></div>
-    <div class="detail-stat"><div class="detail-stat-label">Best Streak</div><div class="detail-stat-val g">${maxWS} wins</div></div>
-    <div class="detail-stat"><div class="detail-stat-label">Worst Streak</div><div class="detail-stat-val r">${maxLS} losses</div></div>`;
-}
-function renderEquityCurve(){
-  if(equityChartInstance){try{equityChartInstance.destroy();}catch(e){}}
-  const closed=trades.filter(t=>t.status==='closed'&&t.exitDate).sort((a,b)=>new Date(a.exitDate)-new Date(b.exitDate));
-  let eq=0,daily={};
-  closed.forEach(t=>{if(!daily[t.exitDate])daily[t.exitDate]=0;daily[t.exitDate]+=exitPnlVal(t);});
-  const dates=Object.keys(daily).sort((a,b)=>new Date(a)-new Date(b));
-  let series=[];if(dates.length){const f=new Date(dates[0]);f.setDate(f.getDate()-1);series.push({x:f.getTime(),y:0});}
-  dates.forEach(d=>{eq+=daily[d];series.push({x:new Date(d).getTime(),y:+eq.toFixed(2)});});
-  if(!series.length)series.push({x:new Date().getTime(),y:0});
-  const isPositive=eq>=0;
-  const opts={series:[{name:'Cumulative P&L',data:series}],chart:{type:'area',height:280,background:'transparent',toolbar:{show:false},animations:{enabled:false}},theme:{mode:'dark'},colors:[isPositive?'#00e5a0':'#ff4d6a'],fill:{type:'gradient',gradient:{shadeIntensity:1,opacityFrom:0.3,opacityTo:0.0,stops:[0,100]}},stroke:{curve:'straight',width:2},xaxis:{type:'datetime',labels:{style:{colors:'var(--text3)',fontFamily:'Space Mono',fontSize:'9px'}},axisBorder:{show:false},axisTicks:{show:false},tooltip:{enabled:false}},yaxis:{labels:{style:{colors:'var(--text3)',fontFamily:'Space Mono',fontSize:'9px'},formatter:v=>'₹'+v.toFixed(0)}},grid:{borderColor:'rgba(77,124,255,0.05)',strokeDashArray:4},tooltip:{theme:'dark',x:{format:'dd MMM yyyy'},y:{formatter:v=>'₹'+v.toFixed(2)}}};
-  equityChartInstance=new ApexCharts(document.querySelector('#equityChart'),opts);equityChartInstance.render();
-}
-function renderSetupAnalytics(){
-  const grouping=document.getElementById('analyticsGroupSelect').value;
-  const map={setupType:'Setup Type',marketContext:'Market Context',execution:'Execution Grade',type:'Asset Type'};
-  document.getElementById('analyticsGroupHeader').textContent=map[grouping];
-  const setups={};
-  trades.forEach(t=>{const s=(t[grouping]||'Uncategorized').trim();if(!s)return;
-    if(!setups[s])setups[s]={count:0,wins:0,pnl:0,gProfit:0,gLoss:0,rrSum:0,rrCount:0};
-    setups[s].count++;const p=t.status==='closed'?exitPnlVal(t):pnlVal(t);setups[s].pnl+=p;
-    if(p>=0){setups[s].wins++;setups[s].gProfit+=p;}else{setups[s].gLoss+=Math.abs(p);}
-    const rr=parseFloat(rrRatio(t)||0);if(rr>0){setups[s].rrSum+=rr;setups[s].rrCount++;}
-  });
-  const sorted=Object.keys(setups).sort((a,b)=>setups[b].pnl-setups[a].pnl);
-  if(!sorted.length){document.getElementById('setupTableBody').innerHTML=`<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text3);">No tagged trades yet.</td></tr>`;return;}
-  document.getElementById('setupTableBody').innerHTML=sorted.map(s=>{const st=setups[s],wr=((st.wins/st.count)*100).toFixed(1),pf=st.gLoss===0?(st.gProfit>0?'∞':'0'):(st.gProfit/st.gLoss).toFixed(2),avgRR=st.rrCount?(st.rrSum/st.rrCount).toFixed(1):'—';
-    return`<tr><td style="color:var(--text);font-weight:600;">${s}</td><td>${st.count}</td><td style="color:${parseFloat(wr)>=50?'var(--green)':'var(--red)'}">${wr}%</td><td style="color:${parseFloat(pf)>=1.5?'var(--green)':parseFloat(pf)>=1?'var(--amber)':'var(--red)'}">${pf}</td><td>${avgRR}</td><td class="${st.pnl>=0?'g':'r'}">${st.pnl>=0?'+':''}${fmtINR(st.pnl)}</td></tr>`;
-  }).join('');
-}
-function renderHeatmap(){
-  const all=trades.filter(t=>t.ticker);
-  if(!all.length){document.getElementById('heatmapGrid').innerHTML='<div style="color:var(--text3);font-family:var(--mono);font-size:11px;">No trades with tickers yet.</div>';return;}
-  document.getElementById('heatmapGrid').innerHTML=all.map(t=>{const p=t.status==='closed'?pct(t.entry,t.exitPrice||t.cmp):pct(t.entry,t.cmp);const intensity=Math.min(Math.abs(p)/15,1);const bg=p>=0?`rgba(0,229,160,${0.1+intensity*0.4})`:`rgba(255,77,106,${0.1+intensity*0.4})`;const color=p>=0?'var(--green)':'var(--red)';
-    return`<div class="heatmap-cell" style="background:${bg};"><div class="hm-ticker" style="color:${color};">${(t.ticker||t.name).replace('.NS','')}</div><div class="hm-pct" style="color:${color};">${p>=0?'+':''}${p.toFixed(1)}%</div></div>`;}).join('');
-}
-function renderCalendar(year,month){
-  const now=new Date();if(year===undefined)year=now.getFullYear();if(month===undefined)month=now.getMonth();
-  const daily={};trades.filter(t=>t.status==='closed'&&t.exitDate).forEach(t=>{if(!daily[t.exitDate])daily[t.exitDate]={pnl:0,count:0};daily[t.exitDate].pnl+=exitPnlVal(t);daily[t.exitDate].count++;});
-  const firstDay=new Date(year,month,1).getDay(),daysInMonth=new Date(year,month+1,0).getDate();
-  const mn=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],dn=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-  const prevY=month===0?year-1:year,prevM=month===0?11:month-1,nextY=month===11?year+1:year,nextM=month===11?0:month+1;
-  let html=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;"><button onclick="renderCalendar(${prevY},${prevM})" class="btn" style="padding:5px 12px;font-size:12px;">‹ ${mn[prevM]}</button><div style="font-family:var(--display);font-size:16px;font-weight:700;">${mn[month]} ${year}</div><button onclick="renderCalendar(${nextY},${nextM})" class="btn" style="padding:5px 12px;font-size:12px;">${mn[nextM]} ›</button></div><div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;">`;
-  dn.forEach(d=>html+=`<div style="font-family:var(--mono);font-size:9px;color:var(--text3);text-align:center;padding:6px 0;font-weight:700;">${d}</div>`);
-  for(let i=0;i<firstDay;i++)html+=`<div></div>`;
-  for(let d=1;d<=daysInMonth;d++){
-    const key=`${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`,data=daily[key];
-    const isToday=(d===now.getDate()&&month===now.getMonth()&&year===now.getFullYear());
-    const bg=data?(data.pnl>=0?'var(--green-dim)':'var(--red-dim)'):(isToday?'var(--blue-dim)':'transparent');
-    const border=isToday?'1px solid var(--blue)':data?`1px solid ${data.pnl>=0?'rgba(0,229,160,0.2)':'rgba(255,77,106,0.2)'}`:'1px solid var(--border)';
-    html+=`<div style="background:${bg};border:${border};border-radius:6px;padding:8px 4px;text-align:center;min-height:50px;"><div style="font-family:var(--mono);font-size:11px;color:${isToday?'var(--blue)':'var(--text2)'};">${d}</div>${data?`<div style="font-family:var(--mono);font-size:9px;color:${data.pnl>=0?'var(--green)':'var(--red)'};margin-top:4px;">${data.pnl>=0?'+':''}${fmtINR(data.pnl)}</div><div style="font-family:var(--mono);font-size:8px;color:var(--text3);margin-top:2px;">${data.count} trade${data.count>1?'s':''}</div>`:''}</div>`;
-  }
-  html+='</div>';document.getElementById('calendarView').innerHTML=html;
 }
 
 function clearAllTrades(){
