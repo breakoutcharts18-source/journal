@@ -1137,37 +1137,76 @@ function renderCards(){
     if(q&&!t.name.toLowerCase().includes(q)&&!(t.ticker||'').toLowerCase().includes(q)&&!(t.setupType||'').toLowerCase().includes(q))return false;
     return true;
   });
-  if(sort==='pct-desc')list.sort((a,b)=>pct(b.entry,b.cmp)-pct(a.entry,a.cmp));
-  else if(sort==='pct-asc')list.sort((a,b)=>pct(a.entry,a.cmp)-pct(b.entry,b.cmp));
-  else if(sort==='pnl-desc')list.sort((a,b)=>pnlVal(b)-pnlVal(a));
-  else if(sort==='risk')list.sort((a,b)=>(b.entry-b.sl)*b.qty-(a.entry-a.sl)*a.qty);
-  else if(sort==='name')list.sort((a,b)=>a.name.localeCompare(b.name));
-  else list.sort((a,b)=>new Date(b.date)-new Date(a.date));
-  if(!list.length){grid.innerHTML=`<div class="empty-state"><div class="empty-icon">⬡</div><div class="empty-title">No trades here</div><div class="empty-sub">Add your first trade or adjust filters</div></div>`;return;}
-  grid.innerHTML='';
+
+  // ── Group same ticker+entry date into one card (multiple exits) ──
+  // Key: ticker_entryDate_entryPrice — trades sharing this are partial exits of the same position
+  const groups=[];
+  const groupMap={};
   list.forEach(t=>{
-    const isActive=t.status==='active';
-    const curPct=isActive?pct(t.entry,t.cmp):pct(t.entry,t.exitPrice||t.cmp);
-    const pnl=isActive?pnlVal(t):exitPnlVal(t);
-    const positive=pnl>=0,rr=rrRatio(t),score=tradeScore(t);
-    const{g:grade,cls}=scoreGrade(score),hd=holdDays(t);
-    // Tax classification badge for closed trades
+    const key=`${t.ticker||t.name}_${t.date}_${t.entry}`;
+    if(groupMap[key]){groupMap[key].members.push(t);}
+    else{const g={key,primary:t,members:[t]};groupMap[key]=g;groups.push(g);}
+  });
+  // For each group, compute aggregate stats
+  const cards=groups.map(g=>{
+    const primary=g.primary;
+    const members=g.members;
+    const isMulti=members.length>1;
+    const isActive=primary.status==='active';
+    // Aggregate totals
+    const totalQty=members.reduce((s,t)=>s+t.qty,0);
+    const totalPnl=members.reduce((s,t)=>s+(t.status==='closed'?exitPnlVal(t):pnlVal(t)),0);
+    const totalInvested=members.reduce((s,t)=>s+t.entry*t.qty,0);
+    const avgExitPrice=members.filter(t=>t.exitPrice).length
+      ?members.filter(t=>t.exitPrice).reduce((s,t)=>s+t.exitPrice*t.qty,0)/members.filter(t=>t.exitPrice).reduce((s,t)=>s+t.qty,0)
+      :null;
+    const curPctAgg=totalInvested>0?(totalPnl/totalInvested*100):0;
+    const hd=holdDays(primary);
+    return{primary,members,isMulti,isActive,totalQty,totalPnl,totalInvested,avgExitPrice,curPctAgg,hd};
+  });
+
+  // Sort by primary trade
+  if(sort==='pct-desc')cards.sort((a,b)=>b.curPctAgg-a.curPctAgg);
+  else if(sort==='pct-asc')cards.sort((a,b)=>a.curPctAgg-b.curPctAgg);
+  else if(sort==='pnl-desc')cards.sort((a,b)=>b.totalPnl-a.totalPnl);
+  else if(sort==='risk')cards.sort((a,b)=>(b.primary.entry-b.primary.sl)*b.totalQty-(a.primary.entry-a.primary.sl)*a.totalQty);
+  else if(sort==='name')cards.sort((a,b)=>a.primary.name.localeCompare(b.primary.name));
+  else cards.sort((a,b)=>new Date(b.primary.date)-new Date(a.primary.date));
+
+  if(!cards.length){grid.innerHTML=`<div class="empty-state"><div class="empty-icon">⬡</div><div class="empty-title">No trades here</div><div class="empty-sub">Add your first trade or adjust filters</div></div>`;return;}
+  grid.innerHTML='';
+
+  cards.forEach(({primary:t,members,isMulti,isActive,totalQty,totalPnl,totalInvested,avgExitPrice,curPctAgg,hd})=>{
+    const positive=totalPnl>=0,rr=rrRatio(t),score=tradeScore(t);
+    const{g:grade,cls}=scoreGrade(score);
     const taxInfo=t.status==='closed'?taxClassifyTrade(t):null;
     let badges='';
     if(isActive&&t.ticker)badges+=`<span class="badge badge-live">LIVE</span>`;
     else if(!isActive)badges+=`<span class="badge badge-closed">CLOSED</span>`;
+    if(isMulti)badges+=`<span class="badge" style="background:rgba(180,109,255,0.12);color:var(--purple);border-color:rgba(180,109,255,0.25);">${members.length} EXITS</span>`;
     if(taxInfo)badges+=`<span class="badge ${taxInfo.type==='LTCG'?'badge-ltcg':'badge-stcg'}">${taxInfo.type}</span>`;
     if(t.sl&&isActive){const rp=((t.entry-t.sl)/t.entry*100);badges+=rp<3?`<span class="badge badge-safe">SL ${rp.toFixed(1)}%</span>`:`<span class="badge badge-risk">SL ${rp.toFixed(1)}%</span>`;}
     if(t.setupType)badges+=`<span class="badge badge-tag">${t.setupType}</span>`;
     if(t.emotion&&(t.emotion==='FOMO'||t.emotion==='Revenge Trading'))badges+=`<span class="badge badge-risk">${t.emotion}</span>`;
     const cardClass=isActive?(positive?'profit':'loss'):'closed';
-    const exitLabel=isActive?'CMP':'Exit';
-    const exitVal=isActive?'₹'+(t.cmp||'—'):'₹'+(t.exitPrice||t.cmp||'—');
     const dayChg=t.liveChange!=null&&isActive?`<div class="price-change" style="color:${t.liveChange>=0?'var(--green)':'var(--red)'}">${t.liveChange>=0?'+':''}${t.liveChange.toFixed(2)}% today</div>`:'';
     const rrSection=rr
       ?`<div class="rr-divider"><div class="rr-divider-line"></div><div class="rr-badge-pill"><span class="rr-badge-label">R:R</span><span class="rr-badge-val ${rrClass(rr)}">${rr}R</span></div><div class="rr-divider-line"></div></div>`
       :`<div style="flex:0 0 8px;"></div>`;
     const targetCol=t.target?`<div class="price-col" style="text-align:right;"><div class="price-label">Target</div><div class="price-val g">₹${t.target}</div></div>`:'';
+
+    // Multi-exit breakdown strip
+    const multiExitStrip=isMulti?`<div style="border-top:1px solid var(--border);padding-top:8px;margin-top:4px;display:flex;flex-direction:column;gap:3px;">
+      ${members.map(m=>{const mp=exitPnlVal(m);return`<div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:9px;color:var(--text3);">
+        <span>Exit ${m.exitDate||'open'} · ${m.qty} shares</span>
+        <span style="color:${mp>=0?'var(--green)':'var(--red)'};">₹${(m.exitPrice||m.cmp).toFixed(2)} · ${mp>=0?'+':''}${fmtINR(mp)}</span>
+      </div>`;}).join('')}
+    </div>`:''
+
+    // Exit display
+    const exitLabel=isActive?'CMP':isMulti?'Avg Exit':'Exit';
+    const exitPrice=isActive?(t.cmp||'—'):isMulti?(avgExitPrice?avgExitPrice.toFixed(2):'—'):(t.exitPrice||t.cmp||'—');
+
     const div=document.createElement('div');
     div.className=`trade-card ${cardClass}`;
     div.onclick=()=>openDetail(t.id);
@@ -1176,15 +1215,16 @@ function renderCards(){
       <div class="card-ticker">${t.ticker||t.exchange||'MANUAL'}</div>
       <div class="card-name">${t.name}</div>
       <div class="card-meta">${badges}</div>
-      <div class="card-pct ${positive?'g':'r'}">${fmtPct(curPct)}</div>
-      <div class="card-pnl" style="color:${positive?'var(--green)':'var(--red)'};">${positive?'+':''}${fmtINR(pnl)} · ${hd}d</div>
+      <div class="card-pct ${positive?'g':'r'}">${fmtPct(curPctAgg)}</div>
+      <div class="card-pnl" style="color:${positive?'var(--green)':'var(--red)'};">${positive?'+':''}${fmtINR(totalPnl)} · ${totalQty} shares · ${hd}d</div>
       <div class="chart-wrap" id="chart_${t.id}"></div>
       <div class="card-footer">
         <div class="price-col"><div class="price-label">Entry</div><div class="price-val">₹${t.entry.toFixed(2)}</div></div>
         ${rrSection}
-        <div class="price-col" style="text-align:right;"><div class="price-label">${exitLabel}</div><div class="price-val">${exitVal}</div>${dayChg}</div>
+        <div class="price-col" style="text-align:right;"><div class="price-label">${exitLabel}</div><div class="price-val">₹${exitPrice}</div>${dayChg}</div>
         ${targetCol}
       </div>
+      ${multiExitStrip}
       ${t.sl&&isActive?`<div class="risk-meter"><div class="risk-fill" style="width:${Math.min(100,Math.max(0,((t.cmp||t.entry)-t.sl)/(t.entry-t.sl)*100))}%;background:${positive?'var(--green)':'var(--red)'};"></div></div>`:''}`;
     grid.appendChild(div);
     setTimeout(()=>drawCandleChart('chart_'+t.id,t,false),0);
@@ -1320,10 +1360,22 @@ function saveTrade(){
 function closeModal(){document.getElementById('tradeOverlay').classList.remove('open');editingId=null;}
 function closeModalBackdrop(e){if(e.target.id==='tradeOverlay')closeModal();}
 
+// Persist capital + SL% settings across sessions
+function getRiskSettings(){
+  try{const s=JSON.parse(localStorage.getItem('_bc_risk_settings')||'{}');return{capital:s.capital||'',slPct:s.slPct!==undefined?s.slPct:3,riskPct:s.riskPct||1};}catch(e){return{capital:'',slPct:3,riskPct:1};}
+}
+function saveRiskSettings(){
+  const s={capital:document.getElementById('psCapital')?.value||'',slPct:parseFloat(document.getElementById('psSlPct')?.value||3),riskPct:parseFloat(document.getElementById('psRiskPct')?.value||1)};
+  try{localStorage.setItem('_bc_risk_settings',JSON.stringify(s));}catch(e){}
+}
+
 function openRisk(){
   const active=trades.filter(t=>t.status==='active'),invested=active.reduce((a,t)=>a+t.entry*t.qty,0);
   const riskItems=active.map(t=>{const riskAmt=t.sl?Math.max(0,(t.entry-t.sl)*t.qty):0;const pctOfPortfolio=invested?riskAmt/invested*100:0;const slDist=t.sl?((t.entry-t.sl)/t.entry*100):0;return{t,riskAmt,pctOfPortfolio,slDist};}).sort((a,b)=>b.pctOfPortfolio-a.pctOfPortfolio);
   const totalRisk=riskItems.reduce((a,x)=>a+x.riskAmt,0),maxPctRisk=Math.max(...riskItems.map(x=>x.pctOfPortfolio),1);
+  const rs=getRiskSettings();
+  // Use saved capital if set, else fall back to invested (but user can always edit)
+  const savedCapital=rs.capital||Math.round(invested)||'';
   let html=`<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px;">
     <div class="detail-stat"><div class="detail-stat-label">Total Open Risk</div><div class="detail-stat-val r">${fmtINR(totalRisk)}</div></div>
     <div class="detail-stat"><div class="detail-stat-label">% of Capital at Risk</div><div class="detail-stat-val ${totalRisk/invested*100>10?'r':totalRisk/invested*100>5?'a':'g'}">${invested?(totalRisk/invested*100).toFixed(2):0}%</div></div>
@@ -1334,29 +1386,134 @@ function openRisk(){
     html+=`<div class="risk-bar-row"><div class="risk-bar-label">${t.name.substring(0,16)}</div><div class="risk-bar-track"><div class="risk-bar-fill" style="width:${(pctOfPortfolio/maxPctRisk*100).toFixed(0)}%;background:${color};"></div></div><div class="risk-bar-val" style="color:${color};">${pctOfPortfolio.toFixed(2)}%</div><div style="font-family:var(--mono);font-size:10px;color:var(--text3);width:80px;text-align:right;">SL: ${slDist?slDist.toFixed(1)+'%':'Not set'}</div></div>`;
   });
   html+=`</div><div class="section-header" style="margin-top:18px;"><h3>POSITION SIZER</h3><div class="section-line"></div></div><div class="risk-panel">
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px;">
-      <div class="form-group"><label style="font-family:var(--mono);font-size:9px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.1em;display:block;margin-bottom:5px;">Account Size (₹)</label><input id="psCapital" type="number" value="${Math.round(invested)}" style="background:var(--bg4);border:1px solid var(--border2);border-radius:var(--r);padding:8px 10px;color:var(--text);font-family:var(--mono);font-size:12px;outline:none;width:100%;"/></div>
-      <div class="form-group"><label style="font-family:var(--mono);font-size:9px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.1em;display:block;margin-bottom:5px;">Risk % per Trade</label><input id="psRiskPct" type="number" value="1" step="0.1" style="background:var(--bg4);border:1px solid var(--border2);border-radius:var(--r);padding:8px 10px;color:var(--text);font-family:var(--mono);font-size:12px;outline:none;width:100%;"/></div>
-      <div class="form-group"><label style="font-family:var(--mono);font-size:9px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.1em;display:block;margin-bottom:5px;">Entry Price</label><input id="psEntry" type="number" placeholder="0.00" style="background:var(--bg4);border:1px solid var(--border2);border-radius:var(--r);padding:8px 10px;color:var(--text);font-family:var(--mono);font-size:12px;outline:none;width:100%;"/></div>
-      <div class="form-group"><label style="font-family:var(--mono);font-size:9px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.1em;display:block;margin-bottom:5px;">Stop Loss Price</label><input id="psSL" type="number" placeholder="0.00" style="background:var(--bg4);border:1px solid var(--border2);border-radius:var(--r);padding:8px 10px;color:var(--text);font-family:var(--mono);font-size:12px;outline:none;width:100%;"/></div>
+    <!-- SL Mode toggle -->
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;padding:10px 14px;background:var(--bg4);border:1px solid var(--border2);border-radius:var(--r);">
+      <span style="font-family:var(--mono);font-size:9px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.1em;">SL Mode</span>
+      <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-family:var(--mono);font-size:11px;color:var(--text2);">
+        <input type="radio" name="slMode" value="pct" checked onchange="toggleSLMode()" style="accent-color:var(--amber);"/> % of Entry
+      </label>
+      <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-family:var(--mono);font-size:11px;color:var(--text2);">
+        <input type="radio" name="slMode" value="price" onchange="toggleSLMode()" style="accent-color:var(--amber);"/> Fixed Price
+      </label>
+      <div id="slPctWrap" style="display:flex;align-items:center;gap:6px;margin-left:auto;">
+        <span style="font-family:var(--mono);font-size:11px;color:var(--amber);">Default SL</span>
+        <input id="psSlPct" type="number" value="${rs.slPct}" min="0.1" max="20" step="0.5"
+          style="background:var(--bg3);border:1px solid rgba(255,179,64,0.35);border-radius:8px;padding:5px 8px;color:var(--amber);font-family:var(--mono);font-size:13px;font-weight:700;outline:none;width:68px;text-align:center;"
+          oninput="saveRiskSettings();updateSLFromPct()" />
+        <span style="font-family:var(--mono);font-size:13px;color:var(--amber);font-weight:700;">% below entry</span>
+      </div>
     </div>
-    <button class="btn btn-primary" onclick="calcPositionSize()" style="margin-bottom:10px;">Calculate Optimal Size</button>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px;">
+      <div class="form-group">
+        <label style="font-family:var(--mono);font-size:9px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.1em;display:block;margin-bottom:5px;">
+          Account Capital (₹) <span style="color:var(--green);font-weight:400;">← saved</span>
+        </label>
+        <input id="psCapital" type="number" value="${savedCapital}" placeholder="e.g. 1000000"
+          style="background:var(--bg4);border:1px solid var(--border2);border-radius:var(--r);padding:8px 10px;color:var(--text);font-family:var(--mono);font-size:12px;outline:none;width:100%;"
+          oninput="saveRiskSettings()" />
+        <div style="font-family:var(--mono);font-size:9px;color:var(--text3);margin-top:3px;">Saved across sessions</div>
+      </div>
+      <div class="form-group">
+        <label style="font-family:var(--mono);font-size:9px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.1em;display:block;margin-bottom:5px;">Risk % per Trade</label>
+        <input id="psRiskPct" type="number" value="${rs.riskPct}" step="0.1" min="0.1" max="10"
+          style="background:var(--bg4);border:1px solid var(--border2);border-radius:var(--r);padding:8px 10px;color:var(--text);font-family:var(--mono);font-size:12px;outline:none;width:100%;"
+          oninput="saveRiskSettings()" />
+      </div>
+      <div class="form-group">
+        <label style="font-family:var(--mono);font-size:9px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.1em;display:block;margin-bottom:5px;">Entry Price</label>
+        <input id="psEntry" type="number" placeholder="0.00"
+          style="background:var(--bg4);border:1px solid var(--border2);border-radius:var(--r);padding:8px 10px;color:var(--text);font-family:var(--mono);font-size:12px;outline:none;width:100%;"
+          oninput="updateSLFromPct()" />
+      </div>
+      <div class="form-group">
+        <label style="font-family:var(--mono);font-size:9px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.1em;display:block;margin-bottom:5px;" id="psSLLabel">Stop Loss (auto from %)</label>
+        <input id="psSL" type="number" placeholder="Auto"
+          style="background:var(--bg4);border:1px solid rgba(255,179,64,0.25);border-radius:var(--r);padding:8px 10px;color:var(--amber);font-family:var(--mono);font-size:12px;outline:none;width:100%;"
+          oninput="calcPositionSize()" />
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;">
+      <button class="btn btn-primary" onclick="calcPositionSize()" style="flex:1;justify-content:center;padding:10px;">Calculate Optimal Size</button>
+      <button class="btn" onclick="applyDefaultSLToAll()" style="flex:1;justify-content:center;padding:10px;font-size:11px;" title="Apply default SL% to all active trades that have no SL set">⚡ Apply ${rs.slPct}% SL to trades without SL</button>
+    </div>
     <div id="psResult" style="font-family:var(--mono);font-size:12px;color:var(--text2);"></div>
   </div>`;
-  document.getElementById('riskContent').innerHTML=html;document.getElementById('riskOverlay').classList.add('open');
+  document.getElementById('riskContent').innerHTML=html;
+  document.getElementById('riskOverlay').classList.add('open');
+  // Update the apply button text to reflect current slPct
+  updateSLFromPct();
 }
+
+function toggleSLMode(){
+  const mode=document.querySelector('input[name="slMode"]:checked')?.value||'pct';
+  const slPctWrap=document.getElementById('slPctWrap');
+  const slLabel=document.getElementById('psSLLabel');
+  if(mode==='pct'){
+    slPctWrap.style.display='flex';
+    slLabel.textContent='Stop Loss (auto from %)';
+    document.getElementById('psSL').style.borderColor='rgba(255,179,64,0.25)';
+    updateSLFromPct();
+  }else{
+    slPctWrap.style.display='none';
+    slLabel.textContent='Stop Loss Price';
+    document.getElementById('psSL').style.borderColor='var(--border2)';
+    document.getElementById('psSL').placeholder='0.00';
+  }
+}
+
+function updateSLFromPct(){
+  const mode=document.querySelector('input[name="slMode"]:checked')?.value||'pct';
+  if(mode!=='pct')return;
+  const entry=parseFloat(document.getElementById('psEntry')?.value);
+  const slPct=parseFloat(document.getElementById('psSlPct')?.value||3);
+  const slField=document.getElementById('psSL');
+  if(!isNaN(entry)&&entry>0&&slField){
+    const slPrice=+(entry*(1-slPct/100)).toFixed(2);
+    slField.value=slPrice;
+    slField.placeholder=`Auto: ₹${slPrice}`;
+    calcPositionSize();
+  }else if(slField){
+    slField.value='';
+    slField.placeholder=`Auto (enter price first)`;
+  }
+}
+
+function applyDefaultSLToAll(){
+  const slPct=parseFloat(document.getElementById('psSlPct')?.value||3);
+  const noSL=trades.filter(t=>t.status==='active'&&!t.sl);
+  if(!noSL.length){showToast('All active trades already have SL set','info');return;}
+  if(!confirm(`Apply ${slPct}% SL to ${noSL.length} active trades without SL?`))return;
+  noSL.forEach(t=>{t.sl=+(t.entry*(1-slPct/100)).toFixed(2);});
+  save();renderCards();renderSummary();
+  showToast(`✓ Applied ${slPct}% SL to ${noSL.length} trades`,'success');
+  openRisk(); // refresh panel
+}
+
 function closeRisk(){document.getElementById('riskOverlay').classList.remove('open');}
 function calcPositionSize(){
-  const capital=parseFloat(document.getElementById('psCapital').value),riskPct=parseFloat(document.getElementById('psRiskPct').value)/100;
-  const entry=parseFloat(document.getElementById('psEntry').value),sl=parseFloat(document.getElementById('psSL').value);
-  if(isNaN(capital)||isNaN(entry)||isNaN(sl)||sl>=entry){document.getElementById('psResult').innerHTML='<span style="color:var(--red)">Enter valid entry and SL (SL must be below entry)</span>';return;}
+  const capital=parseFloat(document.getElementById('psCapital')?.value);
+  const riskPct=parseFloat(document.getElementById('psRiskPct')?.value||1)/100;
+  const entry=parseFloat(document.getElementById('psEntry')?.value);
+  const sl=parseFloat(document.getElementById('psSL')?.value);
+  const psResult=document.getElementById('psResult');
+  if(!psResult)return;
+  if(isNaN(capital)||capital<=0){psResult.innerHTML='<span style="color:var(--amber)">Enter your account capital first.</span>';return;}
+  if(isNaN(entry)||entry<=0){psResult.innerHTML='<span style="color:var(--text3)">Enter entry price to calculate.</span>';return;}
+  if(isNaN(sl)||sl>=entry){psResult.innerHTML='<span style="color:var(--red)">SL must be below entry price.</span>';return;}
   const riskAmt=capital*riskPct,riskPerShare=entry-sl,shares=Math.floor(riskAmt/riskPerShare),totalCost=shares*entry,pctOfCapital=totalCost/capital*100;
-  document.getElementById('psResult').innerHTML=`<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:8px;">
-    <div class="detail-stat"><div class="detail-stat-label">Shares to Buy</div><div class="detail-stat-val g">${shares.toLocaleString()}</div></div>
-    <div class="detail-stat"><div class="detail-stat-label">Risk Amount</div><div class="detail-stat-val r">${fmtINR(riskAmt)}</div></div>
+  const slDistPct=((entry-sl)/entry*100).toFixed(2);
+  const rr=document.getElementById('psTarget')?(parseFloat(document.getElementById('psTarget').value)-entry)/riskPerShare:null;
+  psResult.innerHTML=`<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:8px;">
+    <div class="detail-stat"><div class="detail-stat-label">Shares to Buy</div><div class="detail-stat-val g">${shares.toLocaleString('en-IN')}</div></div>
+    <div class="detail-stat"><div class="detail-stat-label">Max Risk ₹</div><div class="detail-stat-val r">${fmtINR(riskAmt)}</div></div>
     <div class="detail-stat"><div class="detail-stat-label">Position Value</div><div class="detail-stat-val b">${fmtINR(totalCost)}</div></div>
-    <div class="detail-stat"><div class="detail-stat-label">% of Capital</div><div class="detail-stat-val a">${pctOfCapital.toFixed(1)}%</div></div>
+    <div class="detail-stat"><div class="detail-stat-label">% of Capital</div><div class="detail-stat-val ${pctOfCapital>30?'r':pctOfCapital>15?'a':'g'}">${pctOfCapital.toFixed(1)}%</div></div>
+    <div class="detail-stat"><div class="detail-stat-label">SL Distance</div><div class="detail-stat-val a">${slDistPct}%</div></div>
+    <div class="detail-stat"><div class="detail-stat-label">SL Price</div><div class="detail-stat-val r">₹${sl.toFixed(2)}</div></div>
+    <div class="detail-stat"><div class="detail-stat-label">Risk/Share</div><div class="detail-stat-val">₹${riskPerShare.toFixed(2)}</div></div>
+    <div class="detail-stat"><div class="detail-stat-label">Capital Left</div><div class="detail-stat-val" style="color:var(--text2);">${fmtINR(capital-totalCost)}</div></div>
   </div>`;
+  saveRiskSettings();
 }
 
 function clearAllTrades(){
