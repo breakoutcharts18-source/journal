@@ -725,26 +725,31 @@ let autoRefreshTimer=null,progressTimer=null,progressStart=null,progressDuration
 let chartInstances={},anChartInstances={};
 
 function save(){
+  const slim=trades.map(({dailyData,livePrice,...t})=>t);
+  const payload=JSON.stringify({trades:slim,savedAt:new Date().toISOString()});
   try{
-    // Strip dailyData (large OHLC arrays) before saving — they're re-fetched on demand
-    const slim=trades.map(({dailyData,...t})=>t);
-    localStorage.setItem(STORAGE_KEY,JSON.stringify({trades:slim}));
+    localStorage.removeItem(STORAGE_KEY);
+    localStorage.setItem(STORAGE_KEY,payload);
+    if(!localStorage.getItem(STORAGE_KEY))throw new Error('verify');
   }catch(e){
-    // localStorage quota exceeded — try saving without any extras
-    try{
-      const minimal=trades.map(({dailyData,livePrice,...t})=>t);
-      localStorage.setItem(STORAGE_KEY,JSON.stringify({trades:minimal}));
-    }catch(e2){console.warn('Save failed:',e2);}
+    console.error('localStorage save failed:',e);
+    showToast('WARNING: Save failed — storage full. Export CSV now!','error');
   }
 }
 function load(){
   try{
     const raw=localStorage.getItem(STORAGE_KEY);
-    if(!raw){loadDefaults();return;}
-    const d=JSON.parse(raw)||{};
-    trades=(d.trades||[]).map(t=>({...t,dailyData:t.dailyData||[]}));
-    if(!trades.length)loadDefaults();
-  }catch(e){trades=[];loadDefaults();}
+    if(!raw||raw==='null'||raw==='{}'){loadDefaults();return;}
+    const d=JSON.parse(raw);
+    const loaded=(d.trades||[]).map(t=>({...t,dailyData:[]}));
+    if(!loaded.length){loadDefaults();return;}
+    trades=loaded;
+    console.log('Loaded',trades.length,'trades from localStorage, saved:',d.savedAt||'unknown');
+  }catch(e){
+    console.error('Load error:',e);
+    try{localStorage.removeItem(STORAGE_KEY);}catch(e2){}
+    loadDefaults();
+  }
 }
 function loadDefaults(){
   const d=(n)=>{const x=new Date();x.setDate(x.getDate()-n);return x.toISOString().split('T')[0];};
@@ -1380,9 +1385,23 @@ function handleCSVImport(e){
     for(let i=1;i<lines.length;i++){if(!lines[i].trim())continue;const row=parseCSVLine(lines[i]);const entry=parseFloat(getV(row,'Entry')),qty=parseFloat(getV(row,'Qty'));if(isNaN(entry)||isNaN(qty))continue;maxId++;
       newTrades.push({id:maxId,name:getV(row,'Name'),ticker:getV(row,'Ticker').toUpperCase(),exchange:getV(row,'Exchange')||'NSE',type:getV(row,'Type')||'Equity',entry,qty,sl:parseFloat(getV(row,'SL'))||null,target:parseFloat(getV(row,'Target'))||null,cmp:parseFloat(getV(row,'CMP'))||entry,exitPrice:parseFloat(getV(row,'ExitPrice'))||null,status:getV(row,'Status').toLowerCase()==='closed'?'closed':'active',date:getV(row,'EntryDate')||new Date().toISOString().split('T')[0],exitDate:getV(row,'ExitDate')||'',setupType:getV(row,'SetupType')||'',marketContext:getV(row,'MarketContext')||'',execution:getV(row,'Execution')||'',emotion:getV(row,'Emotion')||'',notes:getV(row,'Notes')||'',dailyData:[]});}
     if(!newTrades.length){showToast('No valid data found in CSV','error');return;}
-    if(confirm(`Import ${newTrades.length} trades? This will overwrite current data.`)){
+    // Ask: merge or replace
+    const choice=confirm(`Import ${newTrades.length} trades?\n\nOK = MERGE with existing ${trades.length} trades\nCancel = Replace all existing trades`);
+    const replace=!choice&&confirm('Replace ALL existing trades with imported data?');
+    if(choice||replace){
       Object.values(chartInstances).forEach(c=>{try{c.destroy();}catch(e){}});chartInstances={};
-      trades=newTrades;save();renderSummary();renderCards();showToast(`Imported ${newTrades.length} trades ✓`,'success');fetchAllPrices();}
+      if(replace){
+        trades=newTrades;
+      }else{
+        // Merge: skip trades that share same ticker+date combo
+        const existingKeys=new Set(trades.map(t=>`${t.ticker}_${t.date}`));
+        const toAdd=newTrades.filter(t=>!existingKeys.has(`${t.ticker}_${t.date}`));
+        const maxId=Math.max(...trades.map(t=>t.id||0),0);
+        toAdd.forEach((t,i)=>t.id=maxId+i+1);
+        trades=[...trades,...toAdd];
+        showToast(`Merged: added ${toAdd.length} new, kept ${trades.length-toAdd.length} existing`,'success');
+      }
+      save();renderSummary();renderCards();if(replace)showToast(`Imported ${newTrades.length} trades ✓`,'success');fetchAllPrices();}
   };reader.readAsText(file);e.target.value='';
 }
 
@@ -1921,6 +1940,46 @@ function emptyMsg(msg='No closed trades yet.'){
   return`<div style="text-align:center;padding:40px 20px;color:var(--text3);font-family:var(--mono);font-size:11px;"><div style="font-size:28px;opacity:0.3;margin-bottom:10px;">📊</div>${msg}</div>`;
 }
 
+// ── BOOT ──
+(function boot(){
+  const statusEl=document.getElementById('liveStatus');
+  const dotEl=document.getElementById('statusDot');
+
+  // 1. Test localStorage is actually available and writable
+  try{
+    localStorage.setItem('_bc_test','1');
+    if(localStorage.getItem('_bc_test')!=='1')throw new Error('read-back failed');
+    localStorage.removeItem('_bc_test');
+  }catch(e){
+    dotEl.className='status-dot error';
+    statusEl.textContent='🚫 localStorage unavailable (private/incognito mode?) — data will NOT persist across refreshes.';
+    statusEl.style.color='var(--red)';
+    load();renderSummary();renderCards();
+    return;
+  }
+
+  // 2. Load trades
+  load();
+  renderSummary();
+  renderCards();
+
+  // 3. Show storage status
+  try{
+    const raw=localStorage.getItem(STORAGE_KEY);
+    if(!raw||raw==='null'){
+      dotEl.className='status-dot error';
+      statusEl.textContent='⚠ No saved data found — your trades are not persisting. Try: Settings → Clear site data, then re-import your CSV.';
+    }else{
+      const d=JSON.parse(raw);
+      const count=(d.trades||[]).length;
+      const when=d.savedAt?new Date(d.savedAt).toLocaleString('en-IN'):'unknown time';
+      dotEl.className='status-dot';
+      statusEl.textContent=`✓ ${count} trade${count!==1?'s':''} loaded from storage · last saved ${when} · fetch live prices to update charts`;
+    }
+  }catch(e){
+    statusEl.textContent='Ready — fetch live prices or add a trade to get started.';
+  }
+})();
 
 </script>
 </body>
