@@ -356,6 +356,7 @@ select option{background:var(--bg3);}
       <button class="analytics-tab" onclick="switchAnTab('dow',this)">DAY-OF-WEEK</button>
       <button class="analytics-tab" onclick="switchAnTab('ee',this)">ENTRY/EXIT EFF.</button>
       <button class="analytics-tab" onclick="switchAnTab('dd',this)">DRAWDOWN</button>
+      <button class="analytics-tab" onclick="switchAnTab('alpha',this)">vs SMALLCAP</button>
     </div>
 
     <!-- EQUITY CURVE -->
@@ -423,6 +424,58 @@ select option{background:var(--bg3);}
       <div style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-bottom:12px;">Rolling drawdown from peak equity. Deeper = higher psychological pressure. Recover faster = tighter system.</div>
       <div class="an-stat-row" id="anDDStats"></div>
       <div class="an-chart-wrap" id="anDDChart"></div>
+    </div>
+
+    <!-- ALPHA vs SMALLCAP -->
+    <div class="an-section" id="an-alpha">
+      <!-- controls row -->
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;">
+        <div style="font-family:var(--mono);font-size:10px;color:var(--text3);flex:1;line-height:1.7;">
+          Compares your portfolio's <strong style="color:var(--text2);">time-weighted return</strong> against a Nifty Smallcap index over the same window.
+          <strong style="color:var(--green);">Positive alpha</strong> = you beat the benchmark. Requires a live price fetch.
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+          <select id="alphaIndexSelect" class="sort-select" style="font-size:11px;">
+            <option value="NIFTYSMALLCAP250.NS">Nifty Smallcap 250</option>
+            <option value="NIFTYSMALLCAP100.NS">Nifty Smallcap 100</option>
+            <option value="^NSEI">Nifty 50</option>
+            <option value="^NSMIDCP">Nifty Midcap 150</option>
+          </select>
+          <button class="btn btn-cyan" id="alphaFetchBtn" onclick="fetchAlphaData()" style="font-size:11px;padding:6px 14px;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+            Fetch &amp; Compare
+          </button>
+        </div>
+      </div>
+
+      <!-- alpha hero cards -->
+      <div class="an-stat-row" id="anAlphaStats">
+        <div class="an-stat" style="grid-column:1/-1;padding:28px;text-align:center;">
+          <div style="font-size:28px;opacity:0.25;margin-bottom:10px;">📡</div>
+          <div style="font-family:var(--mono);font-size:11px;color:var(--text3);">Select an index and click <strong style="color:var(--cyan);">Fetch &amp; Compare</strong> to load benchmark data.</div>
+        </div>
+      </div>
+
+      <!-- dual-line chart -->
+      <div class="an-chart-wrap" style="height:270px;" id="anAlphaChart"></div>
+
+      <!-- per-trade alpha table -->
+      <div id="anAlphaTable" style="display:none;margin-top:14px;">
+        <div class="section-header" style="margin-bottom:8px;"><h3>POSITION-LEVEL ALPHA</h3><div class="section-line"></div></div>
+        <div style="max-height:200px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--r);">
+          <table style="width:100%;border-collapse:collapse;font-size:11px;font-family:var(--mono);">
+            <thead><tr style="background:var(--bg4);">
+              <th style="padding:8px 10px;text-align:left;color:var(--text3);font-size:9px;text-transform:uppercase;border-bottom:1px solid var(--border);">Stock</th>
+              <th style="padding:8px 10px;text-align:left;color:var(--text3);font-size:9px;text-transform:uppercase;border-bottom:1px solid var(--border);">Hold Period</th>
+              <th style="padding:8px 10px;text-align:right;color:var(--text3);font-size:9px;text-transform:uppercase;border-bottom:1px solid var(--border);">Your Return</th>
+              <th style="padding:8px 10px;text-align:right;color:var(--text3);font-size:9px;text-transform:uppercase;border-bottom:1px solid var(--border);">Index Return</th>
+              <th style="padding:8px 10px;text-align:right;color:var(--text3);font-size:9px;text-transform:uppercase;border-bottom:1px solid var(--border);">Alpha</th>
+              <th style="padding:8px 10px;text-align:center;color:var(--text3);font-size:9px;text-transform:uppercase;border-bottom:1px solid var(--border);">Verdict</th>
+            </tr></thead>
+            <tbody id="anAlphaTableBody"></tbody>
+          </table>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -1405,6 +1458,7 @@ function switchAnTab(id,btn){
   else if(id==='dow')renderAnDOW();
   else if(id==='ee')renderAnEE();
   else if(id==='dd')renderAnDD();
+  else if(id==='alpha')initAlphaTab();
 }
 
 /* helper: closed trades with usable data */
@@ -1647,6 +1701,185 @@ function renderAnDD(){
   };
   anChartInstances['dd']=new ApexCharts(document.getElementById('anDDChart'),opts);
   anChartInstances['dd'].render();
+}
+
+/* ── 7. ALPHA vs SMALLCAP ── */
+let alphaIndexData=null; // cached {ticker, dailyData}
+
+function initAlphaTab(){
+  // if we already fetched, re-render; else just show the prompt state
+  if(alphaIndexData)renderAlphaChart();
+}
+
+async function fetchAlphaData(){
+  const btn=document.getElementById('alphaFetchBtn');
+  const ticker=document.getElementById('alphaIndexSelect').value;
+  btn.disabled=true;btn.textContent='Fetching…';
+  document.getElementById('anAlphaStats').innerHTML=`<div class="an-stat" style="grid-column:1/-1;padding:20px;text-align:center;"><div style="font-family:var(--mono);font-size:11px;color:var(--amber);">⟳ Fetching ${ticker}…</div></div>`;
+  try{
+    const r=await fetchPrice(ticker);
+    alphaIndexData={ticker,name:document.getElementById('alphaIndexSelect').options[document.getElementById('alphaIndexSelect').selectedIndex].text,dailyData:r.dailyData};
+    renderAlphaChart();
+    showToast('Benchmark loaded ✓','success');
+  }catch(e){
+    document.getElementById('anAlphaStats').innerHTML=`<div class="an-stat" style="grid-column:1/-1;padding:20px;text-align:center;"><div style="font-family:var(--mono);font-size:11px;color:var(--red);">✗ Could not fetch ${ticker}. Try another index or check connection.</div></div>`;
+    showToast('Benchmark fetch failed','error');
+  }
+  btn.disabled=false;btn.innerHTML='<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg> Fetch &amp; Compare';
+}
+
+function renderAlphaChart(){
+  if(!alphaIndexData)return;
+  destroyAnCharts();
+
+  // ── Gather closed + active trades with date range ──
+  const allTrades=trades.filter(t=>t.date);
+  if(!allTrades.length){document.getElementById('anAlphaStats').innerHTML=emptyMsg('No trades logged.');return;}
+
+  // Portfolio earliest entry and latest exit/today
+  const pfStart=allTrades.reduce((min,t)=>t.date<min?t.date:min,allTrades[0].date);
+  const pfEnd=new Date().toISOString().split('T')[0];
+
+  const idxData=alphaIndexData.dailyData;
+  if(!idxData||!idxData.length){document.getElementById('anAlphaStats').innerHTML=emptyMsg('No index data loaded.');return;}
+
+  // ── Build a daily price map for the index ──
+  const idxMap={};
+  idxData.forEach(d=>idxMap[d.time]=d.close);
+  const idxDates=Object.keys(idxMap).sort();
+
+  // Index start = first available date on or after pfStart
+  const idxStartDate=idxDates.find(d=>d>=pfStart)||idxDates[0];
+  const idxEndDate=idxDates[idxDates.length-1];
+  const idxStartPrice=idxMap[idxStartDate];
+  const idxEndPrice=idxMap[idxEndDate];
+  const idxReturn=((idxEndPrice-idxStartPrice)/idxStartPrice)*100;
+
+  // ── Build portfolio TWR (Time-Weighted Return) using closed trades ──
+  // Method: sum of (return × weight) weighted by invested capital
+  const closed=trades.filter(t=>t.status==='closed'&&t.date&&t.exitDate);
+  const active=trades.filter(t=>t.status==='active'&&t.date&&t.cmp);
+
+  // Total deployed (entry value) across all trades as weight denominator
+  const allForTWR=[...closed,...active];
+  const totalInvested=allForTWR.reduce((s,t)=>s+t.entry*t.qty,0)||1;
+  const totalGain=allForTWR.reduce((s,t)=>{
+    const exitP=t.status==='closed'?(t.exitPrice||t.cmp):t.cmp;
+    return s+((exitP-t.entry)/t.entry)*(t.entry*t.qty);
+  },0);
+  const pfReturn=(totalGain/totalInvested)*100;
+  const alpha=pfReturn-idxReturn;
+
+  // ── Build normalised dual time-series (indexed to 100) ──
+  // Portfolio daily curve: use closed trades' exit dates to build cumulative equity
+  // normalised to 100 at pfStart
+  const pfDailyPnl={};
+  closed.forEach(t=>{
+    const d=t.exitDate;
+    if(!pfDailyPnl[d])pfDailyPnl[d]=0;
+    pfDailyPnl[d]+=((t.exitPrice||t.cmp)-t.entry)*t.qty;
+  });
+  // Build running equity series
+  const allDates=[...new Set([...idxDates,...Object.keys(pfDailyPnl)])].filter(d=>d>=idxStartDate&&d<=idxEndDate).sort();
+  let pfEq=0,pfBase=null;
+  const pfSeries=[],idxSeries=[];
+  allDates.forEach(d=>{
+    if(pfDailyPnl[d])pfEq+=pfDailyPnl[d];
+    if(pfBase===null)pfBase=pfEq;
+    // index normalised to 100
+    if(idxMap[d]){
+      idxSeries.push({x:new Date(d).getTime(),y:+((idxMap[d]/idxStartPrice)*100).toFixed(2)});
+      // pf: use entry investment as base (100 = starting capital deployed at pfStart)
+      const pfNorm=totalInvested>0?(100+((pfEq/totalInvested)*100)):100;
+      pfSeries.push({x:new Date(d).getTime(),y:+pfNorm.toFixed(2)});
+    }
+  });
+
+  // ── Alpha per closed position ──
+  const tradeAlphas=closed.map(t=>{
+    const tradeReturn=((t.exitPrice||t.cmp)-t.entry)/t.entry*100;
+    // find index return over same holding period
+    const iStart=idxDates.find(d=>d>=t.date)||idxDates[0];
+    const iEnd=idxDates.filter(d=>d<=t.exitDate).pop()||idxDates[idxDates.length-1];
+    const iR=idxMap[iStart]&&idxMap[iEnd]?((idxMap[iEnd]-idxMap[iStart])/idxMap[iStart]*100):null;
+    return{trade:t,tradeReturn,indexReturn:iR,alpha:iR!==null?tradeReturn-iR:null,days:holdDays(t)};
+  }).filter(x=>x.alpha!==null).sort((a,b)=>b.alpha-a.alpha);
+
+  const beatCount=tradeAlphas.filter(x=>x.alpha>0).length;
+  const avgAlphaPerTrade=tradeAlphas.length?(tradeAlphas.reduce((s,x)=>s+x.alpha,0)/tradeAlphas.length):0;
+
+  // ── Render summary cards ──
+  const alphaColor=alpha>=0?'var(--green)':'var(--red)';
+  const pfColor=pfReturn>=0?'var(--green)':'var(--red)';
+  document.getElementById('anAlphaStats').innerHTML=`
+    <div class="an-stat" style="border-color:${alpha>=0?'rgba(0,229,160,0.3)':'rgba(255,77,106,0.3)'};background:${alpha>=0?'rgba(0,229,160,0.05)':'rgba(255,77,106,0.05)'};">
+      <div class="an-stat-label">Portfolio Alpha</div>
+      <div class="an-stat-val" style="color:${alphaColor};font-size:22px;">${alpha>=0?'+':''}${alpha.toFixed(2)}%</div>
+      <div style="font-family:var(--mono);font-size:9px;color:var(--text3);margin-top:4px;">vs ${alphaIndexData.name}</div>
+    </div>
+    <div class="an-stat">
+      <div class="an-stat-label">Your Portfolio Return</div>
+      <div class="an-stat-val" style="color:${pfColor};">${pfReturn>=0?'+':''}${pfReturn.toFixed(2)}%</div>
+      <div style="font-family:var(--mono);font-size:9px;color:var(--text3);margin-top:4px;">TWR across all trades</div>
+    </div>
+    <div class="an-stat">
+      <div class="an-stat-label">${alphaIndexData.name}</div>
+      <div class="an-stat-val" style="color:${idxReturn>=0?'var(--cyan)':'var(--red)'};">${idxReturn>=0?'+':''}${idxReturn.toFixed(2)}%</div>
+      <div style="font-family:var(--mono);font-size:9px;color:var(--text3);margin-top:4px;">same window (${idxStartDate} →)</div>
+    </div>
+    <div class="an-stat">
+      <div class="an-stat-label">Trades Beating Index</div>
+      <div class="an-stat-val" style="color:${beatCount>tradeAlphas.length/2?'var(--green)':'var(--amber)'};">${beatCount} / ${tradeAlphas.length}</div>
+      <div style="font-family:var(--mono);font-size:9px;color:var(--text3);margin-top:4px;">avg α ${avgAlphaPerTrade>=0?'+':''}${avgAlphaPerTrade.toFixed(1)}% per trade</div>
+    </div>`;
+
+  // ── Dual-line chart ──
+  if(pfSeries.length>1&&idxSeries.length>1){
+    const chartOpts={
+      series:[
+        {name:'Your Portfolio',data:pfSeries},
+        {name:alphaIndexData.name,data:idxSeries}
+      ],
+      chart:{type:'line',height:262,background:'transparent',toolbar:{show:false},animations:{enabled:false}},
+      theme:{mode:'dark'},
+      colors:['#00e5a0','#4d7cff'],
+      stroke:{curve:'straight',width:[2.5,1.5],dashArray:[0,5]},
+      fill:{type:'solid'},
+      markers:{size:0},
+      xaxis:{type:'datetime',labels:{style:{colors:'var(--text3)',fontFamily:'Space Mono',fontSize:'9px'}},axisBorder:{show:false},axisTicks:{show:false},tooltip:{enabled:false}},
+      yaxis:{labels:{style:{colors:'var(--text3)',fontFamily:'Space Mono',fontSize:'9px'},formatter:v=>v.toFixed(0)},title:{text:'Indexed to 100',style:{color:'var(--text3)',fontFamily:'Space Mono',fontSize:'9px'}}},
+      grid:{borderColor:'rgba(77,124,255,0.05)',strokeDashArray:4},
+      legend:{show:true,fontFamily:'Space Mono',fontSize:'9px',labels:{colors:'var(--text2)'},markers:{width:10,height:2,radius:0}},
+      tooltip:{theme:'dark',x:{format:'dd MMM yy'},y:{formatter:v=>v.toFixed(2)+' (indexed)'}},
+      annotations:{yaxis:[{y:100,borderColor:'rgba(255,255,255,0.1)',strokeDashArray:3,borderWidth:1,label:{text:'Base 100',position:'right',style:{background:'transparent',color:'var(--text3)',fontSize:'8px',fontFamily:'Space Mono'}}}]}
+    };
+    const chartEl=document.getElementById('anAlphaChart');
+    chartEl.innerHTML='';
+    anChartInstances['alpha']=new ApexCharts(chartEl,chartOpts);
+    anChartInstances['alpha'].render();
+  }else{
+    document.getElementById('anAlphaChart').innerHTML=`<div style="text-align:center;padding:30px;font-family:var(--mono);font-size:11px;color:var(--text3);">Not enough overlapping data for chart. Try fetching prices for your trades first.</div>`;
+  }
+
+  // ── Per-trade table ──
+  if(tradeAlphas.length){
+    document.getElementById('anAlphaTable').style.display='block';
+    document.getElementById('anAlphaTableBody').innerHTML=tradeAlphas.map(x=>{
+      const aColor=x.alpha>=0?'var(--green)':'var(--red)';
+      const verdict=x.alpha>=5?'🔥 Strong Alpha':x.alpha>=0?'✓ Beat Index':x.alpha>=-3?'↓ Slight Lag':'⚠ Underperformed';
+      const verdictColor=x.alpha>=5?'var(--green)':x.alpha>=0?'var(--green)':x.alpha>=-3?'var(--amber)':'var(--red)';
+      return`<tr style="border-bottom:1px solid var(--border);">
+        <td style="padding:7px 10px;font-weight:600;color:var(--text);">${x.trade.name}<div style="font-size:9px;color:var(--text3);">${x.trade.ticker||''}</div></td>
+        <td style="padding:7px 10px;color:var(--text3);">${x.trade.date} → ${x.trade.exitDate}<br><span style="font-size:9px;">${x.days}d</span></td>
+        <td style="padding:7px 10px;text-align:right;color:${x.tradeReturn>=0?'var(--green)':'var(--red)'};">${x.tradeReturn>=0?'+':''}${x.tradeReturn.toFixed(2)}%</td>
+        <td style="padding:7px 10px;text-align:right;color:var(--cyan);">${x.indexReturn>=0?'+':''}${x.indexReturn.toFixed(2)}%</td>
+        <td style="padding:7px 10px;text-align:right;font-weight:700;color:${aColor};">${x.alpha>=0?'+':''}${x.alpha.toFixed(2)}%</td>
+        <td style="padding:7px 10px;text-align:center;font-size:10px;color:${verdictColor};">${verdict}</td>
+      </tr>`;
+    }).join('');
+  }else{
+    document.getElementById('anAlphaTable').style.display='none';
+  }
 }
 
 function emptyMsg(msg='No closed trades yet.'){
