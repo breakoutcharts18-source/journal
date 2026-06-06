@@ -210,6 +210,36 @@ select option{background:var(--bg3);}
 .section-header h3{font-family:var(--display);font-size:13px;font-weight:700;color:var(--text2);letter-spacing:0.05em;}
 .section-line{flex:1;height:1px;background:var(--border);}
 
+/* ── ANALYTICS STYLES ── */
+.analytics-tabs{display:flex;gap:4px;margin-bottom:18px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:3px;flex-wrap:wrap;}
+.analytics-tab{padding:5px 14px;border-radius:7px;font-family:var(--mono);font-size:11px;cursor:pointer;color:var(--text3);background:transparent;border:none;font-weight:700;transition:all 0.15s;letter-spacing:.05em;white-space:nowrap;}
+.analytics-tab.active{background:var(--bg4);color:var(--text);border:1px solid var(--border2);}
+.an-section{display:none;}.an-section.active{display:block;}
+.an-chart-wrap{height:260px;margin:10px 0;}
+.an-chart-wrap-sm{height:200px;margin:8px 0;}
+.an-stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px;}
+.an-stat{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;text-align:center;}
+.an-stat-label{font-family:var(--mono);font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px;}
+.an-stat-val{font-family:var(--mono);font-size:16px;font-weight:700;}
+.an-2col{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.an-panel{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:14px;}
+.an-panel-title{font-family:var(--mono);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--text3);margin-bottom:12px;}
+.mfe-bar-row{display:flex;align-items:center;gap:8px;margin:5px 0;font-family:var(--mono);font-size:10px;}
+.mfe-bar-name{width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text2);}
+.mfe-bar-track{flex:1;height:10px;background:var(--bg4);border-radius:3px;overflow:hidden;position:relative;}
+.mfe-bar-entry{position:absolute;top:0;bottom:0;border-radius:2px;}
+.mfe-bar-max{position:absolute;top:0;bottom:0;border-radius:2px;opacity:0.35;}
+.mfe-bar-val{width:54px;text-align:right;font-size:9px;}
+.dow-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-top:8px;}
+.dow-cell{border-radius:6px;padding:8px 4px;text-align:center;cursor:default;}
+.dow-cell-day{font-family:var(--mono);font-size:8px;color:var(--text3);text-transform:uppercase;margin-bottom:5px;}
+.dow-cell-val{font-family:var(--mono);font-size:11px;font-weight:700;}
+.dow-cell-n{font-family:var(--mono);font-size:8px;color:var(--text3);margin-top:3px;}
+.ee-bar-row{display:flex;align-items:center;gap:8px;margin:4px 0;font-family:var(--mono);font-size:10px;}
+.ee-bar-label{width:90px;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.ee-bar-track{flex:1;height:8px;background:var(--bg4);border-radius:4px;overflow:hidden;}
+.ee-bar-fill{height:100%;border-radius:4px;transition:width .5s;}
+.ee-bar-pct{width:40px;text-align:right;font-size:9px;}
 /* ── TAX CALCULATOR STYLES ── */
 .tax-modal{width:1000px;}
 .tax-modal::before{background:linear-gradient(90deg,transparent,var(--amber),transparent);}
@@ -263,6 +293,7 @@ select option{background:var(--bg3);}
   <div class="live-pulse"><div class="dot"></div>LIVE</div>
   <div class="topbar-right">
     <button class="btn btn-ai" onclick="openAICoach()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10H12V2z"/><circle cx="12" cy="12" r="3"/></svg>AI Coach</button>
+    <button class="btn btn-purple" onclick="openAnalytics()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>Analytics</button>
     <button class="btn btn-tax" onclick="openTaxCalc()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>Tax P&amp;L</button>
     <button class="btn btn-amber" onclick="openRisk()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Risk</button>
     <button class="btn btn-amber" id="fetchBtn" onclick="fetchAllPrices()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>Fetch</button>
@@ -306,6 +337,95 @@ select option{background:var(--bg3);}
     <button class="btn ml-auto" onclick="fetchAllPrices()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>Refresh</button>
   </div>
   <div class="cards-grid" id="cardsGrid"></div>
+</div>
+
+<!-- ANALYTICS MODAL -->
+<div class="overlay" id="analyticsOverlay" onclick="if(event.target.id==='analyticsOverlay')closeAnalytics()">
+  <div class="modal" style="width:960px;max-height:92vh;">
+    <div class="modal-title" style="margin-bottom:14px;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,var(--purple),var(--blue));display:flex;align-items:center;justify-content:center;font-size:13px;">📊</div>
+        <div>Performance Analytics<div style="font-family:var(--mono);font-size:10px;color:var(--text3);font-weight:400;margin-top:1px;">Deep-dive into your trading edge</div></div>
+      </div>
+      <button class="modal-close" onclick="closeAnalytics()">✕</button>
+    </div>
+
+    <div class="analytics-tabs">
+      <button class="analytics-tab active" onclick="switchAnTab('equity',this)">EQUITY CURVE</button>
+      <button class="analytics-tab" onclick="switchAnTab('mfe',this)">MFE / MAE</button>
+      <button class="analytics-tab" onclick="switchAnTab('rmult',this)">R-MULTIPLE</button>
+      <button class="analytics-tab" onclick="switchAnTab('dow',this)">DAY-OF-WEEK</button>
+      <button class="analytics-tab" onclick="switchAnTab('ee',this)">ENTRY/EXIT EFF.</button>
+      <button class="analytics-tab" onclick="switchAnTab('dd',this)">DRAWDOWN</button>
+    </div>
+
+    <!-- EQUITY CURVE -->
+    <div class="an-section active" id="an-equity">
+      <div class="an-stat-row" id="anEquityStats"></div>
+      <div class="an-chart-wrap" id="anEquityChart"></div>
+    </div>
+
+    <!-- MFE / MAE -->
+    <div class="an-section" id="an-mfe">
+      <div style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-bottom:12px;line-height:1.7;">
+        <strong style="color:var(--text2);">MFE</strong> = Max Favourable Excursion (how far price moved in your favour before exit) &nbsp;·&nbsp;
+        <strong style="color:var(--text2);">MAE</strong> = Max Adverse Excursion (how far price moved against you). If MFE ≫ exit gain → you're cutting winners early.
+      </div>
+      <div class="an-2col">
+        <div class="an-panel">
+          <div class="an-panel-title" style="color:var(--green);">🎯 MFE vs Actual Exit — Are You Leaving Money?</div>
+          <div id="anMFEBars"></div>
+        </div>
+        <div class="an-panel">
+          <div class="an-panel-title" style="color:var(--red);">⚠ MAE — Max Pain Taken Per Trade</div>
+          <div id="anMAEBars"></div>
+        </div>
+      </div>
+      <div class="an-stat-row" style="margin-top:14px;" id="anMFEStats"></div>
+    </div>
+
+    <!-- R-MULTIPLE DISTRIBUTION -->
+    <div class="an-section" id="an-rmult">
+      <div style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-bottom:12px;line-height:1.7;">
+        R-multiple = (actual P&L per share) ÷ (initial risk per share). 1R = you made exactly what you risked. Distribution skewed right = positive expectancy system.
+      </div>
+      <div class="an-stat-row" id="anRStats"></div>
+      <div class="an-chart-wrap" id="anRChart"></div>
+    </div>
+
+    <!-- DAY OF WEEK -->
+    <div class="an-section" id="an-dow">
+      <div style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-bottom:14px;">Which days produce the best results? Based on <strong style="color:var(--text2);">entry date</strong> of closed trades.</div>
+      <div class="dow-grid" id="anDOWGrid"></div>
+      <div class="an-chart-wrap" style="height:220px;margin-top:16px;" id="anDOWChart"></div>
+    </div>
+
+    <!-- ENTRY / EXIT EFFICIENCY -->
+    <div class="an-section" id="an-ee">
+      <div style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-bottom:12px;line-height:1.7;">
+        <strong style="color:var(--text2);">Entry Efficiency</strong> = how close to the low (for longs) you entered within the day's range (0% = worst, 100% = perfect bottom tick).
+        <strong style="color:var(--text2);">Exit Efficiency</strong> = how close to the high you exited (100% = sold the top).
+      </div>
+      <div class="an-2col">
+        <div class="an-panel">
+          <div class="an-panel-title" style="color:var(--blue);">📍 Entry Efficiency per Trade</div>
+          <div id="anEntryEff"></div>
+        </div>
+        <div class="an-panel">
+          <div class="an-panel-title" style="color:var(--green);">🏁 Exit Efficiency per Trade</div>
+          <div id="anExitEff"></div>
+        </div>
+      </div>
+      <div class="an-stat-row" style="margin-top:14px;" id="anEEStats"></div>
+    </div>
+
+    <!-- DRAWDOWN CHART -->
+    <div class="an-section" id="an-dd">
+      <div style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-bottom:12px;">Rolling drawdown from peak equity. Deeper = higher psychological pressure. Recover faster = tighter system.</div>
+      <div class="an-stat-row" id="anDDStats"></div>
+      <div class="an-chart-wrap" id="anDDChart"></div>
+    </div>
+  </div>
 </div>
 
 <!-- TAX CALCULATOR MODAL -->
@@ -1337,7 +1457,283 @@ function showToast(msg,type='info'){
   void t.offsetWidth;t.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),3000);
 }
 
-load();renderSummary();renderCards();
+/* ═══════════════════════════════════════════════
+   ANALYTICS ENGINE
+   ═══════════════════════════════════════════════ */
+let anChartInstances={};
+function destroyAnCharts(){Object.values(anChartInstances).forEach(c=>{try{c.destroy();}catch(e){}});anChartInstances={};}
+
+function openAnalytics(){
+  document.getElementById('analyticsOverlay').classList.add('open');
+  // slight delay to let overlay render
+  setTimeout(()=>switchAnTab('equity',document.querySelector('.analytics-tab.active')),60);
+}
+function closeAnalytics(){
+  document.getElementById('analyticsOverlay').classList.remove('open');
+  destroyAnCharts();
+}
+
+function switchAnTab(id,btn){
+  document.querySelectorAll('.an-section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.analytics-tab').forEach(b=>b.classList.remove('active'));
+  document.getElementById('an-'+id).classList.add('active');
+  if(btn)btn.classList.add('active');
+  destroyAnCharts();
+  if(id==='equity')renderAnEquity();
+  else if(id==='mfe')renderAnMFE();
+  else if(id==='rmult')renderAnRMult();
+  else if(id==='dow')renderAnDOW();
+  else if(id==='ee')renderAnEE();
+  else if(id==='dd')renderAnDD();
+}
+
+/* helper: closed trades with usable data */
+function closedTrades(){
+  return trades.filter(t=>t.status==='closed'&&t.exitDate)
+               .sort((a,b)=>new Date(a.exitDate)-new Date(b.exitDate));
+}
+
+/* ── 1. EQUITY CURVE ── */
+function renderAnEquity(){
+  const closed=closedTrades();
+  if(!closed.length){document.getElementById('anEquityChart').innerHTML=emptyMsg();return;}
+  let eq=0,peak=0,maxDd=0,winSum=0,lossSum=0,wins=0,losses=0;
+  const series=[];
+  closed.forEach(t=>{
+    const p=exitPnlVal(t);
+    if(p>=0){wins++;winSum+=p;}else{losses++;lossSum+=Math.abs(p);}
+    eq+=p;if(eq>peak)peak=eq;
+    const dd=peak-eq;if(dd>maxDd)maxDd=dd;
+    series.push({x:new Date(t.exitDate).getTime(),y:+eq.toFixed(2)});
+  });
+  series.unshift({x:new Date(closed[0].exitDate).getTime()-86400000,y:0});
+  const wr=((wins/(wins+losses))*100).toFixed(1);
+  const pf=lossSum===0?(winSum>0?'∞':'0'):(winSum/lossSum).toFixed(2);
+  const exp=((wins/(wins+losses))*(winSum/Math.max(wins,1)))-((losses/(wins+losses))*(lossSum/Math.max(losses,1)));
+  document.getElementById('anEquityStats').innerHTML=`
+    <div class="an-stat"><div class="an-stat-label">Win Rate</div><div class="an-stat-val ${parseFloat(wr)>=50?'g':'r'}">${wr}%</div></div>
+    <div class="an-stat"><div class="an-stat-label">Profit Factor</div><div class="an-stat-val ${parseFloat(pf)>=1.5?'g':parseFloat(pf)>=1?'a':'r'}">${pf}</div></div>
+    <div class="an-stat"><div class="an-stat-label">Expectancy/Trade</div><div class="an-stat-val ${exp>=0?'g':'r'}">${exp>=0?'+':''}${fmtINR(exp)}</div></div>
+    <div class="an-stat"><div class="an-stat-label">Max Drawdown</div><div class="an-stat-val r">-${fmtINR(maxDd)}</div></div>`;
+  const up=eq>=0;
+  const opts={series:[{name:'Cumulative P&L',data:series}],chart:{type:'area',height:248,background:'transparent',toolbar:{show:false},animations:{enabled:false}},theme:{mode:'dark'},colors:[up?'#00e5a0':'#ff4d6a'],fill:{type:'gradient',gradient:{shadeIntensity:1,opacityFrom:0.28,opacityTo:0.02,stops:[0,100]}},stroke:{curve:'straight',width:2},xaxis:{type:'datetime',labels:{style:{colors:'var(--text3)',fontFamily:'Space Mono',fontSize:'9px'}},axisBorder:{show:false},axisTicks:{show:false},tooltip:{enabled:false}},yaxis:{labels:{style:{colors:'var(--text3)',fontFamily:'Space Mono',fontSize:'9px'},formatter:v=>'₹'+v.toFixed(0)}},grid:{borderColor:'rgba(77,124,255,0.05)',strokeDashArray:4},tooltip:{theme:'dark',x:{format:'dd MMM yy'},y:{formatter:v=>'₹'+v.toFixed(2)}}};
+  anChartInstances['equity']=new ApexCharts(document.getElementById('anEquityChart'),opts);
+  anChartInstances['equity'].render();
+}
+
+/* ── 2. MFE / MAE ── */
+function renderAnMFE(){
+  const closed=closedTrades().filter(t=>t.entry&&(t.exitPrice||t.cmp)&&t.target);
+  if(!closed.length){
+    document.getElementById('anMFEBars').innerHTML=emptyMsg('Need closed trades with Target set for MFE estimation.');
+    document.getElementById('anMAEBars').innerHTML='';
+    document.getElementById('anMFEStats').innerHTML='';
+    return;
+  }
+  // MFE estimate: we use target as proxy for MFE (best case), exit as actual
+  // MAE estimate: we use SL distance as proxy for worst excursion
+  let earlyCount=0,totalCaptureRatio=0,mfeSamples=0;
+  let mfeBars='',maeBars='';
+  closed.forEach(t=>{
+    const exitPct=pct(t.entry,t.exitPrice||t.cmp);
+    const mfePct=t.target?pct(t.entry,t.target):null;
+    const maePct=t.sl?-pct(t.entry,t.sl):null; // SL distance as MAE proxy
+    if(mfePct!==null&&mfePct>0){
+      const captured=Math.min(exitPct/mfePct,1);
+      totalCaptureRatio+=captured;mfeSamples++;
+      if(captured<0.7&&exitPct>0)earlyCount++;
+      const barW=Math.min(Math.abs(exitPct)/Math.max(Math.abs(mfePct),0.01)*100,100);
+      const color=captured>=0.8?'var(--green)':captured>=0.5?'var(--amber)':'var(--red)';
+      mfeBars+=`<div class="mfe-bar-row">
+        <div class="mfe-bar-name" title="${t.name}">${t.name.substring(0,14)}</div>
+        <div class="mfe-bar-track">
+          <div class="mfe-bar-max" style="width:100%;background:var(--green);left:0;"></div>
+          <div class="mfe-bar-entry" style="width:${barW}%;background:${color};left:0;"></div>
+        </div>
+        <div class="mfe-bar-val" style="color:${color};">${exitPct>=0?'+':''}${exitPct.toFixed(1)}%<span style="color:var(--text3);font-size:8px;"> /tgt ${mfePct.toFixed(1)}%</span></div>
+      </div>`;
+    }
+    if(maePct!==null){
+      const aeColor=maePct>5?'var(--red)':maePct>2?'var(--amber)':'var(--green)';
+      maeBars+=`<div class="mfe-bar-row">
+        <div class="mfe-bar-name" title="${t.name}">${t.name.substring(0,14)}</div>
+        <div class="mfe-bar-track">
+          <div class="mfe-bar-entry" style="width:${Math.min(maePct/10*100,100)}%;background:${aeColor};left:0;"></div>
+        </div>
+        <div class="mfe-bar-val" style="color:${aeColor};">${maePct.toFixed(1)}%</div>
+      </div>`;
+    }
+  });
+  const avgCapture=mfeSamples?((totalCaptureRatio/mfeSamples)*100).toFixed(1):0;
+  document.getElementById('anMFEBars').innerHTML=mfeBars||'<div style="color:var(--text3);font-family:var(--mono);font-size:11px;padding:12px;">Set Target prices for MFE analysis.</div>';
+  document.getElementById('anMAEBars').innerHTML=maeBars||'<div style="color:var(--text3);font-family:var(--mono);font-size:11px;padding:12px;">Set Stop Loss prices for MAE analysis.</div>';
+  document.getElementById('anMFEStats').innerHTML=`
+    <div class="an-stat"><div class="an-stat-label">Avg Capture %</div><div class="an-stat-val ${parseFloat(avgCapture)>=70?'g':parseFloat(avgCapture)>=50?'a':'r'}">${avgCapture}%</div></div>
+    <div class="an-stat"><div class="an-stat-label">Early Exits</div><div class="an-stat-val ${earlyCount>mfeSamples/2?'r':'g'}">${earlyCount} / ${mfeSamples}</div></div>
+    <div class="an-stat"><div class="an-stat-label">Trades with Target</div><div class="an-stat-val b">${mfeSamples}</div></div>
+    <div class="an-stat"><div class="an-stat-label">Verdict</div><div class="an-stat-val" style="font-size:11px;color:${parseFloat(avgCapture)>=70?'var(--green)':parseFloat(avgCapture)>=50?'var(--amber)':'var(--red)'};">${parseFloat(avgCapture)>=70?'Holding Well':parseFloat(avgCapture)>=50?'Some Early Exits':'Cutting Too Soon'}</div></div>`;
+}
+
+/* ── 3. R-MULTIPLE DISTRIBUTION ── */
+function renderAnRMult(){
+  const closed=closedTrades().filter(t=>t.sl&&t.entry>t.sl);
+  if(closed.length<2){document.getElementById('anRChart').innerHTML=emptyMsg('Need closed trades with Stop Loss set.');document.getElementById('anRStats').innerHTML='';return;}
+  const rMultiples=closed.map(t=>{
+    const riskPerShare=t.entry-t.sl;
+    const gainPerShare=(t.exitPrice||t.cmp)-t.entry;
+    return +(gainPerShare/riskPerShare).toFixed(2);
+  });
+  // bucket into bins: <-2, -2 to -1, -1 to 0, 0 to 1, 1 to 2, 2 to 3, >3
+  const buckets={lt2:0,n1:0,n0:0,p1:0,p2:0,p3:0,gt3:0};
+  const labels=['<−2R','−2→−1R','−1→0R','0→1R','1→2R','2→3R','>3R'];
+  const bucketArr=[0,0,0,0,0,0,0];
+  rMultiples.forEach(r=>{
+    if(r<-2)bucketArr[0]++;
+    else if(r<-1)bucketArr[1]++;
+    else if(r<0)bucketArr[2]++;
+    else if(r<1)bucketArr[3]++;
+    else if(r<2)bucketArr[4]++;
+    else if(r<3)bucketArr[5]++;
+    else bucketArr[6]++;
+  });
+  const posCount=rMultiples.filter(r=>r>0).length;
+  const avgR=(rMultiples.reduce((a,r)=>a+r,0)/rMultiples.length).toFixed(2);
+  const medR=[...rMultiples].sort((a,b)=>a-b)[Math.floor(rMultiples.length/2)].toFixed(2);
+  const maxR=Math.max(...rMultiples).toFixed(2);
+  const minR=Math.min(...rMultiples).toFixed(2);
+  document.getElementById('anRStats').innerHTML=`
+    <div class="an-stat"><div class="an-stat-label">Avg R-Multiple</div><div class="an-stat-val ${parseFloat(avgR)>=1?'g':parseFloat(avgR)>=0?'a':'r'}">${avgR}R</div></div>
+    <div class="an-stat"><div class="an-stat-label">Median R</div><div class="an-stat-val ${parseFloat(medR)>=1?'g':parseFloat(medR)>=0?'a':'r'}">${medR}R</div></div>
+    <div class="an-stat"><div class="an-stat-label">Best Trade</div><div class="an-stat-val g">+${maxR}R</div></div>
+    <div class="an-stat"><div class="an-stat-label">Worst Trade</div><div class="an-stat-val r">${minR}R</div></div>`;
+  const colors=bucketArr.map((_,i)=>i<3?'#ff4d6a':i===3?'#8b96c8':'#00e5a0');
+  const opts={series:[{name:'Trades',data:bucketArr}],chart:{type:'bar',height:248,background:'transparent',toolbar:{show:false},animations:{enabled:false}},theme:{mode:'dark'},colors,plotOptions:{bar:{distributed:true,borderRadius:4,columnWidth:'55%'}},dataLabels:{enabled:true,style:{fontFamily:'Space Mono',fontSize:'10px',fontWeight:'700'},formatter:v=>v||''},xaxis:{categories:labels,labels:{style:{colors:'var(--text3)',fontFamily:'Space Mono',fontSize:'9px'}}},yaxis:{labels:{style:{colors:'var(--text3)',fontFamily:'Space Mono',fontSize:'9px'}},title:{text:'# Trades',style:{color:'var(--text3)',fontFamily:'Space Mono',fontSize:'9px'}}},grid:{borderColor:'rgba(77,124,255,0.05)',strokeDashArray:4},legend:{show:false},tooltip:{theme:'dark',y:{formatter:v=>v+' trade'+(v!==1?'s':'')}}};
+  anChartInstances['rmult']=new ApexCharts(document.getElementById('anRChart'),opts);
+  anChartInstances['rmult'].render();
+}
+
+/* ── 4. DAY-OF-WEEK P&L ── */
+function renderAnDOW(){
+  const closed=closedTrades();
+  const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const dayData=Array.from({length:7},()=>({pnl:0,count:0,wins:0}));
+  closed.forEach(t=>{
+    const d=new Date(t.date).getDay(); // entry day
+    const p=exitPnlVal(t);
+    dayData[d].pnl+=p;dayData[d].count++;
+    if(p>0)dayData[d].wins++;
+  });
+  const maxAbs=Math.max(...dayData.map(d=>Math.abs(d.pnl)),1);
+  // Tile grid
+  document.getElementById('anDOWGrid').innerHTML=DAYS.map((day,i)=>{
+    const d=dayData[i];
+    const intensity=Math.min(Math.abs(d.pnl)/maxAbs,1);
+    const bg=d.count===0?'var(--bg3)':d.pnl>=0?`rgba(0,229,160,${0.07+intensity*0.38})`:`rgba(255,77,106,${0.07+intensity*0.38})`;
+    const border=d.count===0?'var(--border)':d.pnl>=0?'rgba(0,229,160,0.2)':'rgba(255,77,106,0.2)';
+    const valColor=d.count===0?'var(--text3)':d.pnl>=0?'var(--green)':'var(--red)';
+    return`<div class="dow-cell" style="background:${bg};border:1px solid ${border};">
+      <div class="dow-cell-day">${day}</div>
+      <div class="dow-cell-val" style="color:${valColor};">${d.count?`${d.pnl>=0?'+':''}${fmtINR(d.pnl)}`:'—'}</div>
+      <div class="dow-cell-n">${d.count?d.count+'t':''}</div>
+    </div>`;
+  }).join('');
+  if(!closed.length){document.getElementById('anDOWChart').innerHTML=emptyMsg();return;}
+  const tradingDays=DAYS.slice(1,6); // Mon–Fri
+  const tradingData=dayData.slice(1,6);
+  const opts={series:[{name:'Total P&L',data:tradingData.map(d=>+d.pnl.toFixed(2))}],chart:{type:'bar',height:212,background:'transparent',toolbar:{show:false},animations:{enabled:false}},theme:{mode:'dark'},colors:tradingData.map(d=>d.pnl>=0?'#00e5a0':'#ff4d6a'),plotOptions:{bar:{distributed:true,borderRadius:4,columnWidth:'50%'}},dataLabels:{enabled:false},xaxis:{categories:tradingDays,labels:{style:{colors:'var(--text3)',fontFamily:'Space Mono',fontSize:'9px'}}},yaxis:{labels:{style:{colors:'var(--text3)',fontFamily:'Space Mono',fontSize:'9px'},formatter:v=>fmtINR(v)}},grid:{borderColor:'rgba(77,124,255,0.05)',strokeDashArray:4},legend:{show:false},tooltip:{theme:'dark',y:{formatter:v=>(v>=0?'+':'')+fmtINR(v)}}};
+  anChartInstances['dow']=new ApexCharts(document.getElementById('anDOWChart'),opts);
+  anChartInstances['dow'].render();
+}
+
+/* ── 5. ENTRY / EXIT EFFICIENCY ── */
+function renderAnEE(){
+  // Efficiency from daily candle data
+  const closed=closedTrades().filter(t=>t.dailyData&&t.dailyData.length&&t.entry&&(t.exitPrice||t.cmp));
+  if(!closed.length){
+    document.getElementById('anEntryEff').innerHTML=emptyMsg('Fetch prices to load OHLC data for efficiency calc.');
+    document.getElementById('anExitEff').innerHTML='';
+    document.getElementById('anEEStats').innerHTML='';
+    return;
+  }
+  let entryBars='',exitBars='',totalEE=0,totalXE=0,count=0;
+  closed.forEach(t=>{
+    const entryCandle=t.dailyData.find(d=>d.time===t.date)||t.dailyData.reduce((best,d)=>Math.abs(new Date(d.time)-new Date(t.date))<Math.abs(new Date(best.time)-new Date(t.date))?d:best,t.dailyData[0]);
+    const exitCandle=t.exitDate?(t.dailyData.find(d=>d.time===t.exitDate)||t.dailyData.reduce((best,d)=>Math.abs(new Date(d.time)-new Date(t.exitDate))<Math.abs(new Date(best.time)-new Date(t.exitDate))?d:best,t.dailyData[0])):null;
+    if(!entryCandle)return;
+    const range=entryCandle.high-entryCandle.low;
+    if(range<=0)return;
+    // Entry efficiency: 100% = entered at the low (perfect for a long)
+    const entryEff=Math.max(0,Math.min(100,((entryCandle.high-t.entry)/range)*100));
+    const exitEff=exitCandle?Math.max(0,Math.min(100,(((t.exitPrice||t.cmp)-exitCandle.low)/(exitCandle.high-exitCandle.low||1))*100)):null;
+    totalEE+=entryEff;if(exitEff!==null)totalXE+=exitEff;count++;
+    const eColor=entryEff>=70?'var(--green)':entryEff>=40?'var(--amber)':'var(--red)';
+    const xColor=exitEff===null?'var(--text3)':exitEff>=70?'var(--green)':exitEff>=40?'var(--amber)':'var(--red)';
+    entryBars+=`<div class="ee-bar-row"><div class="ee-bar-label" title="${t.name}">${t.name.substring(0,12)}</div><div class="ee-bar-track"><div class="ee-bar-fill" style="width:${entryEff.toFixed(0)}%;background:${eColor};"></div></div><div class="ee-bar-pct" style="color:${eColor};">${entryEff.toFixed(0)}%</div></div>`;
+    exitBars+=`<div class="ee-bar-row"><div class="ee-bar-label" title="${t.name}">${t.name.substring(0,12)}</div><div class="ee-bar-track"><div class="ee-bar-fill" style="width:${(exitEff||0).toFixed(0)}%;background:${xColor};"></div></div><div class="ee-bar-pct" style="color:${xColor};">${exitEff!==null?exitEff.toFixed(0)+'%':'—'}</div></div>`;
+  });
+  const avgEE=count?(totalEE/count).toFixed(1):0;
+  const avgXE=count?(totalXE/count).toFixed(1):0;
+  document.getElementById('anEntryEff').innerHTML=entryBars||emptyMsg('No OHLC data.');
+  document.getElementById('anExitEff').innerHTML=exitBars||emptyMsg('No exit candle data.');
+  document.getElementById('anEEStats').innerHTML=`
+    <div class="an-stat"><div class="an-stat-label">Avg Entry Eff.</div><div class="an-stat-val ${parseFloat(avgEE)>=60?'g':parseFloat(avgEE)>=40?'a':'r'}">${avgEE}%</div></div>
+    <div class="an-stat"><div class="an-stat-label">Avg Exit Eff.</div><div class="an-stat-val ${parseFloat(avgXE)>=60?'g':parseFloat(avgXE)>=40?'a':'r'}">${avgXE}%</div></div>
+    <div class="an-stat"><div class="an-stat-label">Trades Analysed</div><div class="an-stat-val b">${count}</div></div>
+    <div class="an-stat"><div class="an-stat-label">Entry Verdict</div><div class="an-stat-val" style="font-size:10px;color:${parseFloat(avgEE)>=60?'var(--green)':parseFloat(avgEE)>=40?'var(--amber)':'var(--red)'};">${parseFloat(avgEE)>=60?'Near Low ✓':parseFloat(avgEE)>=40?'Decent':'Chasing Entries'}</div></div>`;
+}
+
+/* ── 6. ROLLING DRAWDOWN ── */
+function renderAnDD(){
+  const closed=closedTrades();
+  if(closed.length<2){document.getElementById('anDDChart').innerHTML=emptyMsg();document.getElementById('anDDStats').innerHTML='';return;}
+  let eq=0,peak=0,ddSeries=[],eqSeries=[];
+  let maxDd=0,maxDdDate='',currentDd=0,ddDays=0,longestDdDays=0,ddStart=null;
+  closed.forEach(t=>{
+    const p=exitPnlVal(t);eq+=p;
+    if(eq>peak){peak=eq;if(ddStart)longestDdDays=Math.max(longestDdDays,ddDays);ddStart=null;ddDays=0;}
+    const dd=peak>0?((peak-eq)/peak*100):0;
+    if(dd>0&&!ddStart)ddStart=t.exitDate;
+    if(ddStart)ddDays=Math.floor((new Date(t.exitDate)-new Date(ddStart))/86400000);
+    currentDd=dd;
+    if(dd>maxDd){maxDd=dd;maxDdDate=t.exitDate;}
+    const ts=new Date(t.exitDate).getTime();
+    ddSeries.push({x:ts,y:-+dd.toFixed(2)});
+    eqSeries.push({x:ts,y:+eq.toFixed(2)});
+  });
+  if(ddStart)longestDdDays=Math.max(longestDdDays,ddDays);
+  document.getElementById('anDDStats').innerHTML=`
+    <div class="an-stat"><div class="an-stat-label">Max Drawdown</div><div class="an-stat-val r">-${maxDd.toFixed(1)}%</div></div>
+    <div class="an-stat"><div class="an-stat-label">Max DD Date</div><div class="an-stat-val" style="font-size:11px;color:var(--text2);">${maxDdDate||'—'}</div></div>
+    <div class="an-stat"><div class="an-stat-label">Current DD</div><div class="an-stat-val ${currentDd>10?'r':currentDd>5?'a':'g'}">${currentDd>0?'-':''}${currentDd.toFixed(1)}%</div></div>
+    <div class="an-stat"><div class="an-stat-label">Longest DD (days)</div><div class="an-stat-val a">${longestDdDays}d</div></div>`;
+  const opts={
+    series:[
+      {name:'Drawdown %',data:ddSeries,type:'area'},
+      {name:'Equity',data:eqSeries,type:'line'}
+    ],
+    chart:{height:248,background:'transparent',toolbar:{show:false},animations:{enabled:false}},
+    theme:{mode:'dark'},
+    colors:['#ff4d6a','#4d7cff'],
+    fill:{type:['gradient','solid'],gradient:{shadeIntensity:1,opacityFrom:0.3,opacityTo:0.02,stops:[0,100]}},
+    stroke:{curve:'straight',width:[2,1.5],dashArray:[0,4]},
+    xaxis:{type:'datetime',labels:{style:{colors:'var(--text3)',fontFamily:'Space Mono',fontSize:'9px'}},axisBorder:{show:false},axisTicks:{show:false},tooltip:{enabled:false}},
+    yaxis:[
+      {seriesName:'Drawdown %',labels:{style:{colors:'#ff4d6a',fontFamily:'Space Mono',fontSize:'9px'},formatter:v=>v+'%'},opposite:false},
+      {seriesName:'Equity',labels:{style:{colors:'#4d7cff',fontFamily:'Space Mono',fontSize:'9px'},formatter:v=>fmtINR(v)},opposite:true}
+    ],
+    grid:{borderColor:'rgba(77,124,255,0.05)',strokeDashArray:4},
+    legend:{show:true,fontFamily:'Space Mono',fontSize:'9px',labels:{colors:'var(--text2)'}},
+    tooltip:{theme:'dark',x:{format:'dd MMM yy'}}
+  };
+  anChartInstances['dd']=new ApexCharts(document.getElementById('anDDChart'),opts);
+  anChartInstances['dd'].render();
+}
+
+function emptyMsg(msg='No closed trades yet.'){
+  return`<div style="text-align:center;padding:40px 20px;color:var(--text3);font-family:var(--mono);font-size:11px;"><div style="font-size:28px;opacity:0.3;margin-bottom:10px;">📊</div>${msg}</div>`;
+}
+
+
 </script>
 </body>
 </html>
