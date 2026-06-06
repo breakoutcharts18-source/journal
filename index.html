@@ -436,10 +436,11 @@ select option{background:var(--bg3);}
         </div>
         <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
           <select id="alphaIndexSelect" class="sort-select" style="font-size:11px;">
-            <option value="NIFTYSMALLCAP250.NS">Nifty Smallcap 250</option>
-            <option value="NIFTYSMALLCAP100.NS">Nifty Smallcap 100</option>
+            <option value="^CNXSC">Nifty Smallcap 100</option>
+            <option value="^CNXSMALLCAP">Nifty Smallcap 250</option>
             <option value="^NSEI">Nifty 50</option>
             <option value="^NSMIDCP">Nifty Midcap 150</option>
+            <option value="^CNXMIDCAP">Nifty Midcap 100</option>
           </select>
           <button class="btn btn-cyan" id="alphaFetchBtn" onclick="fetchAlphaData()" style="font-size:11px;padding:6px 14px;">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
@@ -1777,7 +1778,7 @@ async function fetchAlphaData(){
   }catch(e){
     document.getElementById('anAlphaStats').innerHTML=`<div class="an-stat" style="grid-column:1/-1;padding:20px;text-align:center;">
       <div style="font-family:var(--mono);font-size:11px;color:var(--red);">✗ Could not fetch ${ticker}.<br><br>
-      <span style="color:var(--text3);">Try: NIFTYSMALLCAP250.NS · NIFTYSMALLCAP100.NS · ^NSEI<br>Check your internet connection and try again.</span></div></div>`;
+      <span style="color:var(--text3);">Working tickers: ^CNXSC · ^NSEI · ^NSMIDCP · ^CNXMIDCAP<br>Check your internet connection and try again.</span></div></div>`;
     showToast('Benchmark fetch failed','error');
   }
   btn.disabled=false;
@@ -1791,73 +1792,79 @@ function renderAlphaChart(){
   const allTrades=trades.filter(t=>t.date);
   if(!allTrades.length){document.getElementById('anAlphaStats').innerHTML=emptyMsg('No trades logged.');return;}
 
-  // Portfolio window: earliest entry → today
-  const pfStart=allTrades.reduce((min,t)=>t.date<min?t.date:min,allTrades[0].date);
-
-  const idxData=alphaIndexData.dailyData;
-  if(!idxData||!idxData.length){document.getElementById('anAlphaStats').innerHTML=emptyMsg('No index data. Click Fetch & Compare.');return;}
-
-  // Build index price map
+  // Index price map
   const idxMap={};
-  idxData.forEach(d=>idxMap[d.time]=d.close);
+  alphaIndexData.dailyData.forEach(d=>idxMap[d.time]=d.close);
   const idxDates=Object.keys(idxMap).sort();
+  if(!idxDates.length){document.getElementById('anAlphaStats').innerHTML=emptyMsg('No index data. Click Fetch & Compare.');return;}
 
-  // Index anchor = first trading day on or after pfStart
+  // Portfolio window start = earliest trade entry available in index data
+  const pfStart=allTrades.reduce((min,t)=>t.date<min?t.date:min,allTrades[0].date);
   const idxStartDate=idxDates.find(d=>d>=pfStart)||idxDates[0];
-  const idxEndDate=idxDates[idxDates.length-1];
   const idxStartPrice=idxMap[idxStartDate];
-  const idxEndPrice=idxMap[idxEndDate];
+  const idxEndPrice=idxMap[idxDates[idxDates.length-1]];
   const idxReturn=((idxEndPrice-idxStartPrice)/idxStartPrice)*100;
 
-  // ── Portfolio TWR ──
-  // Simple method: sum weighted returns across all trades (closed + active)
-  const allForTWR=trades.filter(t=>t.date);
-  const totalInvested=allForTWR.reduce((s,t)=>s+t.entry*t.qty,0)||1;
-  const totalGain=allForTWR.reduce((s,t)=>{
+  // ── Portfolio TWR (scalar) ──
+  // Weight each trade's return by its capital (entry * qty)
+  const totalInvested=allTrades.reduce((s,t)=>s+t.entry*t.qty,0)||1;
+  const totalGain=allTrades.reduce((s,t)=>{
     const exitP=t.status==='closed'?(t.exitPrice||t.cmp):t.cmp;
-    return s+((exitP-t.entry)*t.qty);
+    return s+(exitP-t.entry)*t.qty;
   },0);
   const pfReturn=(totalGain/totalInvested)*100;
   const alpha=pfReturn-idxReturn;
 
-  // ── Build dual time-series (both indexed to 100 at pfStart) ──
-  // Portfolio: use closed trades' exit dates to build a step-wise cumulative P&L
-  // then normalise against total invested capital
-  const pfDailyPnl={};
-  trades.filter(t=>t.status==='closed'&&t.exitDate).forEach(t=>{
-    const d=t.exitDate;
-    pfDailyPnl[d]=(pfDailyPnl[d]||0)+((t.exitPrice||t.cmp)-t.entry)*t.qty;
+  // ── Portfolio time-series: mark-to-market each day ──
+  // For each index date >= idxStartDate, compute portfolio value:
+  //   closed trades: contribute their realised P&L from exitDate onwards
+  //   active trades: use their dailyData OHLC close for each day; fallback to entry price before their entry date
+  const relevantDates=idxDates.filter(d=>d>=idxStartDate);
+
+  // Pre-build per-trade daily close maps from fetched OHLC
+  const tradeDailyMaps=allTrades.map(t=>{
+    const m={};
+    (t.dailyData||[]).forEach(d=>m[d.time]=d.close);
+    return{t,m};
   });
 
-  // Walk the index dates from idxStartDate onwards, building both series
-  const relevantDates=idxDates.filter(d=>d>=idxStartDate);
-  let pfCumPnl=0;
   const pfSeries=[],idxSeries=[];
 
   relevantDates.forEach(d=>{
-    if(pfDailyPnl[d])pfCumPnl+=pfDailyPnl[d];
-    const pfIndexed=100+(pfCumPnl/totalInvested*100);
+    // Portfolio value on this day
+    let portValue=totalInvested; // start at cost basis (= 100 indexed)
+    let portGainOnDay=0;
+    tradeDailyMaps.forEach(({t,m})=>{
+      let priceOnDay;
+      if(t.status==='closed'){
+        // After exit: locked in exitPrice gain
+        if(d>=t.exitDate) priceOnDay=t.exitPrice||t.cmp;
+        // Before entry: not yet in portfolio (no contribution)
+        else if(d<t.date) return;
+        // During hold: use daily close if available, else entry
+        else priceOnDay=m[d]||t.entry;
+      }else{
+        // Active: use daily close if available, else last known cmp or entry
+        if(d<t.date) return;
+        priceOnDay=m[d]||t.cmp||t.entry;
+      }
+      portGainOnDay+=(priceOnDay-t.entry)*t.qty;
+    });
+    const pfIndexed=100+(portGainOnDay/totalInvested*100);
     const idxIndexed=(idxMap[d]/idxStartPrice)*100;
     const ts=new Date(d).getTime();
     pfSeries.push({x:ts,y:+pfIndexed.toFixed(2)});
     idxSeries.push({x:ts,y:+idxIndexed.toFixed(2)});
   });
-  // Add today's active position unrealised to last point
-  const activeGain=trades.filter(t=>t.status==='active'&&t.cmp).reduce((s,t)=>(t.cmp-t.entry)*t.qty+s,0);
-  if(pfSeries.length&&activeGain!==0){
-    const last=pfSeries[pfSeries.length-1];
-    pfSeries[pfSeries.length-1]={x:last.x,y:+(100+((pfCumPnl+activeGain)/totalInvested*100)).toFixed(2)};
-  }
 
-  // ── Per-trade alpha ──
+  // ── Per-trade alpha (closed trades vs index over same hold period) ──
   const closed=trades.filter(t=>t.status==='closed'&&t.date&&t.exitDate);
   const tradeAlphas=closed.map(t=>{
     const tradeReturn=((t.exitPrice||t.cmp)-t.entry)/t.entry*100;
     const iStart=idxDates.find(d=>d>=t.date);
     const iEnd=[...idxDates].reverse().find(d=>d<=t.exitDate);
     const iR=(iStart&&iEnd&&idxMap[iStart]&&idxMap[iEnd])
-      ?((idxMap[iEnd]-idxMap[iStart])/idxMap[iStart]*100)
-      :null;
+      ?((idxMap[iEnd]-idxMap[iStart])/idxMap[iStart]*100):null;
     return{trade:t,tradeReturn,indexReturn:iR,alpha:iR!==null?tradeReturn-iR:null,days:holdDays(t)};
   }).filter(x=>x.alpha!==null).sort((a,b)=>b.alpha-a.alpha);
 
@@ -1866,6 +1873,7 @@ function renderAlphaChart(){
 
   // ── Hero cards ──
   const alphaColor=alpha>=0?'var(--green)':'var(--red)';
+  const hasDailyData=tradeDailyMaps.some(({m})=>Object.keys(m).length>0);
   document.getElementById('anAlphaStats').innerHTML=`
     <div class="an-stat" style="border-color:${alpha>=0?'rgba(0,229,160,0.35)':'rgba(255,77,106,0.35)'};background:${alpha>=0?'rgba(0,229,160,0.06)':'rgba(255,77,106,0.06)'};">
       <div class="an-stat-label">Portfolio Alpha</div>
@@ -1875,7 +1883,7 @@ function renderAlphaChart(){
     <div class="an-stat">
       <div class="an-stat-label">Your Return (TWR)</div>
       <div class="an-stat-val" style="color:${pfReturn>=0?'var(--green)':'var(--red)'};">${pfReturn>=0?'+':''}${pfReturn.toFixed(2)}%</div>
-      <div style="font-family:var(--mono);font-size:9px;color:var(--text3);margin-top:4px;">weighted across all trades</div>
+      <div style="font-family:var(--mono);font-size:9px;color:var(--text3);margin-top:4px;">weighted across all ${allTrades.length} positions</div>
     </div>
     <div class="an-stat">
       <div class="an-stat-label">${alphaIndexData.name}</div>
@@ -1885,34 +1893,40 @@ function renderAlphaChart(){
     <div class="an-stat">
       <div class="an-stat-label">Trades Beating Index</div>
       <div class="an-stat-val" style="color:${beatCount>=tradeAlphas.length/2?'var(--green)':'var(--amber)'};">${beatCount} / ${tradeAlphas.length}</div>
-      <div style="font-family:var(--mono);font-size:9px;color:var(--text3);margin-top:4px;">avg α per trade: ${avgAlpha>=0?'+':''}${avgAlpha.toFixed(1)}%</div>
+      <div style="font-family:var(--mono);font-size:9px;color:var(--text3);margin-top:4px;">avg α: ${avgAlpha>=0?'+':''}${avgAlpha.toFixed(1)}% per closed trade</div>
     </div>`;
+
+  if(!hasDailyData){
+    document.getElementById('anAlphaChart').innerHTML=`<div style="text-align:center;padding:24px;font-family:var(--mono);font-size:11px;color:var(--amber);">
+      ⚠ Chart shows step-only curve — hit <strong>Fetch</strong> on the main screen first to load daily OHLC data for smoother portfolio tracking.</div>`;
+  }
 
   // ── Chart ──
   const chartEl=document.getElementById('anAlphaChart');
-  chartEl.innerHTML='';
+  if(hasDailyData) chartEl.innerHTML='';
   if(pfSeries.length>1){
     const chartOpts={
       series:[
         {name:'Your Portfolio',data:pfSeries},
         {name:alphaIndexData.name,data:idxSeries}
       ],
-      chart:{type:'line',height:262,background:'transparent',toolbar:{show:false},animations:{enabled:false}},
+      chart:{type:'line',height:hasDailyData?262:220,background:'transparent',toolbar:{show:false},animations:{enabled:false}},
       theme:{mode:'dark'},
       colors:['#00e5a0','#4d7cff'],
       stroke:{curve:'straight',width:[2.5,1.5],dashArray:[0,5]},
       markers:{size:0},
       xaxis:{type:'datetime',labels:{style:{colors:'var(--text3)',fontFamily:'Space Mono',fontSize:'9px'}},axisBorder:{show:false},axisTicks:{show:false},tooltip:{enabled:false}},
-      yaxis:{labels:{style:{colors:'var(--text3)',fontFamily:'Space Mono',fontSize:'9px'},formatter:v=>v.toFixed(0)},title:{text:'Indexed (base 100)',style:{color:'var(--text3)',fontFamily:'Space Mono',fontSize:'9px'}}},
+      yaxis:{labels:{style:{colors:'var(--text3)',fontFamily:'Space Mono',fontSize:'9px'},formatter:v=>v.toFixed(1)},title:{text:'Indexed (base 100)',style:{color:'var(--text3)',fontFamily:'Space Mono',fontSize:'9px'}}},
       grid:{borderColor:'rgba(77,124,255,0.05)',strokeDashArray:4},
       legend:{show:true,fontFamily:'Space Mono',fontSize:'9px',labels:{colors:'var(--text2)'}},
-      tooltip:{theme:'dark',x:{format:'dd MMM yy'},y:{formatter:v=>v.toFixed(2)}},
-      annotations:{yaxis:[{y:100,borderColor:'rgba(255,255,255,0.08)',strokeDashArray:3,borderWidth:1,label:{text:'Start',position:'right',style:{background:'transparent',color:'var(--text3)',fontSize:'8px',fontFamily:'Space Mono'}}}]}
+      tooltip:{theme:'dark',x:{format:'dd MMM yy'},y:{formatter:(v,{seriesIndex})=>{
+        const label=seriesIndex===0?'Portfolio':'Index';
+        return `${label}: ${v.toFixed(2)} (${v>=100?'+':''}${(v-100).toFixed(2)}%)`;
+      }}},
+      annotations:{yaxis:[{y:100,borderColor:'rgba(255,255,255,0.1)',strokeDashArray:3,borderWidth:1,label:{text:'Baseline',position:'right',style:{background:'transparent',color:'var(--text3)',fontSize:'8px',fontFamily:'Space Mono'}}}]}
     };
     anChartInstances['alpha']=new ApexCharts(chartEl,chartOpts);
     anChartInstances['alpha'].render();
-  }else{
-    chartEl.innerHTML=`<div style="text-align:center;padding:30px;font-family:var(--mono);font-size:11px;color:var(--text3);">Not enough overlapping dates for chart. Fetch prices for your trades first, then re-run.</div>`;
   }
 
   // ── Per-trade table ──
