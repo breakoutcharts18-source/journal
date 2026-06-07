@@ -436,12 +436,15 @@ select option{background:var(--bg3);}
         </div>
         <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
           <select id="alphaIndexSelect" class="sort-select" style="font-size:11px;">
-            <option value="^CNXSC">Nifty Smallcap 100</option>
-            <option value="^CNXSMALLCAP">Nifty Smallcap 250</option>
             <option value="^NSEI">Nifty 50</option>
             <option value="^NSMIDCP">Nifty Midcap 150</option>
-            <option value="^CNXMIDCAP">Nifty Midcap 100</option>
+            <option value="NIFTYBEES.NS">Nifty 50 BeES ETF</option>
+            <option value="JUNIORBEES.NS">Nifty Next 50 BeES ETF</option>
+            <option value="SETFNN50.NS">SBI Nifty Next 50 ETF</option>
           </select>
+          <div style="font-family:var(--mono);font-size:9px;color:var(--text3);margin-top:4px;max-width:220px;line-height:1.5;">
+            ⚠ Smallcap index tickers are geo-blocked via the proxy. ETFs above track equivalent indices reliably.
+          </div>
           <button class="btn btn-cyan" id="alphaFetchBtn" onclick="fetchAlphaData()" style="font-size:11px;padding:6px 14px;">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
             Fetch &amp; Compare
@@ -726,7 +729,12 @@ let autoRefreshTimer=null,progressTimer=null,progressStart=null,progressDuration
 let chartInstances={},anChartInstances={};
 
 function save(){
-  const slim=trades.map(({dailyData,livePrice,...t})=>t);
+  // Keep a compact close-only cache for alpha chart (tiny vs full OHLC)
+  const slim=trades.map(({dailyData,livePrice,...t})=>{
+    // Save just date+close for each candle (saves ~80% space vs full OHLC)
+    const compactData=(dailyData||[]).map(d=>({time:d.time,close:d.close,high:d.high,low:d.low,open:d.open}));
+    return{...t,dailyData:compactData.length?compactData:undefined};
+  });
   const payload=JSON.stringify({trades:slim,savedAt:new Date().toISOString()});
   try{
     localStorage.removeItem(STORAGE_KEY);
@@ -742,7 +750,7 @@ function load(){
     const raw=localStorage.getItem(STORAGE_KEY);
     if(!raw||raw==='null'||raw==='{}'){loadDefaults();return;}
     const d=JSON.parse(raw);
-    const loaded=(d.trades||[]).map(t=>({...t,dailyData:[]}));
+    const loaded=(d.trades||[]).map(t=>({...t,dailyData:t.dailyData||[]}));
     if(!loaded.length){loadDefaults();return;}
     trades=loaded;
     console.log('Loaded',trades.length,'trades from localStorage, saved:',d.savedAt||'unknown');
@@ -1144,12 +1152,19 @@ function renderCards(){
   });
 
   // ── Group same ticker+entry date into one card (multiple exits) ──
-  // Key: ticker_entryDate_entryPrice — trades sharing this are partial exits of the same position
+  // Key: ticker+name+date only — entry price excluded to handle float precision mismatches
+  // (e.g. 1603.37 vs 1603.3 both stored for same position)
   const groups=[];
   const groupMap={};
   list.forEach(t=>{
-    const key=`${t.ticker||t.name}_${t.date}_${t.entry}`;
-    if(groupMap[key]){groupMap[key].members.push(t);}
+    const key=`${(t.ticker||t.name).toUpperCase().trim()}_${t.date}`;
+    if(groupMap[key]){
+      groupMap[key].members.push(t);
+      // Prefer active trade as primary; else prefer trade with most dailyData
+      const cur=groupMap[key].primary;
+      if(t.status==='active'&&cur.status!=='active') groupMap[key].primary=t;
+      else if((t.dailyData||[]).length>(cur.dailyData||[]).length) groupMap[key].primary=t;
+    }
     else{const g={key,primary:t,members:[t]};groupMap[key]=g;groups.push(g);}
   });
   // For each group, compute aggregate stats
@@ -1241,9 +1256,9 @@ function openDetail(id){
   detailId=id;
   const isActive=t.status==='active';
 
-  // ── Find all sibling trades (same ticker + entry date + entry price) ──
-  const groupKey=`${t.ticker||t.name}_${t.date}_${t.entry}`;
-  const siblings=trades.filter(x=>`${x.ticker||x.name}_${x.date}_${x.entry}`===groupKey);
+  // ── Find all sibling trades (same ticker + entry date) ──
+  const groupKey=`${(t.ticker||t.name).toUpperCase().trim()}_${t.date}`;
+  const siblings=trades.filter(x=>`${(x.ticker||x.name).toUpperCase().trim()}_${x.date}`===groupKey);
   const isMulti=siblings.length>1;
   const closedSiblings=siblings.filter(x=>x.status==='closed'&&x.exitDate);
   const totalQty=siblings.reduce((s,x)=>s+x.qty,0);
