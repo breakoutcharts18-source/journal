@@ -1096,13 +1096,18 @@ function drawCandleChart(containerId,trade,isDetail=false){
     annotations.yaxis.push({value:trade.entry,borderColor:'#4d7cff',strokeDashArray:4,borderWidth:1,label:{text:'ENTRY  ₹'+trade.entry,position:'right',offsetX:0,style:{background:'#4d7cff',color:'#fff',fontSize:'8px',fontFamily:'Space Mono',padding:{top:2,bottom:2,left:6,right:6}}}});
     if(trade.sl)annotations.yaxis.push({value:trade.sl,borderColor:'#ff4d6a',strokeDashArray:4,borderWidth:1,label:{text:'SL  ₹'+trade.sl,position:'right',offsetX:0,style:{background:'#ff4d6a',color:'#fff',fontSize:'8px',fontFamily:'Space Mono',padding:{top:2,bottom:2,left:6,right:6}}}});
     if(trade.target)annotations.yaxis.push({value:trade.target,borderColor:'#00e5a0',strokeDashArray:4,borderWidth:1,label:{text:'TARGET  ₹'+trade.target,position:'right',offsetX:0,style:{background:'#00e5a0',color:'#000',fontSize:'8px',fontFamily:'Space Mono',padding:{top:2,bottom:2,left:6,right:6}}}});
-    const entryCandle=data.find(d=>d.time===trade.date)||data.reduce((best,d)=>Math.abs(new Date(d.time)-new Date(trade.date))<Math.abs(new Date(best.time)-new Date(trade.date))?d:best,data[0]);
-    if(entryCandle)annotations.points.push({x:new Date(entryCandle.time).getTime(),y:entryCandle.low,yAxisIndex:0,marker:{size:6,fillColor:'#4d7cff',strokeColor:'#fff',strokeWidth:1.5,shape:'triangle',offsetY:8},label:{text:'B',borderColor:'transparent',borderWidth:0,style:{background:'#4d7cff',color:'#fff',fontSize:'8px',fontFamily:'Space Mono',padding:{top:1,bottom:1,left:4,right:4}},offsetY:26,offsetX:0}});
-    if(trade.status==='closed'&&trade.exitDate){
-      const exitCandle=data.find(d=>d.time===trade.exitDate)||data.reduce((best,d)=>Math.abs(new Date(d.time)-new Date(trade.exitDate))<Math.abs(new Date(best.time)-new Date(trade.exitDate))?d:best,data[0]);
-      const exitPnl=((trade.exitPrice||trade.cmp)-trade.entry)*trade.qty,exitColor=exitPnl>=0?'#00e5a0':'#ff4d6a';
-      if(exitCandle)annotations.points.push({x:new Date(exitCandle.time).getTime(),y:exitCandle.high,yAxisIndex:0,marker:{size:6,fillColor:exitColor,strokeColor:'#fff',strokeWidth:1.5,shape:'triangle',offsetY:-8,cssClass:'exit-marker'},label:{text:'S',borderColor:'transparent',borderWidth:0,style:{background:exitColor,color:exitPnl>=0?'#000':'#fff',fontSize:'8px',fontFamily:'Space Mono',padding:{top:1,bottom:1,left:4,right:4}},offsetY:-24,offsetX:0}});
-    }
+    // Entry arrow (no label text)
+    const findCandle=(date)=>data.find(d=>d.time===date)||data.reduce((best,d)=>Math.abs(new Date(d.time)-new Date(date))<Math.abs(new Date(best.time)-new Date(date))?d:best,data[0]);
+    const entryCandle=findCandle(trade.date);
+    if(entryCandle)annotations.points.push({x:new Date(entryCandle.time).getTime(),y:entryCandle.low,yAxisIndex:0,marker:{size:7,fillColor:'#4d7cff',strokeColor:'#fff',strokeWidth:1.5,shape:'triangle',offsetY:10},label:{text:'',borderColor:'transparent',borderWidth:0}});
+    // All exit arrows — from trade.allExits if available (multi-exit), else single exit
+    const exits=trade.allExits||((trade.status==='closed'&&trade.exitDate)?[{exitDate:trade.exitDate,exitPrice:trade.exitPrice||trade.cmp,qty:trade.qty}]:[]);
+    exits.forEach(ex=>{
+      const exitCandle=findCandle(ex.exitDate);
+      const exitPnl=(ex.exitPrice-trade.entry)*ex.qty;
+      const exitColor=exitPnl>=0?'#00e5a0':'#ff4d6a';
+      if(exitCandle)annotations.points.push({x:new Date(exitCandle.time).getTime(),y:exitCandle.high,yAxisIndex:0,marker:{size:7,fillColor:exitColor,strokeColor:'#fff',strokeWidth:1.5,shape:'triangle',offsetY:-10,cssClass:'exit-marker'},label:{text:'',borderColor:'transparent',borderWidth:0}});
+    });
   }
   const opts={
     series:[{data:series}],
@@ -1235,45 +1240,92 @@ function openDetail(id){
   const t=trades.find(x=>x.id===id);if(!t)return;
   detailId=id;
   const isActive=t.status==='active';
-  const curPct=isActive?pct(t.entry,t.cmp):pct(t.entry,t.exitPrice||t.cmp);
-  const pnl=isActive?pnlVal(t):exitPnlVal(t);
+
+  // ── Find all sibling trades (same ticker + entry date + entry price) ──
+  const groupKey=`${t.ticker||t.name}_${t.date}_${t.entry}`;
+  const siblings=trades.filter(x=>`${x.ticker||x.name}_${x.date}_${x.entry}`===groupKey);
+  const isMulti=siblings.length>1;
+  const closedSiblings=siblings.filter(x=>x.status==='closed'&&x.exitDate);
+  const totalQty=siblings.reduce((s,x)=>s+x.qty,0);
+  const totalPnl=siblings.reduce((s,x)=>s+(x.status==='closed'?exitPnlVal(x):pnlVal(x)),0);
+  const totalInvested=siblings.reduce((s,x)=>s+t.entry*x.qty,0);
+  const curPctAgg=totalInvested>0?(totalPnl/totalInvested*100):0;
+
+  // For single trade fallback
+  const curPct=isMulti?curPctAgg:(isActive?pct(t.entry,t.cmp):pct(t.entry,t.exitPrice||t.cmp));
+  const pnl=isMulti?totalPnl:(isActive?pnlVal(t):exitPnlVal(t));
   const rr=rrRatio(t),score=tradeScore(t);const{g:grade}=scoreGrade(score);
-  const taxInfo=t.status==='closed'?taxClassifyTrade(t):null;
+
+  // All exits for chart markers
+  const allExits=closedSiblings.map(x=>({exitDate:x.exitDate,exitPrice:x.exitPrice||x.cmp,qty:x.qty}));
+
+  // Tax: sum across siblings
+  const allTaxInfo=siblings.filter(x=>x.status==='closed').map(x=>taxClassifyTrade(x)).filter(Boolean);
+  const totalSTT=allTaxInfo.reduce((s,x)=>s+x.stt,0);
+  const taxType=allTaxInfo.length?allTaxInfo[0].type:null;
+
   document.getElementById('detailName').textContent=t.name;
-  document.getElementById('detailTicker').textContent=`${t.ticker||'MANUAL'} · ${t.exchange} · ${t.type}`;
+  document.getElementById('detailTicker').textContent=`${t.ticker||'MANUAL'} · ${t.exchange} · ${t.type}${isMulti?' · '+siblings.length+' EXITS':''}`;
   document.getElementById('detailPnlBadge').textContent=(pnl>=0?'+':'')+fmtINR(pnl);
   document.getElementById('detailPnlBadge').style.color=pnl>=0?'var(--green)':'var(--red)';
+
   let tags='';
   if(t.setupType)tags+=`<span class="badge badge-tag">${t.setupType}</span>`;
   if(t.marketContext)tags+=`<span class="badge badge-tag">${t.marketContext}</span>`;
   if(t.execution)tags+=`<span class="badge badge-tag">${t.execution}</span>`;
   if(t.emotion)tags+=`<span class="badge ${t.emotion==='FOMO'||t.emotion==='Revenge Trading'?'badge-risk':'badge-live'}">${t.emotion}</span>`;
   tags+=`<span class="badge" style="background:var(--purple-dim);color:var(--purple);border-color:rgba(180,109,255,0.2);">AI Score: ${grade} (${score})</span>`;
-  if(taxInfo)tags+=`<span class="badge ${taxInfo.type==='LTCG'?'badge-ltcg':'badge-stcg'}">${taxInfo.type} · STT -${fmtINR(taxInfo.stt)}</span>`;
+  if(taxType)tags+=`<span class="badge ${taxType==='LTCG'?'badge-ltcg':'badge-stcg'}">${taxType} · STT -${fmtINR(totalSTT)}</span>`;
+  if(isMulti)tags+=`<span class="badge" style="background:rgba(180,109,255,0.12);color:var(--purple);border-color:rgba(180,109,255,0.25);">${siblings.length} PARTIAL EXITS</span>`;
   document.getElementById('detailTags').innerHTML=tags;
-  document.getElementById('detailGrid').innerHTML=`
+
+  // ── Stats grid ──
+  let statsHtml=`
     <div class="detail-stat"><div class="detail-stat-label">Entry</div><div class="detail-stat-val">₹${t.entry.toFixed(2)}</div></div>
-    <div class="detail-stat"><div class="detail-stat-label">${isActive?'CMP':'Exit Price'}</div><div class="detail-stat-val ${pnl>=0?'g':'r'}">₹${isActive?t.cmp:t.exitPrice||t.cmp}</div></div>
-    <div class="detail-stat"><div class="detail-stat-label">P&L</div><div class="detail-stat-val ${pnl>=0?'g':'r'}">${pnl>=0?'+':''}${fmtINR(pnl)}</div></div>
+    <div class="detail-stat"><div class="detail-stat-label">Total P&L</div><div class="detail-stat-val ${pnl>=0?'g':'r'}">${pnl>=0?'+':''}${fmtINR(pnl)}</div></div>
     <div class="detail-stat"><div class="detail-stat-label">Return %</div><div class="detail-stat-val ${curPct>=0?'g':'r'}">${fmtPct(curPct)}</div></div>
-    <div class="detail-stat"><div class="detail-stat-label">Quantity</div><div class="detail-stat-val">${t.qty}</div></div>
-    <div class="detail-stat"><div class="detail-stat-label">Invested</div><div class="detail-stat-val">${fmtINR(t.entry*t.qty)}</div></div>
+    <div class="detail-stat"><div class="detail-stat-label">Total Qty</div><div class="detail-stat-val">${totalQty} shares</div></div>
+    <div class="detail-stat"><div class="detail-stat-label">Total Invested</div><div class="detail-stat-val">${fmtINR(totalInvested)}</div></div>
     <div class="detail-stat"><div class="detail-stat-label">Stop Loss</div><div class="detail-stat-val r">${t.sl?'₹'+t.sl:'—'}</div></div>
     <div class="detail-stat"><div class="detail-stat-label">Target</div><div class="detail-stat-val g">${t.target?'₹'+t.target:'—'}</div></div>
     <div class="detail-stat"><div class="detail-stat-label">R:R Ratio</div><div class="detail-stat-val b">${rr?rr+'R':'—'}</div></div>
-    <div class="detail-stat"><div class="detail-stat-label">Holding Days</div><div class="detail-stat-val">${holdDays(t)}d</div></div>
     <div class="detail-stat"><div class="detail-stat-label">Entry Date</div><div class="detail-stat-val" style="font-size:12px;">${t.date||'—'}</div></div>
-    <div class="detail-stat"><div class="detail-stat-label">${isActive?'Day Change':'Exit Date'}</div><div class="detail-stat-val ${!isActive?'':(t.liveChange>=0?'g':'r')}">${isActive?(t.liveChange!=null?fmtPct(t.liveChange):'—'):(t.exitDate||'—')}</div></div>
-    ${taxInfo?`<div class="detail-stat"><div class="detail-stat-label">Tax Bucket</div><div class="detail-stat-val" style="color:${taxInfo.type==='LTCG'?'var(--cyan)':'var(--amber)'};">${taxInfo.type}</div></div><div class="detail-stat"><div class="detail-stat-label">STT (0.1%)</div><div class="detail-stat-val p">-${fmtINR(taxInfo.stt)}</div></div>`:''}`;
+    <div class="detail-stat"><div class="detail-stat-label">Hold Days</div><div class="detail-stat-val">${holdDays(t)}d</div></div>
+    ${isActive?`<div class="detail-stat"><div class="detail-stat-label">Day Change</div><div class="detail-stat-val ${t.liveChange>=0?'g':'r'}">${t.liveChange!=null?fmtPct(t.liveChange):'—'}</div></div>`:''}
+    ${totalSTT>0?`<div class="detail-stat"><div class="detail-stat-label">STT Paid</div><div class="detail-stat-val p">-${fmtINR(totalSTT)}</div></div>`:''}`;
+
+  // ── Per-exit breakdown if multi ──
+  if(isMulti&&closedSiblings.length){
+    statsHtml+=`<div style="grid-column:1/-1;background:var(--bg4);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-top:4px;">
+      <div style="font-family:var(--mono);font-size:9px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;">EXIT BREAKDOWN</div>
+      <div style="display:grid;grid-template-columns:repeat(${Math.min(closedSiblings.length,4)},1fr);gap:8px;">
+      ${closedSiblings.sort((a,b)=>new Date(a.exitDate)-new Date(b.exitDate)).map((x,i)=>{
+        const xPnl=exitPnlVal(x);
+        const xPct=pct(x.entry,x.exitPrice||x.cmp);
+        return`<div style="background:var(--bg3);border:1px solid ${xPnl>=0?'rgba(0,229,160,0.2)':'rgba(255,77,106,0.2)'};border-radius:8px;padding:10px;">
+          <div style="font-family:var(--mono);font-size:8px;color:var(--text3);margin-bottom:4px;">EXIT ${i+1} · ${x.exitDate}</div>
+          <div style="font-family:var(--mono);font-size:13px;font-weight:700;color:${xPnl>=0?'var(--green)':'var(--red)'};">₹${(x.exitPrice||x.cmp).toFixed(2)}</div>
+          <div style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:3px;">${x.qty} shares</div>
+          <div style="font-family:var(--mono);font-size:10px;color:${xPnl>=0?'var(--green)':'var(--red)'};margin-top:2px;">${xPnl>=0?'+':''}${fmtINR(xPnl)} (${fmtPct(xPct)})</div>
+        </div>`;
+      }).join('')}
+      </div>
+    </div>`;
+  }
+
+  document.getElementById('detailGrid').innerHTML=statsHtml;
   document.getElementById('detailNotes').textContent=t.notes||'No notes recorded for this trade.';
   document.getElementById('btnCloseTrade').style.display=isActive?'flex':'none';
   document.getElementById('btnPartialExit').style.display=isActive?'flex':'none';
+
   const chartWrap=document.getElementById('detailChart');
   chartWrap.innerHTML='<div id="detailChartInner" style="width:100%;height:320px;"></div>';
   if(chartInstances['detailChartInner']){try{chartInstances['detailChartInner'].destroy();}catch(e){}}
   delete chartInstances['detailChartInner'];
   document.getElementById('detailOverlay').classList.add('open');
-  setTimeout(()=>drawCandleChart('detailChartInner',t,true),80);
+  // Pass allExits so chart can draw all exit arrows
+  const tradeForChart={...t,allExits:allExits.length?allExits:undefined};
+  setTimeout(()=>drawCandleChart('detailChartInner',tradeForChart,true),80);
 }
 function closeDetail(){document.getElementById('detailOverlay').classList.remove('open');detailId=null;}
 function closeDetailBackdrop(e){if(e.target.id==='detailOverlay')closeDetail();}
