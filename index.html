@@ -2039,47 +2039,58 @@ function renderAlphaChart(){
   const pfReturn=(totalGain/totalInvested)*100;
   const alpha=pfReturn-idxReturn;
 
-  // ── Portfolio time-series: mark-to-market each day ──
-  // For each index date >= idxStartDate, compute portfolio value:
-  //   closed trades: contribute their realised P&L from exitDate onwards
-  //   active trades: use their dailyData OHLC close for each day; fallback to entry price before their entry date
+  // ── Build chart series ──
+  // Index: real daily curve (has full OHLC data)
+  // Portfolio: weighted daily MTM using per-trade OHLC where available,
+  //            falling back to a straight line (start=100, end=pfReturn+100)
   const relevantDates=idxDates.filter(d=>d>=idxStartDate);
 
-  // Pre-build per-trade daily close maps from fetched OHLC
   const tradeDailyMaps=allTrades.map(t=>{
     const m={};
     (t.dailyData||[]).forEach(d=>m[d.time]=d.close);
     return{t,m};
   });
+  const hasDailyData=tradeDailyMaps.some(({m})=>Object.keys(m).length>0);
 
   const pfSeries=[],idxSeries=[];
 
-  relevantDates.forEach(d=>{
-    // Portfolio value on this day
-    let portValue=totalInvested; // start at cost basis (= 100 indexed)
-    let portGainOnDay=0;
-    tradeDailyMaps.forEach(({t,m})=>{
-      let priceOnDay;
-      if(t.status==='closed'){
-        // After exit: locked in exitPrice gain
-        if(d>=t.exitDate) priceOnDay=t.exitPrice||t.cmp;
-        // Before entry: not yet in portfolio (no contribution)
-        else if(d<t.date) return;
-        // During hold: use daily close if available, else entry
-        else priceOnDay=m[d]||t.entry;
-      }else{
-        // Active: use daily close if available, else last known cmp or entry
-        if(d<t.date) return;
-        priceOnDay=m[d]||t.cmp||t.entry;
-      }
-      portGainOnDay+=(priceOnDay-t.entry)*t.qty;
+  if(hasDailyData){
+    // Real MTM: price each position daily using its OHLC
+    relevantDates.forEach(d=>{
+      let portGainOnDay=0;
+      let investedOnDay=0;
+      tradeDailyMaps.forEach(({t,m})=>{
+        if(d<t.date)return; // not yet entered
+        const invested=t.entry*t.qty;
+        let priceOnDay;
+        if(t.status==='closed'&&t.exitDate&&d>=t.exitDate){
+          priceOnDay=t.exitPrice||t.cmp; // locked in after exit
+        }else{
+          priceOnDay=m[d]||null; // use OHLC close
+          if(!priceOnDay)return; // skip if no data for this day
+        }
+        portGainOnDay+=(priceOnDay-t.entry)*t.qty;
+        investedOnDay+=invested;
+      });
+      if(investedOnDay===0)return;
+      const pfIndexed=100+(portGainOnDay/totalInvested*100);
+      const idxIndexed=(idxMap[d]/idxStartPrice)*100;
+      const ts=new Date(d).getTime();
+      pfSeries.push({x:ts,y:+pfIndexed.toFixed(2)});
+      idxSeries.push({x:ts,y:+idxIndexed.toFixed(2)});
     });
-    const pfIndexed=100+(portGainOnDay/totalInvested*100);
-    const idxIndexed=(idxMap[d]/idxStartPrice)*100;
-    const ts=new Date(d).getTime();
-    pfSeries.push({x:ts,y:+pfIndexed.toFixed(2)});
-    idxSeries.push({x:ts,y:+idxIndexed.toFixed(2)});
-  });
+  }else{
+    // No OHLC data — draw honest straight line from 100 → pfReturn+100
+    // This is the TWR endpoint, not a daily curve
+    const startTs=new Date(idxStartDate).getTime();
+    const endTs=new Date(idxDates[idxDates.length-1]).getTime();
+    pfSeries.push({x:startTs,y:100});
+    pfSeries.push({x:endTs,y:+(100+pfReturn).toFixed(2)});
+    // Index still gets full curve
+    relevantDates.forEach(d=>{
+      idxSeries.push({x:new Date(d).getTime(),y:+((idxMap[d]/idxStartPrice)*100).toFixed(2)});
+    });
+  }
 
   // ── Per-trade alpha (closed trades vs index over same hold period) ──
   const closed=trades.filter(t=>t.status==='closed'&&t.date&&t.exitDate);
@@ -2097,7 +2108,6 @@ function renderAlphaChart(){
 
   // ── Hero cards ──
   const alphaColor=alpha>=0?'var(--green)':'var(--red)';
-  const hasDailyData=tradeDailyMaps.some(({m})=>Object.keys(m).length>0);
   document.getElementById('anAlphaStats').innerHTML=`
     <div class="an-stat" style="border-color:${alpha>=0?'rgba(0,229,160,0.35)':'rgba(255,77,106,0.35)'};background:${alpha>=0?'rgba(0,229,160,0.06)':'rgba(255,77,106,0.06)'};">
       <div class="an-stat-label">Portfolio Alpha</div>
@@ -2120,14 +2130,13 @@ function renderAlphaChart(){
       <div style="font-family:var(--mono);font-size:9px;color:var(--text3);margin-top:4px;">avg α: ${avgAlpha>=0?'+':''}${avgAlpha.toFixed(1)}% per closed trade</div>
     </div>`;
 
-  if(!hasDailyData){
-    document.getElementById('anAlphaChart').innerHTML=`<div style="text-align:center;padding:24px;font-family:var(--mono);font-size:11px;color:var(--amber);">
-      ⚠ Chart shows step-only curve — hit <strong>Fetch</strong> on the main screen first to load daily OHLC data for smoother portfolio tracking.</div>`;
-  }
-
   // ── Chart ──
   const chartEl=document.getElementById('anAlphaChart');
-  if(hasDailyData) chartEl.innerHTML='';
+  chartEl.innerHTML='';
+  if(!hasDailyData){
+    chartEl.innerHTML+=`<div style="font-family:var(--mono);font-size:9px;color:var(--amber);padding:6px 10px;background:rgba(255,179,64,0.06);border:1px solid rgba(255,179,64,0.2);border-radius:6px;margin-bottom:8px;">
+      ⚠ Portfolio line = straight TWR (no daily OHLC). Hit <strong>Fetch</strong> on main screen for real daily curve.</div>`;
+  }
   if(pfSeries.length>1){
     const chartOpts={
       series:[
