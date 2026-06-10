@@ -20,6 +20,7 @@
   --cyan:#00d4ff;--cyan-dim:rgba(0,212,255,0.08);
   --r:10px;--rl:16px;--font:'Inter',sans-serif;--display:'Syne',sans-serif;--mono:'Space Mono',monospace;
   --glow-green:0 0 20px rgba(0,229,160,0.25);--glow-blue:0 0 20px rgba(77,124,255,0.3);--glow-red:0 0 20px rgba(255,77,106,0.25);
+  --tv-accent:#4d7cff;--tv-up:#00e5a0;--tv-down:#ff4d6a;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 html{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14px;scrollbar-width:thin;scrollbar-color:var(--bg4) transparent;}
@@ -117,7 +118,11 @@ select.nano{background:var(--bg3);border:1px solid var(--border2);border-radius:
 .card-pct{font-family:var(--display);font-size:22px;font-weight:800;line-height:1;margin-bottom:2px;}
 .card-pnl{font-family:var(--mono);font-size:10px;color:var(--text3);}
 .chart-wrap{height:100px;margin:10px 0;}
-.card-footer{display:flex;align-items:stretch;border-top:1px solid var(--border);padding-top:10px;margin-top:2px;gap:0;}
+.card-footer{display:flex;align-items:stretch;border-top:1px solid var(--border);padding-top:8px;margin-top:6px;gap:0;}
+.ohlc-strip{display:flex;gap:10px;padding:6px 0 2px;font-family:var(--mono);font-size:9px;color:var(--text3);}
+.ohlc-item{display:flex;flex-direction:column;gap:1px;}
+.ohlc-label{font-size:8px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;}
+.ohlc-val{font-size:9px;font-weight:700;color:var(--text2);}
 .price-col{display:flex;flex-direction:column;gap:2px;flex:1;}
 .price-label{font-family:var(--mono);font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;}
 .price-val{font-family:var(--mono);font-size:12px;font-weight:700;}
@@ -298,7 +303,7 @@ select option{background:var(--bg3);}
     <button class="btn btn-amber" id="fetchBtn" onclick="fetchAllPrices()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>Fetch</button>
     <button class="btn btn-green" onclick="exportCSV()">↑ CSV</button>
     <button class="btn btn-green" onclick="document.getElementById('csvFileInput').click()">↓ CSV</button>
-    <button class="btn" onclick="openZerodha()" style="background:linear-gradient(135deg,rgba(255,87,34,0.15),rgba(255,152,0,0.12));border-color:rgba(255,87,34,0.35);color:#ff8a50;font-weight:600;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>Zerodha</button>
+    <button class="btn" onclick="openUniversalImport()" style="background:linear-gradient(135deg,rgba(41,98,255,0.15),rgba(0,188,212,0.1));border-color:rgba(41,98,255,0.35);color:#6fa3ff;font-weight:600;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Import CSV</button>
     <button class="btn btn-red" onclick="clearAllTrades()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>Clear All</button>
     <button class="btn btn-primary" onclick="openAddModal()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>New Trade</button>
   </div>
@@ -657,67 +662,153 @@ select option{background:var(--bg3);}
   </div>
 </div>
 
-<!-- ZERODHA IMPORT -->
-<div class="overlay" id="zerodhaOverlay" onclick="if(event.target.id==='zerodhaOverlay')closeZerodha()">
-  <div class="modal" style="width:780px;">
-    <div class="modal-title">
-      <div style="display:flex;align-items:center;gap:12px;">
-        <div style="width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,#ff5722,#ff9800);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:15px;color:#fff;flex-shrink:0;">Z</div>
-        <div><div style="font-size:16px;font-weight:700;">Zerodha Tradebook Import</div><div style="font-family:var(--mono);font-size:10px;color:var(--text3);font-weight:400;margin-top:2px;">Download CSV from console.zerodha.com → Reports → Tradebook → CSV</div></div>
+
+<!-- UNIVERSAL CSV IMPORTER -->
+<div class="overlay" id="universalImportOverlay" onclick="if(event.target.id==='universalImportOverlay')closeUniversalImport()">
+  <div class="modal" style="width:860px;max-height:92vh;padding:0;overflow:hidden;display:flex;flex-direction:column;">
+
+    <!-- Header -->
+    <div style="padding:20px 24px 16px;border-bottom:1px solid var(--border2);display:flex;align-items:center;gap:14px;flex-shrink:0;">
+      <div style="width:36px;height:36px;background:rgba(41,98,255,0.12);border:1px solid rgba(41,98,255,0.3);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2962ff" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
       </div>
-      <button class="modal-close" onclick="closeZerodha()">✕</button>
-    </div>
-    <div style="background:rgba(255,87,34,0.06);border:1px solid rgba(255,87,34,0.2);border-radius:var(--r);padding:14px 16px;margin-bottom:18px;font-size:11px;line-height:1.9;color:var(--text2);">
-      <div style="font-family:var(--mono);font-weight:700;color:#ff8a50;margin-bottom:6px;font-size:9px;letter-spacing:.1em;">HOW TO GET YOUR CSV</div>
-      <div style="display:grid;grid-template-columns:auto 1fr;gap:4px 12px;align-items:start;">
-        <span style="color:#ff8a50;font-weight:700;font-family:var(--mono);">1</span><span>Go to <a href="https://console.zerodha.com/reports/tradebook" target="_blank" style="color:#ff8a50;text-decoration:none;">console.zerodha.com/reports/tradebook</a></span>
-        <span style="color:#ff8a50;font-weight:700;font-family:var(--mono);">2</span><span>Select your date range (up to 1 year per download)</span>
-        <span style="color:#ff8a50;font-weight:700;font-family:var(--mono);">3</span><span>Click <strong style="color:var(--text);">Download → CSV</strong> in the top-right</span>
-        <span style="color:#ff8a50;font-weight:700;font-family:var(--mono);">4</span><span>Upload the file below — all buy/sell fills are paired automatically</span>
+      <div style="flex:1;">
+        <div style="font-size:15px;font-weight:600;color:var(--text);">Universal CSV Importer</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:2px;">Upload any broker's CSV — AI maps columns automatically</div>
       </div>
+      <button class="modal-close" onclick="closeUniversalImport()" style="font-size:20px;border:none;background:none;color:var(--text3);cursor:pointer;">✕</button>
     </div>
-    <div id="zdDropZone" style="border:2px dashed rgba(255,87,34,0.3);border-radius:var(--rl);padding:36px 20px;text-align:center;cursor:pointer;transition:all 0.2s;margin-bottom:16px;background:rgba(255,87,34,0.03);"
-      onclick="document.getElementById('zdFileInput').click()"
-      ondragover="event.preventDefault();this.style.borderColor='#ff5722';this.style.background='rgba(255,87,34,0.08)'"
-      ondragleave="this.style.borderColor='rgba(255,87,34,0.3)';this.style.background='rgba(255,87,34,0.03)'"
-      ondrop="event.preventDefault();this.style.borderColor='rgba(255,87,34,0.3)';this.style.background='rgba(255,87,34,0.03)';zdHandleFile(event.dataTransfer.files[0])">
-      <div style="font-size:32px;margin-bottom:10px;opacity:0.5;">📂</div>
-      <div style="font-family:var(--display);font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px;">Drop Zerodha CSV here</div>
-      <div style="font-family:var(--mono);font-size:10px;color:var(--text3);">or click to browse · tradebook-XXXXXX-EQ.csv</div>
-    </div>
-    <input type="file" id="zdFileInput" accept=".csv" style="display:none;" onchange="zdHandleFile(this.files[0])"/>
-    <div style="display:flex;gap:16px;align-items:center;margin-bottom:16px;flex-wrap:wrap;">
-      <label style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text2);cursor:pointer;"><input type="checkbox" id="zdSkipDupes" checked style="accent-color:var(--blue);width:13px;height:13px;cursor:pointer;"/>Skip duplicates</label>
-      <label style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text2);cursor:pointer;"><input type="checkbox" id="zdMergeMultiFills" checked style="accent-color:var(--blue);width:13px;height:13px;cursor:pointer;"/>Merge multiple fills → weighted avg price</label>
-    </div>
-    <div id="zdPreview" style="display:none;margin-bottom:16px;">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-        <div style="font-family:var(--mono);font-size:9px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.1em;">PREVIEW · <span id="zdPreviewCount">0</span> POSITIONS · <span id="zdPreviewWins" style="color:var(--green);">0 wins</span> · <span id="zdPreviewLoss" style="color:var(--red);">0 losses</span> · <span id="zdPreviewOpen" style="color:var(--blue);">0 open</span></div>
-        <div id="zdPreviewPnl" style="font-family:var(--mono);font-size:13px;font-weight:700;"></div>
+
+    <!-- Steps -->
+    <div style="display:flex;align-items:center;padding:12px 24px;border-bottom:1px solid var(--border);flex-shrink:0;gap:0;">
+      <div style="display:flex;align-items:center;gap:6px;">
+        <div id="ui-step1-num" style="width:22px;height:22px;border-radius:50%;background:var(--tv-accent);border:1px solid var(--tv-accent);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;font-family:var(--mono);">1</div>
+        <span id="ui-step1-lbl" style="font-size:11px;color:var(--text);font-family:var(--mono);">UPLOAD</span>
       </div>
-      <div style="max-height:260px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--r);">
-        <table style="width:100%;border-collapse:collapse;font-size:11px;font-family:var(--mono);">
-          <thead style="position:sticky;top:0;background:var(--bg3);z-index:1;"><tr>
-            <th style="padding:8px 10px;text-align:left;color:var(--text3);font-size:9px;text-transform:uppercase;border-bottom:1px solid var(--border);">Symbol</th>
-            <th style="padding:8px 10px;text-align:left;color:var(--text3);font-size:9px;text-transform:uppercase;border-bottom:1px solid var(--border);">Date</th>
-            <th style="padding:8px 10px;text-align:right;color:var(--text3);font-size:9px;text-transform:uppercase;border-bottom:1px solid var(--border);">Avg Entry</th>
-            <th style="padding:8px 10px;text-align:right;color:var(--text3);font-size:9px;text-transform:uppercase;border-bottom:1px solid var(--border);">Avg Exit</th>
-            <th style="padding:8px 10px;text-align:right;color:var(--text3);font-size:9px;text-transform:uppercase;border-bottom:1px solid var(--border);">Qty</th>
-            <th style="padding:8px 10px;text-align:right;color:var(--text3);font-size:9px;text-transform:uppercase;border-bottom:1px solid var(--border);">P&L</th>
-            <th style="padding:8px 10px;text-align:center;color:var(--text3);font-size:9px;text-transform:uppercase;border-bottom:1px solid var(--border);">Status</th>
-            <th style="padding:8px 4px;text-align:center;color:var(--text3);font-size:9px;text-transform:uppercase;border-bottom:1px solid var(--border);">Skip</th>
-          </tr></thead>
-          <tbody id="zdPreviewBody"></tbody>
-        </table>
+      <div id="ui-line1" style="flex:1;height:1px;background:var(--border);margin:0 10px;"></div>
+      <div style="display:flex;align-items:center;gap:6px;">
+        <div id="ui-step2-num" style="width:22px;height:22px;border-radius:50%;background:var(--bg3);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--text3);font-family:var(--mono);">2</div>
+        <span id="ui-step2-lbl" style="font-size:11px;color:var(--text3);font-family:var(--mono);">AI MAPPING</span>
+      </div>
+      <div id="ui-line2" style="flex:1;height:1px;background:var(--border);margin:0 10px;"></div>
+      <div style="display:flex;align-items:center;gap:6px;">
+        <div id="ui-step3-num" style="width:22px;height:22px;border-radius:50%;background:var(--bg3);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--text3);font-family:var(--mono);">3</div>
+        <span id="ui-step3-lbl" style="font-size:11px;color:var(--text3);font-family:var(--mono);">PREVIEW</span>
+      </div>
+      <div id="ui-line3" style="flex:1;height:1px;background:var(--border);margin:0 10px;"></div>
+      <div style="display:flex;align-items:center;gap:6px;">
+        <div id="ui-step4-num" style="width:22px;height:22px;border-radius:50%;background:var(--bg3);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--text3);font-family:var(--mono);">4</div>
+        <span id="ui-step4-lbl" style="font-size:11px;color:var(--text3);font-family:var(--mono);">IMPORT</span>
       </div>
     </div>
-    <div style="display:flex;gap:10px;align-items:center;" id="zdActions">
-      <button class="btn" onclick="closeZerodha()" style="flex:1;justify-content:center;">Cancel</button>
-      <button class="btn btn-primary" id="zdImportBtn" onclick="zdImportTrades()" style="flex:3;justify-content:center;display:none;font-size:13px;padding:11px;">✓ Import <span id="zdImportCount">0</span> Positions into Journal</button>
+
+    <!-- Body (scrollable) -->
+    <div style="flex:1;overflow-y:auto;padding:20px 24px;">
+
+      <!-- STEP 1: UPLOAD -->
+      <div id="ui-panel-upload">
+        <div id="ui-dropzone" style="border:2px dashed var(--border2);border-radius:8px;padding:40px 24px;text-align:center;cursor:pointer;transition:border-color 0.2s;position:relative;margin-bottom:16px;"
+          onclick="document.getElementById('ui-fileinput').click()"
+          ondragover="event.preventDefault();this.style.borderColor='var(--tv-accent)'"
+          ondragleave="this.style.borderColor='var(--border2)'"
+          ondrop="event.preventDefault();this.style.borderColor='var(--border2)';uiHandleFile(event.dataTransfer.files[0])">
+          <input type="file" id="ui-fileinput" accept=".csv,.txt" style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;" onchange="uiHandleFile(this.files[0])">
+          <div style="font-size:32px;margin-bottom:10px;">📂</div>
+          <div style="font-size:14px;font-weight:500;color:var(--text);margin-bottom:4px;">Drop your CSV here or click to browse</div>
+          <div style="font-size:11px;color:var(--text3);margin-bottom:14px;">Any broker, any format — AI maps columns automatically</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center;">
+            <span style="padding:2px 9px;border-radius:20px;font-size:10px;border:1px solid var(--border2);color:var(--text3);font-family:var(--mono);">Zerodha</span>
+            <span style="padding:2px 9px;border-radius:20px;font-size:10px;border:1px solid var(--border2);color:var(--text3);font-family:var(--mono);">Dhan</span>
+            <span style="padding:2px 9px;border-radius:20px;font-size:10px;border:1px solid var(--border2);color:var(--text3);font-family:var(--mono);">Groww</span>
+            <span style="padding:2px 9px;border-radius:20px;font-size:10px;border:1px solid var(--border2);color:var(--text3);font-family:var(--mono);">Upstox</span>
+            <span style="padding:2px 9px;border-radius:20px;font-size:10px;border:1px solid var(--border2);color:var(--text3);font-family:var(--mono);">Angel One</span>
+            <span style="padding:2px 9px;border-radius:20px;font-size:10px;border:1px solid var(--border2);color:var(--text3);font-family:var(--mono);">ICICI Direct</span>
+            <span style="padding:2px 9px;border-radius:20px;font-size:10px;border:1px solid var(--border2);color:var(--text3);font-family:var(--mono);">Kotak Neo</span>
+            <span style="padding:2px 9px;border-radius:20px;font-size:10px;border:1px solid var(--border2);color:var(--text3);font-family:var(--mono);">IBKR</span>
+            <span style="padding:2px 9px;border-radius:20px;font-size:10px;border:1px solid var(--border2);color:var(--text3);font-family:var(--mono);">Custom</span>
+          </div>
+        </div>
+        <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px 14px;">
+          <div style="font-size:9px;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px;font-family:var(--mono);">Or paste CSV text directly</div>
+          <textarea id="ui-csvpaste" style="width:100%;height:80px;background:transparent;border:none;color:var(--text2);font-family:var(--mono);font-size:11px;resize:none;outline:none;" placeholder="symbol,date,type,qty,price&#10;RELIANCE,2024-01-15,BUY,50,2810&#10;..."></textarea>
+        </div>
+        <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px;">
+          <button class="btn" onclick="closeUniversalImport()">Cancel</button>
+          <button class="btn btn-primary" id="ui-analyze-btn" onclick="uiStartAnalysis()" disabled>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            Analyse with AI
+          </button>
+        </div>
+      </div>
+
+      <!-- STEP 2: THINKING -->
+      <div id="ui-panel-thinking" style="display:none;text-align:center;padding:40px 20px;">
+        <div style="width:40px;height:40px;border:2px solid var(--border2);border-top-color:var(--tv-accent);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 16px;"></div>
+        <div id="ui-ai-status" style="font-family:var(--mono);font-size:13px;color:var(--text2);margin-bottom:8px;">Reading CSV structure...</div>
+        <div id="ui-ai-log" style="font-family:var(--mono);font-size:10px;color:var(--text3);line-height:1.8;"></div>
+      </div>
+
+      <!-- STEP 3: MAPPING -->
+      <div id="ui-panel-mapping" style="display:none;">
+        <div id="ui-ai-banner" style="display:flex;align-items:flex-start;gap:8px;padding:10px 12px;background:rgba(41,98,255,0.07);border:1px solid rgba(41,98,255,0.2);border-radius:6px;font-size:11px;color:#6fa3ff;margin-bottom:14px;font-family:var(--mono);">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;margin-top:1px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span id="ui-ai-summary">AI detected broker format.</span>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;">
+          <div style="font-size:10px;color:var(--text3);font-family:var(--mono);">
+            <span style="color:var(--green);">●</span> High &nbsp;
+            <span style="color:var(--amber);">●</span> Medium &nbsp;
+            <span style="color:var(--red);">●</span> Low confidence
+          </div>
+          <div style="margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--text3);" id="ui-file-meta"></div>
+        </div>
+        <div style="border:1px solid var(--border);border-radius:6px;overflow:hidden;">
+          <div style="display:grid;grid-template-columns:1fr 32px 1fr;">
+            <div style="padding:7px 12px;background:var(--bg3);font-size:9px;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;border-bottom:1px solid var(--border);">CSV Column + Sample</div>
+            <div style="background:var(--bg3);border-bottom:1px solid var(--border);"></div>
+            <div style="padding:7px 12px;background:var(--bg3);font-size:9px;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;border-bottom:1px solid var(--border);">Maps to Journal Field</div>
+          </div>
+          <div id="ui-mapping-rows" style="display:grid;grid-template-columns:1fr 32px 1fr;max-height:320px;overflow-y:auto;"></div>
+        </div>
+        <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px;">
+          <button class="btn" onclick="uiReset()">← Start Over</button>
+          <button class="btn btn-primary" onclick="uiBuildPreview()">Preview Trades →</button>
+        </div>
+      </div>
+
+      <!-- STEP 4: PREVIEW -->
+      <div id="ui-panel-preview" style="display:none;">
+        <div id="ui-preview-summary" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px;"></div>
+        <div id="ui-preview-alerts"></div>
+        <div style="overflow-x:auto;border:1px solid var(--border);border-radius:6px;max-height:280px;overflow-y:auto;">
+          <table style="width:100%;border-collapse:collapse;font-size:11px;font-family:var(--mono);">
+            <thead><tr id="ui-preview-headers" style="position:sticky;top:0;background:var(--bg3);z-index:1;"></tr></thead>
+            <tbody id="ui-preview-body"></tbody>
+          </table>
+        </div>
+        <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px;">
+          <button class="btn" onclick="uiGoToMapping()">← Edit Mapping</button>
+          <button class="btn btn-primary" onclick="uiDoImport()" style="background:var(--green);border-color:var(--green);color:#000;">
+            ✓ Import <span id="ui-import-count">0</span> Trades into Journal
+          </button>
+        </div>
+      </div>
+
+      <!-- SUCCESS -->
+      <div id="ui-panel-success" style="display:none;text-align:center;padding:40px 20px;">
+        <div style="width:56px;height:56px;border-radius:50%;background:var(--green-dim);border:2px solid rgba(38,166,154,0.3);display:flex;align-items:center;justify-content:center;font-size:24px;margin:0 auto 16px;">✓</div>
+        <div style="font-size:18px;font-weight:600;color:var(--text);margin-bottom:8px;">Import Complete</div>
+        <div id="ui-success-msg" style="font-size:12px;color:var(--text3);margin-bottom:20px;"></div>
+        <div style="display:flex;gap:10px;justify-content:center;">
+          <button class="btn" onclick="uiReset()">Import Another</button>
+          <button class="btn btn-primary" onclick="closeUniversalImport()">Close</button>
+        </div>
+      </div>
+
     </div>
-    <div id="zdLog" style="margin-top:10px;font-family:var(--mono);font-size:10px;color:var(--text3);max-height:80px;overflow-y:auto;display:none;"></div>
   </div>
 </div>
+
 
 <div class="toast" id="toast"></div>
 
@@ -1210,10 +1301,6 @@ function renderCards(){
     if(t.emotion&&(t.emotion==='FOMO'||t.emotion==='Revenge Trading'))badges+=`<span class="badge badge-risk">${t.emotion}</span>`;
     const cardClass=isActive?(positive?'profit':'loss'):'closed';
     const dayChg=t.liveChange!=null&&isActive?`<div class="price-change" style="color:${t.liveChange>=0?'var(--green)':'var(--red)'}">${t.liveChange>=0?'+':''}${t.liveChange.toFixed(2)}% today</div>`:'';
-    const rrSection=rr
-      ?`<div class="rr-divider"><div class="rr-divider-line"></div><div class="rr-badge-pill"><span class="rr-badge-label">R:R</span><span class="rr-badge-val ${rrClass(rr)}">${rr}R</span></div><div class="rr-divider-line"></div></div>`
-      :`<div style="flex:0 0 8px;"></div>`;
-    const targetCol=t.target?`<div class="price-col" style="text-align:right;"><div class="price-label">Target</div><div class="price-val g">₹${t.target}</div></div>`:'';
 
     // Multi-exit breakdown strip
     const multiExitStrip=isMulti?`<div style="border-top:1px solid var(--border);padding-top:8px;margin-top:4px;display:flex;flex-direction:column;gap:3px;">
@@ -1230,6 +1317,10 @@ function renderCards(){
     const div=document.createElement('div');
     div.className=`trade-card ${cardClass}`;
     div.onclick=()=>openDetail(t.id);
+    const rrSection=rr
+      ?`<div class="rr-divider"><div class="rr-divider-line"></div><div class="rr-badge-pill"><span class="rr-badge-label">R:R</span><span class="rr-badge-val ${rrClass(rr)}">${rr}R</span></div><div class="rr-divider-line"></div></div>`
+      :`<div style="flex:0 0 8px;"></div>`;
+    const targetCol=t.target?`<div class="price-col" style="text-align:right;"><div class="price-label">Target</div><div class="price-val g">₹${t.target}</div></div>`:'';
     div.innerHTML=`
       <div class="ai-score ${cls}">${grade} · ${score}</div>
       <div class="card-ticker">${t.ticker||t.exchange||'MANUAL'}</div>
@@ -1630,60 +1721,298 @@ function handleCSVImport(e){
   };reader.readAsText(file);e.target.value='';
 }
 
-let zdPendingTrades=[];
-function openZerodha(){zdPendingTrades=[];document.getElementById('zdPreview').style.display='none';document.getElementById('zdImportBtn').style.display='none';document.getElementById('zdLog').style.display='none';document.getElementById('zdLog').innerHTML='';document.getElementById('zdFileInput').value='';document.getElementById('zerodhaOverlay').classList.add('open');}
-function closeZerodha(){document.getElementById('zerodhaOverlay').classList.remove('open');}
-function zdHandleFile(file){
-  if(!file)return;if(!file.name.endsWith('.csv')){showToast('Please upload a .csv file','error');return;}
-  document.getElementById('zdDropZone').innerHTML=`<div style="font-size:28px;margin-bottom:8px;">✅</div><div style="font-family:var(--display);font-size:14px;font-weight:700;color:var(--green);margin-bottom:3px;">${file.name}</div><div style="font-family:var(--mono);font-size:10px;color:var(--text3);">${(file.size/1024).toFixed(1)} KB · click to change</div>`;
-  const reader=new FileReader();reader.onload=e=>zdParseCSV(e.target.result);reader.readAsText(file);
+/* ═══════════════════════════════════════════════════════════
+   UNIVERSAL CSV IMPORTER — Zerodha · Dhan · Upstox · Groww
+   Angel One · Fyers · ICICI · Kotak · 5Paisa · Generic
+   ═══════════════════════════════════════════════════════════ */
+
+// ── Broker detection profiles (ported from Indian Broker CSV Analyzer) ──
+const BROKER_PROFILES={
+  angel_tradebook:{name:'Angel One',
+    detect:h=>h.includes('trade no.')||(h.includes('net qty')&&h.includes('net rate')&&h.includes('scrip'))||(h.includes('client id')&&h.includes('net rate')),
+    map:r=>({symbol:r['Scrip']||r['Symbol']||r['symbol'],trade_date:r['Trade Date']||r['Date'],trade_type:(r['Buy/Sell']||r['B/S']||r['Type']||'').toLowerCase().startsWith('b')?'buy':'sell',quantity:parseFloat(r['Net Qty']||r['Qty']||r['Quantity'])||0,price:parseFloat(r['Net Rate']||r['Price']||r['Trade Price'])||0,exchange:r['Exchange']||'NSE',broker:'Angel One'})},
+  dhan_tradebook:{name:'Dhan',
+    detect:(h,raw,fn)=>fn.includes('globaltransction')||fn.includes('globaltransaction')||(h.includes('particulars')&&(h.includes('debit')||h.includes('credit')))||(h.includes('script name')&&h.includes('buy/sell'))||(h.includes('scrip name')&&h.includes('buy/sell')&&h.includes('qty')&&!h.includes('net qty')),
+    map:r=>{const keys=Object.keys(r);const get=(...ns)=>{for(const n of ns)for(const k of keys)if(k.trim().toLowerCase()===n.toLowerCase())return(r[k]||'').trim();return '';};
+      const rawSide=(get('Buy/Sell','B/S','Type','Trade Type','Transaction Type','Side','buy_sell')||'').toLowerCase();
+      return{symbol:get('Script Name','Scrip Name','Scrip','Symbol','Instrument','Security','Stock'),trade_date:get('Date','Trade Date','Order Date','Transaction Date','Txn Date').split('T')[0],trade_type:rawSide.startsWith('b')?'buy':rawSide.startsWith('s')?'sell':rawSide,quantity:parseFloat(get('Qty','Quantity','Net Qty','Traded Qty','Qty.'))||0,price:parseFloat(get('Price','Rate','Trade Price','Avg Price','Net Rate','Exec Rate'))||0,exchange:get('Exchange','Exch')||'NSE',broker:'Dhan'};}},
+  zerodha_tradebook:{name:'Zerodha',
+    detect:h=>h.includes('symbol')&&h.includes('trade_id')&&h.includes('order_id')&&h.includes('auction'),
+    map:r=>({symbol:r.symbol,trade_date:(r.trade_date||'').split('T')[0],trade_type:(r.trade_type||'').toLowerCase(),quantity:parseFloat(r.quantity)||0,price:parseFloat(r.price)||0,exchange:r.exchange||'NSE',broker:'Zerodha'})},
+  upstox_tradebook:{name:'Upstox',
+    detect:h=>(h.includes('instrument')&&h.includes('trade_num'))||(h.includes('transaction_type')&&h.includes('scrip_name'))||h.includes('avg. price')||(h.includes('trade no')&&!h.includes('trade no.')&&(h.includes('instrument')||h.includes('avg. price')||h.includes('trade price'))),
+    map:r=>({symbol:r['Instrument']||r['Symbol']||r['symbol'],trade_date:r['Trade Date']||r['trade_date']||r['Date'],trade_type:(r['Trade Type']||r['B/S']||r['buy_sell']||'').toLowerCase().includes('b')?'buy':'sell',quantity:parseFloat(r['Qty']||r['Quantity']||r['qty.']||r['quantity'])||0,price:parseFloat(r['Price']||r['Avg. Price']||r['Trade Price'])||0,exchange:r['Exchange']||r['exchange']||'NSE',broker:'Upstox'})},
+  groww_tradebook:{name:'Groww',
+    detect:h=>h.includes('stock symbol')||(h.includes('order type')&&h.includes('stock')),
+    map:r=>({symbol:r['Stock Symbol']||r['Symbol']||r['Scrip'],trade_date:r['Order Date']||r['Date']||r['Trade Date'],trade_type:(r['Order Type']||r['Trade Type']||r['Type']||'').toLowerCase().includes('buy')?'buy':'sell',quantity:parseFloat(r['Quantity']||r['Qty'])||0,price:parseFloat(r['Price']||r['Trade Price']||r['Avg Price'])||0,exchange:r['Exchange']||'NSE',broker:'Groww'})},
+  fyers_tradebook:{name:'Fyers',
+    detect:h=>h.includes('symbol')&&(h.includes('tradenum')||h.includes('tradeno')),
+    map:r=>({symbol:r['Symbol']||r['symbol'],trade_date:r['Date']||r['Trade Date'],trade_type:(r['Side']||r['Buy/Sell']||r['Type']||'').toLowerCase().includes('buy')?'buy':'sell',quantity:parseFloat(r['Qty']||r['Quantity'])||0,price:parseFloat(r['Price']||r['Trade Price'])||0,exchange:r['Exchange']||'NSE',broker:'Fyers'})},
+  kotak_tradebook:{name:'Kotak',
+    detect:h=>(h.includes('scrip')&&h.includes('transaction type'))||(h.includes('kotak')),
+    map:r=>({symbol:r['Scrip']||r['Symbol'],trade_date:r['Date']||r['Trade Date'],trade_type:(r['Transaction Type']||r['Buy/Sell']||'').toLowerCase().startsWith('b')?'buy':'sell',quantity:parseFloat(r['Quantity']||r['Qty'])||0,price:parseFloat(r['Price']||r['Rate'])||0,exchange:r['Exchange']||'NSE',broker:'Kotak'})},
+  icici_tradebook:{name:'ICICI Direct',
+    detect:h=>(h.includes('scrip code')&&h.includes('action'))||(h.includes('icici')),
+    map:r=>({symbol:r['Scrip Name']||r['Scrip']||r['Symbol'],trade_date:r['Trade Date']||r['Date'],trade_type:(r['Action']||r['Buy/Sell']||r['Type']||'').toLowerCase().startsWith('b')?'buy':'sell',quantity:parseFloat(r['Quantity']||r['Qty'])||0,price:parseFloat(r['Price']||r['Rate'])||0,exchange:r['Exchange']||'NSE',broker:'ICICI Direct'})},
+  generic:{name:'Generic',
+    detect:()=>true,
+    map:r=>{const keys=Object.keys(r);const g=(...ns)=>{for(const n of ns)for(const k of keys)if(k.toLowerCase().replace(/[\s_.]/g,'')===n.toLowerCase().replace(/[\s_.]/g,''))return r[k];return '';};
+      const side=(g('tradetype','buysell','side','type','ordertype','transactiontype')||'').toLowerCase();
+      return{symbol:g('symbol','scripname','instrument','stock','scrip')||r[keys[0]],trade_date:(g('tradedate','orderdate','date','executiontime')||'').split('T')[0],trade_type:side.includes('buy')||side==='b'?'buy':side.includes('sell')||side==='s'?'sell':side,quantity:parseFloat(g('quantity','qty','tradedquantity','filledquantity'))||0,price:parseFloat(g('price','tradeprice','avgprice','netrate','executionprice'))||0,exchange:g('exchange','exch')||'NSE',broker:'Generic'};}},
+};
+
+function uiParseCSVRaw(text){
+  const lines=text.replace(/\r\n/g,'\n').replace(/\r/g,'\n').split('\n');
+  const rows=[];
+  for(const line of lines){
+    if(!line.trim()){rows.push(null);continue;}
+    const cols=[];let cur='',inQ=false;
+    for(let i=0;i<line.length;i++){if(line[i]==='"'){inQ=!inQ;}else if(line[i]===','&&!inQ){cols.push(cur.trim());cur='';}else cur+=line[i];}
+    cols.push(cur.trim());rows.push(cols);
+  }
+  return rows;
 }
-function zdParseCSV(text){
-  const lines=text.trim().split('\n').map(l=>l.trim()).filter(Boolean);if(lines.length<2){showToast('CSV appears empty','error');return;}
-  const header=lines[0].split(',').map(h=>h.trim().toLowerCase().replace(/"/g,'')),col=k=>header.indexOf(k);
-  const C={symbol:col('symbol'),date:col('trade_date'),exch:col('exchange'),type:col('trade_type'),qty:col('quantity'),price:col('price'),time:col('order_execution_time')};
-  if(C.symbol<0||C.date<0||C.type<0){showToast('Not a valid Zerodha tradebook CSV','error');return;}
-  const fills=[];
-  for(let i=1;i<lines.length;i++){const parts=lines[i].split(',').map(p=>p.trim().replace(/"/g,''));if(parts.length<6)continue;fills.push({symbol:parts[C.symbol],date:parts[C.date],exchange:parts[C.exch]||'NSE',type:parts[C.type].toLowerCase(),qty:parseFloat(parts[C.qty])||0,price:parseFloat(parts[C.price])||0,time:parts[C.time]||parts[C.date]});}
-  zdLog(`Parsed ${fills.length} fills for ${new Set(fills.map(f=>f.symbol)).size} symbols.`);zdBuildPositions(fills);
+
+function uiDetectAndParse(text,filename){
+  const rawLower=text.toLowerCase();
+  const allRows=uiParseCSVRaw(text).filter(r=>r);
+  const HEADER_RE=/symbol|scrip|script|instrument|stock|trade|isin|particulars|buy.?sell|qty|quantity|date|price|rate/i;
+  let headerIdx=0,bestScore=0;
+  for(let i=0;i<Math.min(20,allRows.length);i++){
+    const r=allRows[i];if(!r||r.length<2)continue;
+    const score=r.filter(c=>HEADER_RE.test(c)).length;
+    if(score>bestScore){bestScore=score;headerIdx=i;}
+  }
+  const headers=allRows[headerIdx]||[];
+  const headerStr=headers.join(',').toLowerCase();
+  let profile=null;
+  for(const[key,p]of Object.entries(BROKER_PROFILES)){
+    if(key==='generic')continue;
+    if(p.detect(headerStr,rawLower,(filename||'').toLowerCase())){profile=p;break;}
+  }
+  if(!profile)profile=BROKER_PROFILES.generic;
+  const dataRows=allRows.slice(headerIdx+1);
+  const records=dataRows.filter(r=>r&&r.length>=Math.max(2,headers.length-3)&&r.some(c=>c.trim())).map(r=>{const obj={};headers.forEach((h,i)=>{obj[h.trim()]=(r[i]||'').trim();});return obj;}).filter(r=>Object.values(r).some(v=>v));
+  const mapped=records.map(r=>{try{return profile.map(r);}catch(e){return null;}}).filter(x=>x&&(x.symbol||x.quantity));
+  return{profile,records:mapped};
 }
-function zdBuildPositions(fills){
-  const skipDupes=document.getElementById('zdSkipDupes').checked,mergeFills=document.getElementById('zdMergeMultiFills').checked;
-  const bySymbol={};fills.forEach(f=>{if(!bySymbol[f.symbol])bySymbol[f.symbol]=[];bySymbol[f.symbol].push(f);});
-  const existingKeys=new Set(trades.map(t=>`${t.symbol||t.ticker?.replace('.NS','').replace('.BO','')}_${t.date}`));
+
+// ── FIFO position builder (buy fills → matched with sells) ──
+function uiBuildPositions(fills,brokerName){
+  const bySymbol={};
+  fills.forEach(f=>{
+    if(!f.symbol)return;
+    const sym=f.symbol.trim().toUpperCase();
+    if(!bySymbol[sym])bySymbol[sym]=[];
+    bySymbol[sym].push({...f,sym});
+  });
+  const existingKeys=new Set(trades.map(t=>`${(t.ticker||t.name||'').toUpperCase().split('.')[0]}_${t.date}`));
   const positions=[];
   Object.entries(bySymbol).forEach(([sym,symFills])=>{
-    symFills.sort((a,b)=>new Date(a.time)-new Date(b.time));
+    symFills.sort((a,b)=>new Date(a.trade_date)-new Date(b.trade_date));
     const buyQueue=[],closed=[];
     symFills.forEach(f=>{
-      if(f.type==='buy'){buyQueue.push({qty:f.qty,price:f.price,date:f.date,exchange:f.exchange});}
-      else if(f.type==='sell'){let sq=f.qty;while(sq>0&&buyQueue.length){const lot=buyQueue[0],m=Math.min(lot.qty,sq);if(m===lot.qty)buyQueue.shift();else buyQueue[0].qty-=m;sq-=m;closed.push({symbol:sym,exchange:lot.exchange,entryDate:lot.date,exitDate:f.date,entryPrice:lot.price,exitPrice:f.price,qty:m});}}
+      const isBuy=f.trade_type==='buy'||f.trade_type==='b';
+      if(isBuy){buyQueue.push({qty:f.quantity,price:f.price,date:f.trade_date,exchange:f.exchange||'NSE'});}
+      else if(f.trade_type==='sell'||f.trade_type==='s'){
+        let sq=f.quantity;
+        while(sq>0&&buyQueue.length){
+          const lot=buyQueue[0],m=Math.min(lot.qty,sq);
+          if(m===lot.qty)buyQueue.shift();else buyQueue[0].qty-=m;
+          sq-=m;
+          closed.push({sym,exchange:lot.exchange,entryDate:lot.date,exitDate:f.trade_date,entryPrice:lot.price,exitPrice:f.price,qty:m});
+        }
+      }
     });
-    let cm=closed;if(mergeFills){const map={};closed.forEach(c=>{const k=`${c.symbol}_${c.entryDate}_${c.exitDate}`;if(!map[k])map[k]={...c,tev:c.qty*c.entryPrice,txv:c.qty*c.exitPrice};else{map[k].qty+=c.qty;map[k].tev+=c.qty*c.entryPrice;map[k].txv+=c.qty*c.exitPrice;}});cm=Object.values(map).map(m=>({...m,entryPrice:m.tev/m.qty,exitPrice:m.txv/m.qty}));}
-    cm.forEach(c=>{const key=`${c.symbol}_${c.entryDate}`;if(skipDupes&&existingKeys.has(key)){zdLog(`SKIP: ${c.symbol} ${c.entryDate}`);return;}positions.push(zdMakeTrade(c.symbol,c.exchange,c.entryDate,c.exitDate,c.entryPrice,c.exitPrice,c.qty,'closed'));});
-    if(buyQueue.length>0){const tq=buyQueue.reduce((s,l)=>s+l.qty,0),ae=buyQueue.reduce((s,l)=>s+l.qty*l.price,0)/tq,fd=buyQueue[0].date,key=`${sym}_${fd}`;if(skipDupes&&existingKeys.has(key)){zdLog(`SKIP open: ${sym}`);return;}positions.push(zdMakeTrade(sym,buyQueue[0].exchange,fd,'',ae,null,tq,'active'));}
+    // Merge same-day same-entry-exit fills
+    const map={};closed.forEach(c=>{const k=`${c.sym}_${c.entryDate}_${c.exitDate}`;if(!map[k])map[k]={...c,tev:c.qty*c.entryPrice,txv:c.qty*c.exitPrice};else{map[k].qty+=c.qty;map[k].tev+=c.qty*c.entryPrice;map[k].txv+=c.qty*c.exitPrice;}});
+    Object.values(map).forEach(c=>{
+      c.entryPrice=c.tev/c.qty;c.exitPrice=c.txv/c.qty;
+      const key=`${sym}_${c.entryDate}`;
+      if(existingKeys.has(key))return;
+      const ticker=sym.includes('.')?sym:(sym+(c.exchange==='BSE'?'.BO':'.NS'));
+      positions.push({id:0,name:sym,ticker,exchange:c.exchange,type:'Equity',entry:+c.entryPrice.toFixed(2),qty:c.qty,cmp:+c.exitPrice.toFixed(2),exitPrice:+c.exitPrice.toFixed(2),status:'closed',date:c.entryDate,exitDate:c.exitDate,sl:null,target:null,setupType:'',marketContext:'',execution:'',emotion:'',notes:`Imported from ${brokerName}.`,dailyData:[]});
+    });
+    if(buyQueue.length){
+      const tq=buyQueue.reduce((s,l)=>s+l.qty,0),ae=buyQueue.reduce((s,l)=>s+l.qty*l.price,0)/tq,fd=buyQueue[0].date;
+      const key=`${sym}_${fd}`;
+      if(!existingKeys.has(key)){
+        const ticker=sym.includes('.')?sym:(sym+(buyQueue[0].exchange==='BSE'?'.BO':'.NS'));
+        positions.push({id:0,name:sym,ticker,exchange:buyQueue[0].exchange,type:'Equity',entry:+ae.toFixed(2),qty:tq,cmp:+ae.toFixed(2),exitPrice:null,status:'active',date:fd,exitDate:'',sl:null,target:null,setupType:'',marketContext:'',execution:'',emotion:'',notes:`Imported from ${brokerName}.`,dailyData:[]});
+      }
+    }
   });
-  zdLog(`Built ${positions.length} positions.`);zdPendingTrades=positions;zdRenderPreview(positions);
+  return positions;
 }
-function zdMakeTrade(sym,exchange,entryDate,exitDate,entryPrice,exitPrice,qty,status){return{_skip:false,name:sym,ticker:sym+(exchange==='BSE'?'.BO':'.NS'),exchange,type:'Equity',entry:+entryPrice.toFixed(2),cmp:exitPrice?+exitPrice.toFixed(2):+entryPrice.toFixed(2),qty,exitPrice:exitPrice?+exitPrice.toFixed(2):null,status,date:entryDate,exitDate:exitDate||'',sl:null,target:null,setupType:'',marketContext:'',execution:'',emotion:'',notes:'Imported from Zerodha tradebook.'};}
-function zdRenderPreview(list){
-  if(!list.length){showToast('No new positions to import','info');return;}
-  const wins=list.filter(t=>t.status==='closed'&&t.exitPrice>t.entry).length,losses=list.filter(t=>t.status==='closed'&&t.exitPrice<=t.entry).length,open=list.filter(t=>t.status==='active').length;
-  const totalPnl=list.filter(t=>t.status==='closed').reduce((s,t)=>(t.exitPrice-t.entry)*t.qty+s,0);
-  document.getElementById('zdPreviewCount').textContent=list.length;document.getElementById('zdPreviewWins').textContent=`${wins} wins`;document.getElementById('zdPreviewLoss').textContent=`${losses} losses`;document.getElementById('zdPreviewOpen').textContent=`${open} open`;
-  document.getElementById('zdPreviewPnl').textContent=(totalPnl>=0?'+':'')+fmtINR(totalPnl);document.getElementById('zdPreviewPnl').style.color=totalPnl>=0?'var(--green)':'var(--red)';
-  document.getElementById('zdPreviewBody').innerHTML=list.map((t,i)=>{const pnl=t.status==='closed'?(t.exitPrice-t.entry)*t.qty:0;
-    return`<tr id="zdRow${i}" style="border-bottom:1px solid var(--border);"><td style="padding:7px 10px;font-weight:600;color:var(--text);">${t.ticker}</td><td style="padding:7px 10px;color:var(--text2);">${t.date}</td><td style="padding:7px 10px;text-align:right;">₹${t.entry.toFixed(2)}</td><td style="padding:7px 10px;text-align:right;">${t.exitPrice?'₹'+t.exitPrice.toFixed(2):'—'}</td><td style="padding:7px 10px;text-align:right;">${t.qty}</td><td style="padding:7px 10px;text-align:right;color:${pnl>=0?'var(--green)':'var(--red)'};">${t.status==='closed'?(pnl>=0?'+':'')+fmtINR(pnl):'<span style="color:var(--blue)">Open</span>'}</td><td style="padding:7px 10px;text-align:center;"><span class="badge ${t.status==='active'?'badge-live':'badge-closed'}">${t.status.toUpperCase()}</span></td><td style="padding:7px 4px;text-align:center;"><input type="checkbox" onchange="zdToggleSkip(${i},this.checked)" style="accent-color:var(--red);cursor:pointer;"/></td></tr>`;}).join('');
-  document.getElementById('zdPreview').style.display='block';document.getElementById('zdImportBtn').style.display='flex';document.getElementById('zdImportCount').textContent=list.length;document.getElementById('zdLog').style.display='block';
+
+// ── Modal state ──
+let uiLoadedFiles=[],uiParsedResults=[],uiAllPositions=[];
+
+function openUniversalImport(){
+  uiReset();
+  document.getElementById('universalImportOverlay').classList.add('open');
+  // Wire file input after modal opens
+  const fi=document.getElementById('ui-fileinput');
+  if(fi)fi.onchange=e=>{if(e.target.files)Array.from(e.target.files).forEach(uiAddFile);};
+  const paste=document.getElementById('ui-csvpaste');
+  if(paste)paste.oninput=()=>{if(paste.value.trim()){document.getElementById('ui-analyze-btn').disabled=false;}};
+  const dz=document.getElementById('ui-dropzone');
+  if(dz){
+    dz.ondragover=e=>{e.preventDefault();dz.style.borderColor='var(--tv-accent)';};
+    dz.ondragleave=()=>{dz.style.borderColor='var(--border2)';};
+    dz.ondrop=e=>{e.preventDefault();dz.style.borderColor='var(--border2)';if(e.dataTransfer.files)Array.from(e.dataTransfer.files).forEach(uiAddFile);};
+  }
 }
-function zdToggleSkip(i,checked){zdPendingTrades[i]._skip=checked;const row=document.getElementById('zdRow'+i);if(row)row.style.opacity=checked?'0.35':'1';document.getElementById('zdImportCount').textContent=zdPendingTrades.filter(t=>!t._skip).length;}
-function zdImportTrades(){
-  const toImport=zdPendingTrades.filter(t=>!t._skip);if(!toImport.length){showToast('Nothing to import','info');return;}
-  const maxId=Math.max(...trades.map(t=>t.id||0),0);toImport.forEach((t,i)=>{const{_skip,...trade}=t;trade.id=maxId+i+1;trades.push(trade);});
+function closeUniversalImport(){document.getElementById('universalImportOverlay').classList.remove('open');}
+
+function uiAddFile(file){
+  if(!file.name.endsWith('.csv')){showToast('Please upload .csv files only','error');return;}
+  if(uiLoadedFiles.find(f=>f.name===file.name))return; // no dupes
+  uiLoadedFiles.push(file);
+  uiRenderFileList();
+  document.getElementById('ui-analyze-btn').disabled=false;
+}
+
+function uiRenderFileList(){
+  const dz=document.getElementById('ui-dropzone');
+  if(!dz)return;
+  const pills=uiLoadedFiles.map((f,i)=>`<div style="display:inline-flex;align-items:center;gap:6px;background:var(--bg3);border:1px solid var(--border2);border-radius:20px;padding:4px 10px;font-size:11px;font-family:var(--mono);margin:3px;">
+    <span style="color:var(--green);">✓</span><span>${f.name}</span><span style="cursor:pointer;color:var(--text3);" onclick="uiRemoveFile(${i})">✕</span>
+  </div>`).join('');
+  dz.querySelector('.drop-title')||0;
+  const existing=dz.querySelector('#ui-file-pills');
+  if(existing)existing.remove();
+  const pillDiv=document.createElement('div');pillDiv.id='ui-file-pills';pillDiv.style.marginTop='12px';pillDiv.innerHTML=pills;
+  dz.appendChild(pillDiv);
+}
+
+function uiRemoveFile(i){
+  uiLoadedFiles.splice(i,1);
+  uiRenderFileList();
+  if(!uiLoadedFiles.length)document.getElementById('ui-analyze-btn').disabled=true;
+}
+
+function uiSetStep(n){
+  [1,2,3,4].forEach(i=>{
+    const num=document.getElementById('ui-step'+i+'-num');
+    const lbl=document.getElementById('ui-step'+i+'-lbl');
+    const line=document.getElementById('ui-line'+i);
+    if(!num)return;
+    if(i<n){num.style.cssText='width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;font-family:var(--mono);background:var(--green);border:1px solid var(--green);color:#000;';if(lbl)lbl.style.color='var(--text3)';if(line)line.style.background='rgba(38,166,154,0.4)';}
+    else if(i===n){num.style.cssText='width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;font-family:var(--mono);background:var(--tv-accent);border:1px solid var(--tv-accent);color:#fff;';if(lbl)lbl.style.color='var(--text)';}
+    else{num.style.cssText='width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;font-family:var(--mono);background:var(--bg3);border:1px solid var(--border2);color:var(--text3);';if(lbl)lbl.style.color='var(--text3)';if(line&&i<4)line.style.background='var(--border)';}
+  });
+}
+
+function uiShowPanel(name){
+  ['upload','thinking','mapping','preview','success'].forEach(p=>{const el=document.getElementById('ui-panel-'+p);if(el)el.style.display='none';});
+  const el=document.getElementById('ui-panel-'+name);if(el)el.style.display='block';
+}
+
+async function uiStartAnalysis(){
+  if(!uiLoadedFiles.length&&!document.getElementById('ui-csvpaste')?.value.trim()){showToast('Upload a CSV file first','error');return;}
+  uiShowPanel('thinking');uiSetStep(2);
+  uiParsedResults=[];
+  const statusEl=document.getElementById('ui-ai-status');
+  const logEl=document.getElementById('ui-ai-log');
+  if(logEl)logEl.textContent='';
+
+  // Process files
+  const filesToProcess=[...uiLoadedFiles];
+  const pasteVal=document.getElementById('ui-csvpaste')?.value.trim();
+  if(pasteVal)filesToProcess.push({name:'pasted-data.csv',_pasted:pasteVal});
+
+  for(const file of filesToProcess){
+    if(statusEl)statusEl.textContent=`Detecting ${file.name}...`;
+    const text=file._pasted?file._pasted:await new Promise(res=>{const r=new FileReader();r.onload=e=>res(e.target.result);r.readAsText(file);});
+    const{profile,records}=uiDetectAndParse(text,file.name);
+    if(logEl)logEl.textContent+=(logEl.textContent?'\n':'')+'✓ '+file.name+' → '+profile.name+' ('+records.length+' fills)';
+    uiParsedResults.push({filename:file.name,profile,records});
+  }
+
+  // Build positions from all files
+  const allFills=uiParsedResults.flatMap(r=>r.records);
+  const brokerName=[...new Set(uiParsedResults.map(r=>r.profile.name))].join(', ');
+  uiAllPositions=uiBuildPositions(allFills,brokerName);
+
+  uiRenderPreview(brokerName);
+}
+
+function uiRenderPreview(brokerName){
+  uiSetStep(3);
+  const wins=uiAllPositions.filter(t=>t.status==='closed'&&t.exitPrice>t.entry).length;
+  const losses=uiAllPositions.filter(t=>t.status==='closed'&&t.exitPrice<=t.entry).length;
+  const open=uiAllPositions.filter(t=>t.status==='active').length;
+  const totalPnl=uiAllPositions.filter(t=>t.status==='closed').reduce((s,t)=>(t.exitPrice-t.entry)*t.qty+s,0);
+  const brokers=[...new Set(uiParsedResults.map(r=>r.profile.name))];
+
+  // Banner
+  const banner=document.getElementById('ui-ai-banner');
+  if(banner)banner.textContent=`✓ Detected: ${brokerName} — ${uiParsedResults.reduce((s,r)=>s+r.records.length,0)} fills → ${uiAllPositions.length} positions`;
+
+  document.getElementById('ui-preview-summary').innerHTML=`
+    <div style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:12px;text-align:center;"><div style="font-family:var(--mono);font-size:18px;font-weight:700;">${uiAllPositions.length}</div><div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-top:3px;">Positions</div></div>
+    <div style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:12px;text-align:center;"><div style="font-family:var(--mono);font-size:18px;font-weight:700;color:var(--green);">${wins}</div><div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-top:3px;">Winners</div></div>
+    <div style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:12px;text-align:center;"><div style="font-family:var(--mono);font-size:18px;font-weight:700;color:var(--red);">${losses}</div><div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-top:3px;">Losers</div></div>
+    <div style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:12px;text-align:center;"><div style="font-family:var(--mono);font-size:18px;font-weight:700;color:${totalPnl>=0?'var(--green)':'var(--red)'};">${totalPnl>=0?'+':''}${fmtINR(totalPnl)}</div><div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-top:3px;">Realised P&L</div></div>`;
+
+  // Broker breakdown alert
+  const alertsEl=document.getElementById('ui-preview-alerts');
+  if(alertsEl)alertsEl.innerHTML=brokers.map(b=>`<div style="display:inline-flex;align-items:center;gap:6px;background:rgba(41,98,255,0.07);border:1px solid rgba(41,98,255,0.2);border-radius:5px;padding:4px 10px;font-size:10px;font-family:var(--mono);color:#6fa3ff;margin:0 4px 6px 0;">${b}</div>`).join('');
+
+  if(!uiAllPositions.length){
+    if(alertsEl)alertsEl.innerHTML+='<div style="padding:10px 12px;background:var(--red-dim);border:1px solid rgba(239,83,80,0.2);border-radius:6px;font-size:11px;color:var(--red);margin-top:6px;">✗ No positions found. CSV may not be a tradebook format, or has unsupported structure.</div>';
+    uiShowPanel('mapping');return;
+  }
+
+  // Table
+  const hdrs=['Symbol','Entry Date','Exit Date','Qty','Entry ₹','Exit ₹','P&L','Status'];
+  document.getElementById('ui-preview-headers').innerHTML=hdrs.map(h=>`<th style="padding:8px 10px;text-align:left;font-size:9px;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border);white-space:nowrap;">${h}</th>`).join('');
+  document.getElementById('ui-preview-body').innerHTML=uiAllPositions.slice(0,50).map(t=>{
+    const pnl=t.status==='closed'&&t.exitPrice?(t.exitPrice-t.entry)*t.qty:null;
+    return`<tr style="border-bottom:1px solid var(--border);">
+      <td style="padding:7px 10px;font-family:var(--mono);font-size:11px;font-weight:600;color:var(--text);">${t.ticker}</td>
+      <td style="padding:7px 10px;font-family:var(--mono);font-size:10px;color:var(--text2);">${t.date}</td>
+      <td style="padding:7px 10px;font-family:var(--mono);font-size:10px;color:var(--text3);">${t.exitDate||'—'}</td>
+      <td style="padding:7px 10px;font-family:var(--mono);font-size:11px;">${t.qty}</td>
+      <td style="padding:7px 10px;font-family:var(--mono);font-size:11px;">₹${t.entry.toFixed(2)}</td>
+      <td style="padding:7px 10px;font-family:var(--mono);font-size:11px;">${t.exitPrice?'₹'+t.exitPrice.toFixed(2):'—'}</td>
+      <td style="padding:7px 10px;font-family:var(--mono);font-size:11px;color:${pnl===null?'var(--text3)':pnl>=0?'var(--green)':'var(--red)'};">${pnl===null?'—':(pnl>=0?'+':'')+fmtINR(pnl)}</td>
+      <td style="padding:7px 10px;"><span style="font-family:var(--mono);font-size:9px;padding:2px 7px;border-radius:3px;background:${t.status==='active'?'rgba(41,98,255,0.1)':'rgba(38,166,154,0.1)'};color:${t.status==='active'?'var(--blue)':'var(--green)'};">${t.status.toUpperCase()}</span></td>
+    </tr>`;
+  }).join('');
+  document.getElementById('ui-import-count').textContent=uiAllPositions.length;
+  uiShowPanel('preview');
+}
+
+function uiGoToMapping(){uiShowPanel('upload');uiSetStep(1);}
+
+function uiDoImport(){
+  if(!uiAllPositions.length){showToast('Nothing to import','error');return;}
   Object.values(chartInstances).forEach(c=>{try{c.destroy();}catch(e){}});chartInstances={};
-  save();renderSummary();renderCards();closeZerodha();showToast(`✓ ${toImport.length} positions imported!`,'success');setTimeout(()=>fetchAllPrices(),600);
+  const maxId=Math.max(...trades.map(t=>t.id||0),0);
+  uiAllPositions.forEach((t,i)=>{t.id=maxId+i+1;});
+  trades=[...trades,...uiAllPositions];
+  save();renderSummary();renderCards();
+  const brokerName=[...new Set(uiParsedResults.map(r=>r.profile.name))].join(', ');
+  document.getElementById('ui-success-msg').textContent=`${uiAllPositions.length} positions from ${brokerName} imported and merged into your journal.`;
+  uiShowPanel('success');uiSetStep(4);
+  showToast(`✓ ${uiAllPositions.length} trades imported from ${brokerName}!`,'success');
+  setTimeout(()=>fetchAllPrices(),800);
 }
-function zdLog(msg){const el=document.getElementById('zdLog');if(!el)return;el.style.display='block';el.innerHTML+=`<div>› ${msg}</div>`;el.scrollTop=el.scrollHeight;}
+
+function uiReset(){
+  uiLoadedFiles=[];uiParsedResults=[];uiAllPositions=[];
+  const fi=document.getElementById('ui-fileinput');if(fi){fi.value='';fi.onchange=null;}
+  const paste=document.getElementById('ui-csvpaste');if(paste)paste.value='';
+  const analyzeBtn=document.getElementById('ui-analyze-btn');if(analyzeBtn)analyzeBtn.disabled=true;
+  const logEl=document.getElementById('ui-ai-log');if(logEl)logEl.textContent='';
+  const pills=document.getElementById('ui-file-pills');if(pills)pills.remove();
+  uiShowPanel('upload');uiSetStep(1);
+}
+
+// Also keep the mapping panel's "Preview Trades" wired to preview
+function uiBuildPreview(){uiRenderPreview([...new Set(uiParsedResults.map(r=>r.profile.name))].join(', '));}
 
 let toastTimer;
 function showToast(msg,type='info'){
