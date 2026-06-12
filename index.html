@@ -708,11 +708,8 @@ select option{background:var(--bg3);}
       <!-- STEP 1: UPLOAD -->
       <div id="ui-panel-upload">
         <div id="ui-dropzone" style="border:2px dashed var(--border2);border-radius:8px;padding:40px 24px;text-align:center;cursor:pointer;transition:border-color 0.2s;position:relative;margin-bottom:16px;"
-          onclick="document.getElementById('ui-fileinput').click()"
-          ondragover="event.preventDefault();this.style.borderColor='var(--tv-accent)'"
-          ondragleave="this.style.borderColor='var(--border2)'"
-          ondrop="event.preventDefault();this.style.borderColor='var(--border2)';uiHandleFile(event.dataTransfer.files[0])">
-          <input type="file" id="ui-fileinput" accept=".csv,.txt" style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;" onchange="uiHandleFile(this.files[0])">
+>
+          <input type="file" id="ui-fileinput" accept=".csv,.txt" style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;">
           <div style="font-size:32px;margin-bottom:10px;">📂</div>
           <div style="font-size:14px;font-weight:500;color:var(--text);margin-bottom:4px;">Drop your CSV here or click to browse</div>
           <div style="font-size:11px;color:var(--text3);margin-bottom:14px;">Any broker, any format — AI maps columns automatically</div>
@@ -1851,17 +1848,6 @@ let uiLoadedFiles=[],uiParsedResults=[],uiAllPositions=[];
 function openUniversalImport(){
   uiReset();
   document.getElementById('universalImportOverlay').classList.add('open');
-  // Wire file input after modal opens
-  const fi=document.getElementById('ui-fileinput');
-  if(fi)fi.onchange=e=>{if(e.target.files)Array.from(e.target.files).forEach(uiAddFile);};
-  const paste=document.getElementById('ui-csvpaste');
-  if(paste)paste.oninput=()=>{if(paste.value.trim()){document.getElementById('ui-analyze-btn').disabled=false;}};
-  const dz=document.getElementById('ui-dropzone');
-  if(dz){
-    dz.ondragover=e=>{e.preventDefault();dz.style.borderColor='var(--tv-accent)';};
-    dz.ondragleave=()=>{dz.style.borderColor='var(--border2)';};
-    dz.ondrop=e=>{e.preventDefault();dz.style.borderColor='var(--border2)';if(e.dataTransfer.files)Array.from(e.dataTransfer.files).forEach(uiAddFile);};
-  }
 }
 function closeUniversalImport(){document.getElementById('universalImportOverlay').classList.remove('open');}
 
@@ -2003,12 +1989,39 @@ function uiDoImport(){
 
 function uiReset(){
   uiLoadedFiles=[];uiParsedResults=[];uiAllPositions=[];
-  const fi=document.getElementById('ui-fileinput');if(fi){fi.value='';fi.onchange=null;}
+  const fi=document.getElementById('ui-fileinput');if(fi)fi.value='';
   const paste=document.getElementById('ui-csvpaste');if(paste)paste.value='';
   const analyzeBtn=document.getElementById('ui-analyze-btn');if(analyzeBtn)analyzeBtn.disabled=true;
   const logEl=document.getElementById('ui-ai-log');if(logEl)logEl.textContent='';
   const pills=document.getElementById('ui-file-pills');if(pills)pills.remove();
   uiShowPanel('upload');uiSetStep(1);
+}
+
+// Wire all UI events once on page load — never re-wire on open
+function uiInitEvents(){
+  const fi=document.getElementById('ui-fileinput');
+  if(fi)fi.addEventListener('change',e=>{
+    if(e.target.files)Array.from(e.target.files).forEach(uiAddFile);
+    e.target.value=''; // reset so same file can be re-selected
+  });
+  const paste=document.getElementById('ui-csvpaste');
+  if(paste)paste.addEventListener('input',()=>{
+    document.getElementById('ui-analyze-btn').disabled=!paste.value.trim();
+  });
+  const dz=document.getElementById('ui-dropzone');
+  if(dz){
+    dz.addEventListener('dragover',e=>{e.preventDefault();dz.style.borderColor='var(--tv-accent)';});
+    dz.addEventListener('dragleave',()=>{dz.style.borderColor='var(--border2)';});
+    dz.addEventListener('drop',e=>{
+      e.preventDefault();dz.style.borderColor='var(--border2)';
+      if(e.dataTransfer.files)Array.from(e.dataTransfer.files).forEach(uiAddFile);
+    });
+    // Click on dropzone triggers file input (but NOT if clicking the input itself)
+    dz.addEventListener('click',e=>{
+      if(e.target.id==='ui-fileinput')return;
+      document.getElementById('ui-fileinput').click();
+    });
+  }
 }
 
 // Also keep the mapping panel's "Preview Trades" wired to preview
@@ -2531,6 +2544,7 @@ function emptyMsg(msg='No closed trades yet.'){
     statusEl.textContent='🚫 localStorage unavailable (private/incognito mode?) — data will NOT persist across refreshes.';
     statusEl.style.color='var(--red)';
     load();renderSummary();renderCards();
+  uiInitEvents();
     return;
   }
 
