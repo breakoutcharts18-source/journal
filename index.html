@@ -9,6 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;500;600;700;800&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 :root {
+  /* ── DARK MODE (default) ── */
   --bg:#060810;--bg2:#0c0f1a;--bg3:#111527;--bg4:#161c32;
   --border:rgba(100,120,255,0.08);--border2:rgba(100,120,255,0.18);--border3:rgba(100,120,255,0.35);
   --text:#e2e8ff;--text2:#8b96c8;--text3:#454d75;
@@ -21,14 +22,46 @@
   --r:10px;--rl:16px;--font:'Inter',sans-serif;--display:'Syne',sans-serif;--mono:'Space Mono',monospace;
   --glow-green:0 0 20px rgba(0,229,160,0.25);--glow-blue:0 0 20px rgba(77,124,255,0.3);--glow-red:0 0 20px rgba(255,77,106,0.25);
   --tv-accent:#4d7cff;--tv-up:#00e5a0;--tv-down:#ff4d6a;
+  --topbar-bg:rgba(6,8,16,0.92);
+  --grid-line:rgba(77,124,255,0.025);
+  --radial-top:rgba(77,124,255,0.07);
+  --shadow-card:rgba(0,0,0,0.4);
+}
+html.light {
+  /* ── LIGHT MODE ── */
+  --bg:#f0f2f8;--bg2:#ffffff;--bg3:#f5f7fd;--bg4:#e8ecf7;
+  --border:rgba(77,100,220,0.10);--border2:rgba(77,100,220,0.22);--border3:rgba(77,100,220,0.40);
+  --text:#1a2040;--text2:#3d4f8a;--text3:#8a97c2;
+  --green:#00a86b;--green-dim:rgba(0,168,107,0.10);--green-mid:rgba(0,168,107,0.20);
+  --red:#e8264a;--red-dim:rgba(232,38,74,0.09);--red-mid:rgba(232,38,74,0.18);
+  --blue:#2d5cf5;--blue-dim:rgba(45,92,245,0.09);
+  --amber:#d47b00;--amber-dim:rgba(212,123,0,0.09);
+  --purple:#7c3aed;--purple-dim:rgba(124,58,237,0.09);
+  --cyan:#0099cc;--cyan-dim:rgba(0,153,204,0.09);
+  --glow-green:0 0 20px rgba(0,168,107,0.18);--glow-blue:0 0 20px rgba(45,92,245,0.22);--glow-red:0 0 20px rgba(232,38,74,0.18);
+  --tv-accent:#2d5cf5;--tv-up:#00a86b;--tv-down:#e8264a;
+  --topbar-bg:rgba(255,255,255,0.95);
+  --grid-line:rgba(77,100,220,0.04);
+  --radial-top:rgba(77,100,220,0.04);
+  --shadow-card:rgba(80,100,200,0.10);
 }
 *{box-sizing:border-box;margin:0;padding:0;}
-html{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14px;scrollbar-width:thin;scrollbar-color:var(--bg4) transparent;}
+html{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14px;scrollbar-width:thin;scrollbar-color:var(--bg4) transparent;transition:background 0.25s,color 0.25s;}
 ::-webkit-scrollbar{width:4px;height:4px;}::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:2px;}
 body{min-height:100vh;overflow-x:hidden;}
-body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(77,124,255,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(77,124,255,0.025) 1px,transparent 1px);background-size:48px 48px;pointer-events:none;z-index:0;}
-body::after{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 70% 50% at 50% -10%,rgba(77,124,255,0.07),transparent);pointer-events:none;z-index:0;}
-.topbar{display:flex;align-items:center;gap:10px;padding:0 20px;height:52px;background:rgba(6,8,16,0.92);border-bottom:1px solid var(--border2);position:sticky;top:0;z-index:100;backdrop-filter:blur(16px);overflow:hidden;}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(var(--grid-line) 1px,transparent 1px),linear-gradient(90deg,var(--grid-line) 1px,transparent 1px);background-size:48px 48px;pointer-events:none;z-index:0;}
+body::after{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 70% 50% at 50% -10%,var(--radial-top),transparent);pointer-events:none;z-index:0;}
+/* ── THEME TOGGLE SWITCH ── */
+.theme-toggle{display:flex;align-items:center;gap:6px;flex-shrink:0;}
+.theme-toggle-label{font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:0.08em;user-select:none;}
+.theme-switch{position:relative;width:36px;height:20px;flex-shrink:0;}
+.theme-switch input{opacity:0;width:0;height:0;position:absolute;}
+.theme-slider{position:absolute;cursor:pointer;inset:0;background:var(--bg4);border:1px solid var(--border2);border-radius:20px;transition:background 0.25s,border-color 0.25s;}
+.theme-slider::before{content:'';position:absolute;width:14px;height:14px;left:2px;top:2px;background:#fff;border-radius:50%;transition:transform 0.25s,background 0.25s;font-size:8px;display:flex;align-items:center;justify-content:center;}
+.theme-switch input:checked+.theme-slider{background:linear-gradient(135deg,#f5c842,#f5913e);border-color:rgba(245,200,66,0.4);}
+.theme-switch input:checked+.theme-slider::before{transform:translateX(16px);background:#fff;}
+.theme-icon{font-size:12px;line-height:1;}
+.topbar{display:flex;align-items:center;gap:10px;padding:0 20px;height:52px;background:var(--topbar-bg);border-bottom:1px solid var(--border2);position:sticky;top:0;z-index:100;backdrop-filter:blur(16px);overflow:hidden;}
 .logo{font-family:var(--display);font-size:16px;font-weight:800;display:flex;align-items:center;gap:8px;letter-spacing:0.3px;color:#fff;flex-shrink:0;}
 .logo-icon{width:26px;height:26px;border-radius:7px;background:linear-gradient(135deg,var(--blue),var(--purple));display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;flex-shrink:0;}
 .logo-sub{font-family:var(--mono);font-size:8px;color:var(--text3);letter-spacing:0.2em;font-weight:400;margin-top:1px;}
@@ -94,7 +127,7 @@ select.nano{background:var(--bg3);border:1px solid var(--border2);border-radius:
 @media(max-width:1200px){.cards-grid{grid-template-columns:repeat(2,1fr);}}
 @media(max-width:680px){.cards-grid{grid-template-columns:1fr;}}
 .trade-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);padding:16px;cursor:pointer;transition:all 0.2s;position:relative;overflow:hidden;}
-.trade-card:hover{border-color:var(--border2);transform:translateY(-2px);box-shadow:0 8px 32px rgba(0,0,0,0.4);}
+.trade-card:hover{border-color:var(--border2);transform:translateY(-2px);box-shadow:0 8px 32px var(--shadow-card);}
 .trade-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
 .trade-card.profit::before{background:linear-gradient(90deg,var(--green),rgba(0,229,160,0.1));}
 .trade-card.loss::before{background:linear-gradient(90deg,var(--red),rgba(255,77,106,0.1));}
@@ -297,6 +330,14 @@ select option{background:var(--bg3);}
   <div class="logo-divider"></div>
   <div class="live-pulse"><div class="dot"></div>LIVE</div>
   <div class="topbar-right">
+    <div class="theme-toggle">
+      <span class="theme-icon">🌙</span>
+      <label class="theme-switch" title="Toggle light/dark mode">
+        <input type="checkbox" id="themeToggle" onchange="toggleTheme(this)">
+        <span class="theme-slider"></span>
+      </label>
+      <span class="theme-icon">☀️</span>
+    </div>
     <button class="btn btn-purple" onclick="openAnalytics()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>Analytics</button>
     <button class="btn btn-tax" onclick="openTaxCalc()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>Tax P&amp;L</button>
     <button class="btn btn-amber" onclick="openRisk()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Risk</button>
@@ -309,7 +350,7 @@ select option{background:var(--bg3);}
   </div>
 </div>
 
-<input type="file" id="csvFileInput" accept=".csv" style="display:none;" onchange="handleCSVImport(event)" />
+<input type="file" id="csvFileInput" accept=".csv,.txt,text/csv,text/plain,text/comma-separated-values,application/csv,application/vnd.ms-excel" style="display:none;" onchange="handleCSVImport(event)" />
 
 <div class="main">
   <div class="status-bar">
@@ -707,12 +748,16 @@ select option{background:var(--bg3);}
 
       <!-- STEP 1: UPLOAD -->
       <div id="ui-panel-upload">
-        <div id="ui-dropzone" style="border:2px dashed var(--border2);border-radius:8px;padding:40px 24px;text-align:center;cursor:pointer;transition:border-color 0.2s;position:relative;margin-bottom:16px;"
->
-          <input type="file" id="ui-fileinput" accept=".csv,.txt" style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;">
+        <div id="ui-dropzone" style="border:2px dashed var(--border2);border-radius:8px;padding:32px 24px;text-align:center;cursor:pointer;transition:border-color 0.2s;margin-bottom:16px;">
           <div style="font-size:32px;margin-bottom:10px;">📂</div>
-          <div style="font-size:14px;font-weight:500;color:var(--text);margin-bottom:4px;">Drop your CSV here or click to browse</div>
+          <div style="font-size:14px;font-weight:500;color:var(--text);margin-bottom:4px;">Drop your CSV here</div>
           <div style="font-size:11px;color:var(--text3);margin-bottom:14px;">Any broker, any format — AI maps columns automatically</div>
+          <!-- Mobile-friendly browse button (visible on all, but especially needed on mobile) -->
+          <button type="button" onclick="document.getElementById('ui-fileinput').click()" style="display:inline-flex;align-items:center;gap:7px;padding:9px 20px;border-radius:8px;font-size:12px;font-family:var(--mono);cursor:pointer;border:1px solid var(--border2);background:var(--bg3);color:var(--text2);margin-bottom:14px;font-weight:600;transition:all 0.2s;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            Browse Files
+          </button>
+          <input type="file" id="ui-fileinput" accept=".csv,.txt,text/csv,text/plain,text/comma-separated-values,application/csv,application/vnd.ms-excel" style="display:none;">
           <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center;">
             <span style="padding:2px 9px;border-radius:20px;font-size:10px;border:1px solid var(--border2);color:var(--text3);font-family:var(--mono);">Zerodha</span>
             <span style="padding:2px 9px;border-radius:20px;font-size:10px;border:1px solid var(--border2);color:var(--text3);font-family:var(--mono);">Dhan</span>
@@ -815,6 +860,9 @@ const PROXY='https://corsproxy.io/?url=';
 let trades=[],currentFilter='active',editingId=null,detailId=null;
 let autoRefreshTimer=null,progressTimer=null,progressStart=null,progressDuration=0;
 let chartInstances={},anChartInstances={};
+
+// Returns 'dark' or 'light' for ApexCharts theme mode
+function chartTheme(){return document.documentElement.classList.contains('light')?'light':'dark';}
 
 function save(){
   // Keep a compact close-only cache for alpha chart (tiny vs full OHLC)
@@ -2016,11 +2064,6 @@ function uiInitEvents(){
       e.preventDefault();dz.style.borderColor='var(--border2)';
       if(e.dataTransfer.files)Array.from(e.dataTransfer.files).forEach(uiAddFile);
     });
-    // Click on dropzone triggers file input (but NOT if clicking the input itself)
-    dz.addEventListener('click',e=>{
-      if(e.target.id==='ui-fileinput')return;
-      document.getElementById('ui-fileinput').click();
-    });
   }
 }
 
@@ -2529,6 +2572,33 @@ function emptyMsg(msg='No closed trades yet.'){
   return`<div style="text-align:center;padding:40px 20px;color:var(--text3);font-family:var(--mono);font-size:11px;"><div style="font-size:28px;opacity:0.3;margin-bottom:10px;">📊</div>${msg}</div>`;
 }
 
+// ── THEME TOGGLE ──
+function toggleTheme(checkbox){
+  if(checkbox.checked){
+    document.documentElement.classList.add('light');
+    localStorage.setItem('bc_theme','light');
+    updateApexTheme('light');
+  } else {
+    document.documentElement.classList.remove('light');
+    localStorage.setItem('bc_theme','dark');
+    updateApexTheme('dark');
+  }
+}
+function updateApexTheme(mode){
+  // Re-render any open charts with new theme
+  const textColor=mode==='light'?'#8a97c2':'var(--text3)';
+  Object.values(chartInstances).forEach(c=>{try{c.updateOptions({theme:{mode},xaxis:{labels:{style:{colors:textColor}}},yaxis:{labels:{style:{colors:textColor}}}});}catch(e){}});
+  Object.values(anChartInstances).forEach(c=>{try{c.updateOptions({theme:{mode},xaxis:{labels:{style:{colors:textColor}}},yaxis:{labels:{style:{colors:textColor}}}});}catch(e){}});
+}
+(function initTheme(){
+  const saved=localStorage.getItem('bc_theme');
+  if(saved==='light'){
+    document.documentElement.classList.add('light');
+    const toggle=document.getElementById('themeToggle');
+    if(toggle)toggle.checked=true;
+  }
+})();
+
 // ── BOOT ──
 (function boot(){
   const statusEl=document.getElementById('liveStatus');
@@ -2552,6 +2622,7 @@ function emptyMsg(msg='No closed trades yet.'){
   load();
   renderSummary();
   renderCards();
+  uiInitEvents();
 
   // 3. Show storage status
   try{
