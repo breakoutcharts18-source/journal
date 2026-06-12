@@ -401,6 +401,7 @@ select option{background:var(--bg3);}
       <button class="analytics-tab" onclick="switchAnTab('ee',this)">ENTRY/EXIT EFF.</button>
       <button class="analytics-tab" onclick="switchAnTab('dd',this)">DRAWDOWN</button>
       <button class="analytics-tab" onclick="switchAnTab('alpha',this)">vs SMALLCAP</button>
+      <button class="analytics-tab" onclick="switchAnTab('tax',this)">TAX P&amp;L</button>
     </div>
 
     <!-- EQUITY CURVE -->
@@ -525,68 +526,52 @@ select option{background:var(--bg3);}
         </div>
       </div>
     </div>
-  </div>
-</div>
 
-<!-- TAX CALCULATOR MODAL -->
-<div class="overlay" id="taxOverlay" onclick="if(event.target.id==='taxOverlay')closeTaxCalc()">
-  <div class="modal tax-modal" style="width:1000px;">
-    <div class="modal-title">
-      <div style="display:flex;align-items:center;gap:10px;">
-        <div style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,var(--amber),#ff6b35);display:flex;align-items:center;justify-content:center;font-size:15px;">₹</div>
+    <!-- TAX P&L -->
+    <div class="an-section" id="an-tax">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+        <div style="width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--amber),#ff6b35);display:flex;align-items:center;justify-content:center;font-size:13px;">₹</div>
         <div>
-          <div>Capital Gains Tax Calculator</div>
-          <div style="font-family:var(--mono);font-size:10px;color:var(--text3);font-weight:400;margin-top:2px;">STCG · LTCG · STT · Net Take-Home · FY 2024-25</div>
+          <div style="font-size:13px;font-weight:600;color:var(--text);">Capital Gains Tax Calculator</div>
+          <div style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:1px;">STCG · LTCG · STT · Net Take-Home · FY 2024-25</div>
         </div>
       </div>
-      <button class="modal-close" onclick="closeTaxCalc()">✕</button>
-    </div>
-
-    <!-- Editable Tax Rates -->
-    <div class="tax-rate-inputs">
-      <div>
-        <span class="tax-rate-label">STCG Tax Rate % <span style="color:var(--amber)">(held &lt; 12 months)</span></span>
-        <input class="tax-rate-input" id="stcgRate" type="number" value="20" min="0" max="100" step="0.5" oninput="renderTaxCalc()" />
-        <div style="font-family:var(--mono);font-size:9px;color:var(--text3);margin-top:4px;">Budget 2024: raised from 15% → 20%</div>
+      <!-- Tax Rate Inputs -->
+      <div class="tax-rate-inputs" style="margin-bottom:14px;">
+        <div>
+          <span class="tax-rate-label">STCG Tax Rate % <span style="color:var(--amber)">(held &lt; 12 months)</span></span>
+          <input class="tax-rate-input" id="stcgRate" type="number" value="20" min="0" max="100" step="0.5" oninput="renderTaxCalc()" />
+          <div style="font-family:var(--mono);font-size:9px;color:var(--text3);margin-top:4px;">Budget 2024: raised from 15% → 20%</div>
+        </div>
+        <div>
+          <span class="tax-rate-label">LTCG Tax Rate % <span style="color:var(--cyan)">(held ≥ 12 months)</span></span>
+          <input class="tax-rate-input" id="ltcgRate" type="number" value="12.5" min="0" max="100" step="0.5" oninput="renderTaxCalc()" />
+          <div style="font-family:var(--mono);font-size:9px;color:var(--text3);margin-top:4px;">Budget 2024: raised from 10% → 12.5%</div>
+        </div>
+        <div>
+          <span class="tax-rate-label">LTCG Exemption Limit (₹)</span>
+          <input class="tax-rate-input" id="ltcgExemption" type="number" value="125000" min="0" step="5000" oninput="renderTaxCalc()" />
+          <div style="font-family:var(--mono);font-size:9px;color:var(--text3);margin-top:4px;">Budget 2024: raised from ₹1L → ₹1.25L</div>
+        </div>
       </div>
-      <div>
-        <span class="tax-rate-label">LTCG Tax Rate % <span style="color:var(--cyan)">(held ≥ 12 months)</span></span>
-        <input class="tax-rate-input" id="ltcgRate" type="number" value="12.5" min="0" max="100" step="0.5" oninput="renderTaxCalc()" />
-        <div style="font-family:var(--mono);font-size:9px;color:var(--text3);margin-top:4px;">Budget 2024: raised from 10% → 12.5%</div>
+      <div class="tax-summary-hero" id="taxHeroCards"></div>
+      <div class="tax-breakdown-grid" id="taxBreakdownGrid"></div>
+      <div class="section-header"><h3>TRADE-LEVEL BREAKDOWN</h3><div class="section-line"></div>
+        <select class="sort-select" id="taxTradeFilter" onchange="renderTaxCalc()" style="margin-left:8px;font-size:10px;padding:4px 8px;">
+          <option value="all">All Closed</option><option value="stcg">STCG Only</option><option value="ltcg">LTCG Only</option><option value="profit">Profits Only</option><option value="loss">Losses Only</option>
+        </select>
       </div>
-      <div>
-        <span class="tax-rate-label">LTCG Exemption Limit (₹)</span>
-        <input class="tax-rate-input" id="ltcgExemption" type="number" value="125000" min="0" step="5000" oninput="renderTaxCalc()" />
-        <div style="font-family:var(--mono);font-size:9px;color:var(--text3);margin-top:4px;">Budget 2024: raised from ₹1L → ₹1.25L</div>
+      <div style="max-height:220px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--r);margin-bottom:14px;">
+        <table class="tax-trades-table"><thead><tr>
+          <th>Stock</th><th>Entry Date</th><th>Exit Date</th><th>Held</th><th>Type</th><th style="text-align:right">Qty</th><th style="text-align:right">Entry ₹</th><th style="text-align:right">Exit ₹</th><th style="text-align:right">Gross P&L</th><th style="text-align:right">STT</th><th style="text-align:right">Net P&L</th>
+        </tr></thead><tbody id="taxTradeBody"></tbody></table>
       </div>
+      <div class="takehome-banner" id="takehomeBanner"></div>
+      <div class="tax-note" id="taxNote" style="margin-top:14px;"></div>
     </div>
 
-    <!-- Summary Hero Cards -->
-    <div class="tax-summary-hero" id="taxHeroCards"></div>
-
-    <!-- Breakdown Grid -->
-    <div class="tax-breakdown-grid" id="taxBreakdownGrid"></div>
-
-    <!-- Per-Trade Table -->
-    <div class="section-header"><h3>TRADE-LEVEL BREAKDOWN</h3><div class="section-line"></div>
-      <select class="sort-select" id="taxTradeFilter" onchange="renderTaxCalc()" style="margin-left:8px;font-size:10px;padding:4px 8px;">
-        <option value="all">All Closed</option><option value="stcg">STCG Only</option><option value="ltcg">LTCG Only</option><option value="profit">Profits Only</option><option value="loss">Losses Only</option>
-      </select>
-    </div>
-    <div style="max-height:260px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--r);margin-bottom:14px;">
-      <table class="tax-trades-table"><thead><tr>
-        <th>Stock</th><th>Entry Date</th><th>Exit Date</th><th>Held</th><th>Type</th><th style="text-align:right">Qty</th><th style="text-align:right">Entry ₹</th><th style="text-align:right">Exit ₹</th><th style="text-align:right">Gross P&L</th><th style="text-align:right">STT</th><th style="text-align:right">Net P&L</th>
-      </tr></thead><tbody id="taxTradeBody"></tbody></table>
-    </div>
-
-    <!-- Take-Home Banner -->
-    <div class="takehome-banner" id="takehomeBanner"></div>
-
-    <!-- Disclaimer -->
-    <div class="tax-note" id="taxNote"></div>
   </div>
 </div>
-
 <!-- ADD/EDIT TRADE MODAL -->
 <div class="overlay" id="tradeOverlay" onclick="closeModalBackdrop(event)">
   <div class="modal">
@@ -2102,6 +2087,7 @@ function switchAnTab(id,btn){
   else if(id==='ee')renderAnEE();
   else if(id==='dd')renderAnDD();
   else if(id==='alpha')initAlphaTab();
+  else if(id==='tax')renderTaxCalc();
 }
 
 /* helper: closed trades with usable data */
@@ -2638,6 +2624,11 @@ function updateApexTheme(mode){
   }catch(e){
     statusEl.textContent='Ready — fetch live prices or add a trade to get started.';
   }
+
+  // 4. Auto-refresh: default to 5 min, fetch immediately on load
+  const arSelect=document.getElementById('autoRefreshSelect');
+  if(arSelect){arSelect.value='300';setAutoRefresh();}
+  fetchAllPrices();
 })();
 
 </script>
