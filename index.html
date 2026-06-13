@@ -110,15 +110,14 @@ body{min-height:100vh;overflow-x:hidden;}
 select.nano{background:var(--bg3);border:1px solid var(--border2);border-radius:6px;color:var(--text2);font-size:11px;padding:3px 6px;font-family:var(--mono);outline:none;cursor:pointer;}
 .progress-bar{height:1px;background:var(--border);border-radius:1px;margin-top:6px;overflow:hidden;}
 .progress-fill{height:100%;background:#00e5a0;border-radius:1px;transition:width 1s linear;}
-.summary-bar{display:grid;grid-template-columns:repeat(7,1fr);gap:12px;margin-bottom:20px;}
-@media(max-width:1300px){.summary-bar{grid-template-columns:repeat(4,1fr);}}
+.summary-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;}
 @media(max-width:900px){.summary-bar{grid-template-columns:repeat(2,1fr);}}
 .stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);padding:16px 18px;position:relative;overflow:hidden;transition:border-color 0.2s;}
 .stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.08),transparent);}
 .stat-card:hover{border-color:var(--border2);}
 .stat-card.hl-blue{border-color:rgba(255,255,255,0.12);background:rgba(255,255,255,0.03);}
 .stat-card.hl-green{border-color:rgba(0,229,160,0.25);background:rgba(0,229,160,0.04);}
-.stat-card.hl-purple{border-color:rgba(255,255,255,0.12);background:rgba(255,255,255,0.03);}
+.stat-card.hl-purple{border-color:rgba(0,229,160,0.2);background:rgba(0,229,160,0.03);}
 .stat-card.hl-amber{border-color:rgba(255,179,64,0.25);background:rgba(255,179,64,0.04);}
 .stat-label{font-family:var(--mono);font-size:9px;font-weight:700;color:var(--text3);letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px;}
 .stat-val{font-family:var(--display);font-size:24px;font-weight:700;line-height:1;}
@@ -1217,13 +1216,10 @@ function setAutoRefresh(){
 function renderSummary(){
   const s=computeSummary(),retPct=s.invested?(s.activePnl/s.invested*100):0;
   document.getElementById('summaryBar').innerHTML=`
-    <div class="stat-card"><div class="stat-label">Open Positions</div><div class="stat-val b">${s.positions}</div><div class="stat-sub">${s.closed} closed · ${fmtINR(s.invested)} deployed</div></div>
-    <div class="stat-card hl-blue"><div class="stat-label">Today's P&L</div><div class="stat-val ${s.dayPnl>=0?'g':'r'}">${s.dayPnl>=0?'+':''}${fmtINR(s.dayPnl)}</div><div class="stat-sub">from live prices</div></div>
-    <div class="stat-card"><div class="stat-label">Active Unrealised</div><div class="stat-val ${s.activePnl>=0?'g':'r'}">${s.activePnl>=0?'+':''}${fmtINR(s.activePnl)}</div><div class="stat-sub">${retPct>=0?'+':''}${retPct.toFixed(2)}% return</div></div>
+    <div class="stat-card"><div class="stat-label">Active Unrealised</div><div class="stat-val ${s.activePnl>=0?'g':'r'}">${s.activePnl>=0?'+':''}${fmtINR(s.activePnl)}</div><div class="stat-sub">${s.positions} positions · ${retPct>=0?'+':''}${retPct.toFixed(2)}% return</div></div>
     <div class="stat-card hl-green"><div class="stat-label">🔒 Realised Profit</div><div class="stat-val ${s.lockedProfit>=0?'g':'r'}">${s.lockedProfit>=0?'+':''}${fmtINR(s.lockedProfit)}</div><div class="stat-sub">from ${s.closed} closed trades</div></div>
-    <div class="stat-card hl-purple"><div class="stat-label">Total P&L</div><div class="stat-val ${s.totalPnl>=0?'g':'r'}">${s.totalPnl>=0?'+':''}${fmtINR(s.totalPnl)}</div><div class="stat-sub">unrealised + realised</div></div>
-    <div class="stat-card hl-amber"><div class="stat-label">Open Risk</div><div class="stat-val ${s.openRiskPct>5?'r':s.openRiskPct>2?'a':'g'}">${s.openRiskPct.toFixed(1)}%</div><div class="stat-sub">of deployed capital</div></div>
-    <div class="stat-card"><div class="stat-label">Win Rate</div><div class="stat-val ${s.winRate>=55?'g':s.winRate>=45?'a':'r'}">${s.winRate}%</div><div class="stat-sub">${s.closed} closed trades</div></div>`;
+    <div class="stat-card hl-purple"><div class="stat-label">Total P&L</div><div class="stat-val ${s.totalPnl>=0?'g':'r'}">${s.totalPnl>=0?'+':''}${fmtINR(s.totalPnl)}</div><div class="stat-sub">unrealised + realised · ${fmtINR(s.invested)} deployed</div></div>
+    <div class="stat-card hl-amber"><div class="stat-label">Open Risk</div><div class="stat-val ${s.openRiskPct>5?'r':s.openRiskPct>2?'a':'g'}">${s.openRiskPct.toFixed(1)}%</div><div class="stat-sub">of deployed capital</div></div>`;
 }
 
 function drawCandleChart(containerId,trade,isDetail=false){
