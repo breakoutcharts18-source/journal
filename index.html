@@ -970,10 +970,14 @@ function computeTaxSummary(){
 }
 
 function openTaxCalc(){
-  document.getElementById('taxOverlay').classList.add('open');
-  renderTaxCalc();
+  openAnalytics();
+  // Switch to tax tab after analytics opens
+  setTimeout(()=>{
+    const taxBtn=Array.from(document.querySelectorAll('.analytics-tab')).find(b=>b.textContent.includes('TAX'));
+    if(taxBtn)taxBtn.click();
+  },50);
 }
-function closeTaxCalc(){document.getElementById('taxOverlay').classList.remove('open');}
+function closeTaxCalc(){closeAnalytics();}
 
 function renderTaxCalc(){
   const s=computeTaxSummary();
@@ -1372,7 +1376,7 @@ function renderCards(){
     });
   }
 
-  finalCards.forEach(({primary:t,members,isMulti,isActive,totalQty,totalPnl,totalInvested,avgExitPrice,curPctAgg,hd,status})=>{
+  finalCards.forEach(({primary:t,members,isMulti,isActive,totalQty,totalPnl,totalInvested,avgExitPrice,curPctAgg,hd,status},cardIndex)=>{
     // Inject group banner
     if(showBanners){
       const groupKey=(status==='action'||status==='watch')?'action':status==='healthy'?'healthy':'closed';
@@ -1445,7 +1449,7 @@ function renderCards(){
       ${t.sl&&isActive?`<div class="risk-meter"><div class="risk-fill" style="width:${Math.min(100,Math.max(0,((t.cmp||t.entry)-t.sl)/(t.entry-t.sl)*100))}%;background:${positive?'var(--green)':'var(--red)'};"></div></div>`:''}`;
     grid.appendChild(div);
     const capturedId=t.id;
-    setTimeout(()=>drawCandleChart('chart_'+capturedId,t,false),50*finalCards.indexOf(finalCards.find(c=>c.primary.id===capturedId)));
+    setTimeout(()=>drawCandleChart('chart_'+capturedId,t,false), cardIndex*40);
   });
 }
 
@@ -2198,7 +2202,7 @@ function renderAnEquity(){
     <div class="an-stat"><div class="an-stat-label">Expectancy/Trade</div><div class="an-stat-val ${exp>=0?'g':'r'}">${exp>=0?'+':''}${fmtINR(exp)}</div></div>
     <div class="an-stat"><div class="an-stat-label">Max Drawdown</div><div class="an-stat-val r">-${fmtINR(maxDd)}</div></div>`;
   const up=eq>=0;
-  const opts={series:[{name:'Cumulative P&L',data:series}],chart:{type:'area',height:248,background:'transparent',toolbar:{show:false},animations:{enabled:false}},theme:{mode:'dark'},colors:[up?'#00e5a0':'#ff4d6a'],fill:{type:'gradient',gradient:{shadeIntensity:1,opacityFrom:0.28,opacityTo:0.02,stops:[0,100]}},stroke:{curve:'straight',width:2},xaxis:{type:'datetime',labels:{style:{colors:'var(--text3)',fontFamily:'Space Mono',fontSize:'9px'}},axisBorder:{show:false},axisTicks:{show:false},tooltip:{enabled:false}},yaxis:{labels:{style:{colors:'var(--text3)',fontFamily:'Space Mono',fontSize:'9px'},formatter:v=>'₹'+v.toFixed(0)}},grid:{borderColor:'rgba(255,255,255,0.04)',strokeDashArray:4},tooltip:{theme:'dark',x:{format:'dd MMM yy'},y:{formatter:v=>'₹'+v.toFixed(2)}}};
+  const opts={series:[{name:'Cumulative P&L',data:series}],chart:{type:'area',height:248,background:'transparent',foreColor:'#909090',toolbar:{show:false},animations:{enabled:false}},colors:[up?'#00e5a0':'#ff4d6a'],fill:{type:'gradient',gradient:{shadeIntensity:1,opacityFrom:0.28,opacityTo:0.02,stops:[0,100]}},stroke:{curve:'straight',width:2},xaxis:{type:'datetime',labels:{style:{colors:'var(--text3)',fontFamily:'Space Mono',fontSize:'9px'}},axisBorder:{show:false},axisTicks:{show:false},tooltip:{enabled:false}},yaxis:{labels:{style:{colors:'var(--text3)',fontFamily:'Space Mono',fontSize:'9px'},formatter:v=>'₹'+v.toFixed(0)}},grid:{borderColor:'rgba(255,255,255,0.04)',strokeDashArray:4},tooltip:{theme:'dark',x:{format:'dd MMM yy'},y:{formatter:v=>'₹'+v.toFixed(2)}}};
   anChartInstances['equity']=new ApexCharts(document.getElementById('anEquityChart'),opts);
   anChartInstances['equity'].render();
 }
@@ -2289,7 +2293,7 @@ function renderAnRMult(){
     <div class="an-stat"><div class="an-stat-label">Best Trade</div><div class="an-stat-val g">+${maxR}R</div></div>
     <div class="an-stat"><div class="an-stat-label">Worst Trade</div><div class="an-stat-val r">${minR}R</div></div>`;
   const colors=bucketArr.map((_,i)=>i<3?'#ff4d6a':i===3?'#909090':'#00e5a0');
-  const opts={series:[{name:'Trades',data:bucketArr}],chart:{type:'bar',height:248,background:'transparent',toolbar:{show:false},animations:{enabled:false}},theme:{mode:'dark'},colors,plotOptions:{bar:{distributed:true,borderRadius:4,columnWidth:'55%'}},dataLabels:{enabled:true,style:{fontFamily:'Space Mono',fontSize:'10px',fontWeight:'700'},formatter:v=>v||''},xaxis:{categories:labels,labels:{style:{colors:'var(--text3)',fontFamily:'Space Mono',fontSize:'9px'}}},yaxis:{labels:{style:{colors:'var(--text3)',fontFamily:'Space Mono',fontSize:'9px'}},title:{text:'# Trades',style:{color:'var(--text3)',fontFamily:'Space Mono',fontSize:'9px'}}},grid:{borderColor:'rgba(255,255,255,0.04)',strokeDashArray:4},legend:{show:false},tooltip:{theme:'dark',y:{formatter:v=>v+' trade'+(v!==1?'s':'')}}};
+  const opts={series:[{name:'Trades',data:bucketArr}],chart:{type:'bar',height:248,background:'transparent',foreColor:'#909090',toolbar:{show:false},animations:{enabled:false}},colors,plotOptions:{bar:{distributed:true,borderRadius:4,columnWidth:'55%'}},dataLabels:{enabled:true,style:{fontFamily:'Space Mono',fontSize:'10px',fontWeight:'700'},formatter:v=>v||''},xaxis:{categories:labels,labels:{style:{colors:'var(--text3)',fontFamily:'Space Mono',fontSize:'9px'}}},yaxis:{labels:{style:{colors:'var(--text3)',fontFamily:'Space Mono',fontSize:'9px'}},title:{text:'# Trades',style:{color:'var(--text3)',fontFamily:'Space Mono',fontSize:'9px'}}},grid:{borderColor:'rgba(255,255,255,0.04)',strokeDashArray:4},legend:{show:false},tooltip:{theme:'dark',y:{formatter:v=>v+' trade'+(v!==1?'s':'')}}};
   anChartInstances['rmult']=new ApexCharts(document.getElementById('anRChart'),opts);
   anChartInstances['rmult'].render();
 }
@@ -2322,7 +2326,7 @@ function renderAnDOW(){
   if(!closed.length){document.getElementById('anDOWChart').innerHTML=emptyMsg();return;}
   const tradingDays=DAYS.slice(1,6); // Mon–Fri
   const tradingData=dayData.slice(1,6);
-  const opts={series:[{name:'Total P&L',data:tradingData.map(d=>+d.pnl.toFixed(2))}],chart:{type:'bar',height:212,background:'transparent',toolbar:{show:false},animations:{enabled:false}},theme:{mode:'dark'},colors:tradingData.map(d=>d.pnl>=0?'#00e5a0':'#ff4d6a'),plotOptions:{bar:{distributed:true,borderRadius:4,columnWidth:'50%'}},dataLabels:{enabled:false},xaxis:{categories:tradingDays,labels:{style:{colors:'var(--text3)',fontFamily:'Space Mono',fontSize:'9px'}}},yaxis:{labels:{style:{colors:'var(--text3)',fontFamily:'Space Mono',fontSize:'9px'},formatter:v=>fmtINR(v)}},grid:{borderColor:'rgba(255,255,255,0.04)',strokeDashArray:4},legend:{show:false},tooltip:{theme:'dark',y:{formatter:v=>(v>=0?'+':'')+fmtINR(v)}}};
+  const opts={series:[{name:'Total P&L',data:tradingData.map(d=>+d.pnl.toFixed(2))}],chart:{type:'bar',height:212,background:'transparent',foreColor:'#909090',toolbar:{show:false},animations:{enabled:false}},colors:tradingData.map(d=>d.pnl>=0?'#00e5a0':'#ff4d6a'),plotOptions:{bar:{distributed:true,borderRadius:4,columnWidth:'50%'}},dataLabels:{enabled:false},xaxis:{categories:tradingDays,labels:{style:{colors:'var(--text3)',fontFamily:'Space Mono',fontSize:'9px'}}},yaxis:{labels:{style:{colors:'var(--text3)',fontFamily:'Space Mono',fontSize:'9px'},formatter:v=>fmtINR(v)}},grid:{borderColor:'rgba(255,255,255,0.04)',strokeDashArray:4},legend:{show:false},tooltip:{theme:'dark',y:{formatter:v=>(v>=0?'+':'')+fmtINR(v)}}};
   anChartInstances['dow']=new ApexCharts(document.getElementById('anDOWChart'),opts);
   anChartInstances['dow'].render();
 }
@@ -2394,7 +2398,7 @@ function renderAnDD(){
       {name:'Equity',data:eqSeries,type:'line'}
     ],
     chart:{height:248,background:'transparent',toolbar:{show:false},animations:{enabled:false}},
-    theme:{mode:'dark'},
+    foreColor:'#909090',
     colors:['#ff4d6a','#888888'],
     fill:{type:['gradient','solid'],gradient:{shadeIntensity:1,opacityFrom:0.3,opacityTo:0.02,stops:[0,100]}},
     stroke:{curve:'straight',width:[2,1.5],dashArray:[0,4]},
@@ -2592,7 +2596,7 @@ function renderAlphaChart(){
         {name:alphaIndexData.name,data:idxSeries}
       ],
       chart:{type:'line',height:hasDailyData?262:220,background:'transparent',toolbar:{show:false},animations:{enabled:false}},
-      theme:{mode:'dark'},
+      foreColor:'#909090',
       colors:['#00e5a0','#666666'],
       stroke:{curve:'straight',width:[2.5,1.5],dashArray:[0,5]},
       markers:{size:0},
