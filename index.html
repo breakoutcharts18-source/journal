@@ -373,7 +373,6 @@ select option{background:var(--bg3);}
   <div class="cards-grid" id="cardsGrid"></div>
 </div>
 
-<!-- ANALYTICS MODAL -->
 <div class="overlay" id="analyticsOverlay" onclick="if(event.target.id==='analyticsOverlay')closeAnalytics()">
   <div class="modal" style="width:960px;max-height:92vh;">
     <div class="modal-title" style="margin-bottom:14px;">
@@ -395,13 +394,11 @@ select option{background:var(--bg3);}
       <button class="analytics-tab" onclick="switchAnTab('tax',this)">TAX P&amp;L</button>
     </div>
 
-    <!-- EQUITY CURVE -->
     <div class="an-section active" id="an-equity">
       <div class="an-stat-row" id="anEquityStats"></div>
       <div class="an-chart-wrap" id="anEquityChart"></div>
     </div>
 
-    <!-- MFE / MAE -->
     <div class="an-section" id="an-mfe">
       <div style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-bottom:12px;line-height:1.7;">
         <strong style="color:var(--text2);">MFE</strong> = Max Favourable Excursion (how far price moved in your favour before exit) &nbsp;·&nbsp;
@@ -420,7 +417,6 @@ select option{background:var(--bg3);}
       <div class="an-stat-row" style="margin-top:14px;" id="anMFEStats"></div>
     </div>
 
-    <!-- R-MULTIPLE DISTRIBUTION -->
     <div class="an-section" id="an-rmult">
       <div style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-bottom:12px;line-height:1.7;">
         R-multiple = (actual P&L per share) ÷ (initial risk per share). 1R = you made exactly what you risked. Distribution skewed right = positive expectancy system.
@@ -429,14 +425,12 @@ select option{background:var(--bg3);}
       <div class="an-chart-wrap" id="anRChart"></div>
     </div>
 
-    <!-- DAY OF WEEK -->
     <div class="an-section" id="an-dow">
       <div style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-bottom:14px;">Which days produce the best results? Based on <strong style="color:var(--text2);">entry date</strong> of closed trades.</div>
       <div class="dow-grid" id="anDOWGrid"></div>
       <div class="an-chart-wrap" style="height:220px;margin-top:16px;" id="anDOWChart"></div>
     </div>
 
-    <!-- ENTRY / EXIT EFFICIENCY -->
     <div class="an-section" id="an-ee">
       <div style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-bottom:12px;line-height:1.7;">
         <strong style="color:var(--text2);">Entry Efficiency</strong> = how close to the low (for longs) you entered within the day's range (0% = worst, 100% = perfect bottom tick).
@@ -455,16 +449,13 @@ select option{background:var(--bg3);}
       <div class="an-stat-row" style="margin-top:14px;" id="anEEStats"></div>
     </div>
 
-    <!-- DRAWDOWN CHART -->
     <div class="an-section" id="an-dd">
       <div style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-bottom:12px;">Rolling drawdown from peak equity. Deeper = higher psychological pressure. Recover faster = tighter system.</div>
       <div class="an-stat-row" id="anDDStats"></div>
       <div class="an-chart-wrap" id="anDDChart"></div>
     </div>
 
-    <!-- ALPHA vs SMALLCAP -->
     <div class="an-section" id="an-alpha">
-      <!-- controls row -->
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;">
         <div style="font-family:var(--mono);font-size:10px;color:var(--text3);flex:1;line-height:1.7;">
           Compares your portfolio's <strong style="color:var(--text2);">time-weighted return</strong> against a Nifty Smallcap index over the same window.
@@ -488,7 +479,6 @@ select option{background:var(--bg3);}
         </div>
       </div>
 
-      <!-- alpha hero cards -->
       <div class="an-stat-row" id="anAlphaStats">
         <div class="an-stat" style="grid-column:1/-1;padding:28px;text-align:center;">
           <div style="font-size:28px;opacity:0.25;margin-bottom:10px;">📡</div>
@@ -496,10 +486,8 @@ select option{background:var(--bg3);}
         </div>
       </div>
 
-      <!-- dual-line chart -->
       <div class="an-chart-wrap" style="height:270px;" id="anAlphaChart"></div>
 
-      <!-- per-trade alpha table -->
       <div id="anAlphaTable" style="display:none;margin-top:14px;">
         <div class="section-header" style="margin-bottom:8px;"><h3>POSITION-LEVEL ALPHA</h3><div class="section-line"></div></div>
         <div style="max-height:200px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--r);">
@@ -518,7 +506,6 @@ select option{background:var(--bg3);}
       </div>
     </div>
 
-    <!-- TAX P&L -->
     <div class="an-section" id="an-tax">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
         <div style="width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--amber),#ff6b35);display:flex;align-items:center;justify-content:center;font-size:13px;">₹</div>
@@ -527,7 +514,6 @@ select option{background:var(--bg3);}
           <div style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:1px;">STCG · LTCG · STT · Net Take-Home · FY 2024-25</div>
         </div>
       </div>
-      <!-- Tax Rate Inputs -->
       <div class="tax-rate-inputs" style="margin-bottom:14px;">
         <div>
           <span class="tax-rate-label">STCG Tax Rate % <span style="color:var(--amber)">(held &lt; 12 months)</span></span>
@@ -563,7 +549,6 @@ select option{background:var(--bg3);}
 
   </div>
 </div>
-<!-- ADD/EDIT TRADE MODAL -->
 <div class="overlay" id="tradeOverlay" onclick="closeModalBackdrop(event)">
   <div class="modal">
     <div class="modal-title"><span id="modalTitle">New Trade</span><button class="modal-close" onclick="closeModal()">✕</button></div>
@@ -643,7 +628,6 @@ select option{background:var(--bg3);}
   </div>
 </div>
 
-<!-- DETAIL PANEL -->
 <div class="detail-overlay" id="detailOverlay" onclick="closeDetailBackdrop(event)">
   <div class="detail-panel">
     <div class="modal-title" style="margin-bottom:0;">
@@ -669,7 +653,6 @@ select option{background:var(--bg3);}
   </div>
 </div>
 
-<!-- RISK MODAL -->
 <div class="overlay" id="riskOverlay" onclick="if(event.target.id==='riskOverlay')closeRisk()">
   <div class="modal" style="width:720px;">
     <div class="modal-title">Risk Command Center<button class="modal-close" onclick="closeRisk()">✕</button></div>
@@ -678,11 +661,9 @@ select option{background:var(--bg3);}
 </div>
 
 
-<!-- UNIVERSAL CSV IMPORTER -->
 <div class="overlay" id="universalImportOverlay" onclick="if(event.target.id==='universalImportOverlay')closeUniversalImport()">
   <div class="modal" style="width:860px;max-height:92vh;padding:0;overflow:hidden;display:flex;flex-direction:column;">
 
-    <!-- Header -->
     <div style="padding:20px 24px 16px;border-bottom:1px solid var(--border2);display:flex;align-items:center;gap:14px;flex-shrink:0;">
       <div style="width:36px;height:36px;background:rgba(255,255,255,0.05);border:1px solid var(--border2);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2962ff" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
@@ -694,7 +675,6 @@ select option{background:var(--bg3);}
       <button class="modal-close" onclick="closeUniversalImport()" style="font-size:20px;border:none;background:none;color:var(--text3);cursor:pointer;">✕</button>
     </div>
 
-    <!-- Steps -->
     <div style="display:flex;align-items:center;padding:12px 24px;border-bottom:1px solid var(--border);flex-shrink:0;gap:0;">
       <div style="display:flex;align-items:center;gap:6px;">
         <div id="ui-step1-num" style="width:22px;height:22px;border-radius:50%;background:var(--tv-accent);border:1px solid var(--tv-accent);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;font-family:var(--mono);">1</div>
@@ -717,16 +697,13 @@ select option{background:var(--bg3);}
       </div>
     </div>
 
-    <!-- Body (scrollable) -->
     <div style="flex:1;overflow-y:auto;padding:20px 24px;">
 
-      <!-- STEP 1: UPLOAD -->
       <div id="ui-panel-upload">
         <div id="ui-dropzone" style="border:2px dashed var(--border2);border-radius:8px;padding:32px 24px;text-align:center;cursor:pointer;transition:border-color 0.2s;margin-bottom:16px;">
           <div style="font-size:32px;margin-bottom:10px;">📂</div>
           <div style="font-size:14px;font-weight:500;color:var(--text);margin-bottom:4px;">Drop your CSV here</div>
           <div style="font-size:11px;color:var(--text3);margin-bottom:14px;">Any broker, any format — AI maps columns automatically</div>
-          <!-- Mobile-friendly browse button (visible on all, but especially needed on mobile) -->
           <button type="button" onclick="document.getElementById('ui-fileinput').click()" style="display:inline-flex;align-items:center;gap:7px;padding:9px 20px;border-radius:8px;font-size:12px;font-family:var(--mono);cursor:pointer;border:1px solid var(--border2);background:var(--bg3);color:var(--text2);margin-bottom:14px;font-weight:600;transition:all 0.2s;">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
             Browse Files
@@ -757,14 +734,12 @@ select option{background:var(--bg3);}
         </div>
       </div>
 
-      <!-- STEP 2: THINKING -->
       <div id="ui-panel-thinking" style="display:none;text-align:center;padding:40px 20px;">
         <div style="width:40px;height:40px;border:2px solid var(--border2);border-top-color:var(--tv-accent);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 16px;"></div>
         <div id="ui-ai-status" style="font-family:var(--mono);font-size:13px;color:var(--text2);margin-bottom:8px;">Reading CSV structure...</div>
         <div id="ui-ai-log" style="font-family:var(--mono);font-size:10px;color:var(--text3);line-height:1.8;"></div>
       </div>
 
-      <!-- STEP 3: MAPPING -->
       <div id="ui-panel-mapping" style="display:none;">
         <div id="ui-ai-banner" style="display:flex;align-items:flex-start;gap:8px;padding:10px 12px;background:rgba(255,255,255,0.03);border:1px solid var(--border2);border-radius:6px;font-size:11px;color:var(--text2);margin-bottom:14px;font-family:var(--mono);">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;margin-top:1px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
@@ -792,7 +767,6 @@ select option{background:var(--bg3);}
         </div>
       </div>
 
-      <!-- STEP 4: PREVIEW -->
       <div id="ui-panel-preview" style="display:none;">
         <div id="ui-preview-summary" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px;"></div>
         <div id="ui-preview-alerts"></div>
@@ -810,7 +784,6 @@ select option{background:var(--bg3);}
         </div>
       </div>
 
-      <!-- SUCCESS -->
       <div id="ui-panel-success" style="display:none;text-align:center;padding:40px 20px;">
         <div style="width:56px;height:56px;border-radius:50%;background:var(--green-dim);border:2px solid rgba(38,166,154,0.3);display:flex;align-items:center;justify-content:center;font-size:24px;margin:0 auto 16px;">✓</div>
         <div style="font-size:18px;font-weight:600;color:var(--text);margin-bottom:8px;">Import Complete</div>
@@ -831,6 +804,8 @@ select option{background:var(--bg3);}
 <script>
 const STORAGE_KEY='nexus_trade_v1';
 const PROXY='https://corsproxy.io/?url=';
+const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycby6eE0pI_Hn9YimpG_XM6bo1Qi81DD8ML7XjTLyDE-GPmE8bQ_lSEcT_FWAWzEv7JeI/exec';
+
 let trades=[],currentFilter='active',editingId=null,detailId=null;
 let autoRefreshTimer=null,progressTimer=null,progressStart=null,progressDuration=0;
 let chartInstances={},anChartInstances={};
@@ -839,37 +814,58 @@ let chartInstances={},anChartInstances={};
 function chartTheme(){return document.documentElement.classList.contains('light')?'light':'dark';}
 
 function save(){
-  // Keep a compact close-only cache for alpha chart (tiny vs full OHLC)
+  // 1. Prepare data (compresses chart data to save space)
   const slim=trades.map(({dailyData,livePrice,...t})=>{
-    // Save just date+close for each candle (saves ~80% space vs full OHLC)
     const compactData=(dailyData||[]).map(d=>({time:d.time,close:d.close,high:d.high,low:d.low,open:d.open}));
     return{...t,dailyData:compactData.length?compactData:undefined};
   });
   const payload=JSON.stringify({trades:slim,savedAt:new Date().toISOString()});
-  try{
-    localStorage.removeItem(STORAGE_KEY);
-    localStorage.setItem(STORAGE_KEY,payload);
-    if(!localStorage.getItem(STORAGE_KEY))throw new Error('verify');
-  }catch(e){
-    console.error('localStorage save failed:',e);
-    showToast('WARNING: Save failed — storage full. Export CSV now!','error');
-  }
+  
+  // 2. Local Backup
+  try { localStorage.setItem(STORAGE_KEY, payload); } catch(e) { console.error('Local save failed', e); }
+
+  // 3. Push to Google Sheets Cloud
+  fetch(WEB_APP_URL, {
+    method: 'POST',
+    mode: 'no-cors', 
+    headers: { 'Content-Type': 'text/plain' },
+    body: payload
+  }).catch(err => console.error('Cloud sync failed:', err));
 }
-function load(){
-  try{
-    const raw=localStorage.getItem(STORAGE_KEY);
-    if(!raw||raw==='null'||raw==='{}'){loadDefaults();return;}
-    const d=JSON.parse(raw);
-    const loaded=(d.trades||[]).map(t=>({...t,dailyData:t.dailyData||[]}));
-    if(!loaded.length){loadDefaults();return;}
-    trades=loaded;
-    console.log('Loaded',trades.length,'trades from localStorage, saved:',d.savedAt||'unknown');
-  }catch(e){
-    console.error('Load error:',e);
-    try{localStorage.removeItem(STORAGE_KEY);}catch(e2){}
-    loadDefaults();
+
+async function load(){
+  const statusEl = document.getElementById('liveStatus');
+  const dotEl = document.getElementById('statusDot');
+  
+  if(statusEl) statusEl.textContent = 'Syncing from cloud...';
+  if(dotEl) dotEl.className = 'status-dot fetching';
+
+  try {
+    const res = await fetch(WEB_APP_URL);
+    const d = await res.json();
+    
+    if(!d.trades || !d.trades.length) throw new Error('Empty cloud data');
+
+    trades = d.trades.map(t=>({...t,dailyData:t.dailyData||[]}));
+    console.log('Loaded', trades.length, 'trades from Cloud, saved:', d.savedAt||'unknown');
+    
+  } catch(e) {
+    console.warn('Cloud sync failed, falling back to local storage', e);
+    try{
+      const raw=localStorage.getItem(STORAGE_KEY);
+      if(!raw||raw==='null'||raw==='{}'){loadDefaults();return;}
+      const d=JSON.parse(raw);
+      trades=(d.trades||[]).map(t=>({...t,dailyData:t.dailyData||[]}));
+      if(!trades.length){loadDefaults();}
+    }catch(e2){ loadDefaults(); }
   }
+
+  renderSummary();
+  renderCards();
+  if(dotEl) dotEl.className = 'status-dot';
+  if(statusEl) statusEl.textContent = `✓ ${trades.length} trades synced to cloud`;
 }
+
 function loadDefaults(){
   const d=(n)=>{const x=new Date();x.setDate(x.getDate()-n);return x.toISOString().split('T')[0];};
   trades=[
@@ -1588,7 +1584,6 @@ function openRisk(){
     html+=`<div class="risk-bar-row"><div class="risk-bar-label">${t.name.substring(0,16)}</div><div class="risk-bar-track"><div class="risk-bar-fill" style="width:${(pctOfPortfolio/maxPctRisk*100).toFixed(0)}%;background:${color};"></div></div><div class="risk-bar-val" style="color:${color};">${pctOfPortfolio.toFixed(2)}%</div><div style="font-family:var(--mono);font-size:10px;color:var(--text3);width:80px;text-align:right;">SL: ${slDist?slDist.toFixed(1)+'%':'Not set'}</div></div>`;
   });
   html+=`</div><div class="section-header" style="margin-top:18px;"><h3>POSITION SIZER</h3><div class="section-line"></div></div><div class="risk-panel">
-    <!-- SL Mode toggle -->
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;padding:10px 14px;background:var(--bg4);border:1px solid var(--border2);border-radius:var(--r);">
       <span style="font-family:var(--mono);font-size:9px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.1em;">SL Mode</span>
       <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-family:var(--mono);font-size:11px;color:var(--text2);">
@@ -2439,7 +2434,7 @@ function renderAlphaChart(){
 
   const pfSeries=[],idxSeries=[];
 
-  if(hasDailyData){
+ if(hasDailyData){
     // Real MTM: price each position daily using its OHLC
     relevantDates.forEach(d=>{
       let portGainOnDay=0;
@@ -2600,48 +2595,27 @@ function updateApexTheme(mode){
 })();
 
 // ── BOOT ──
-(function boot(){
+(async function boot(){
   const statusEl=document.getElementById('liveStatus');
   const dotEl=document.getElementById('statusDot');
 
-  // 1. Test localStorage is actually available and writable
+  // Test local storage functionality
   try{
     localStorage.setItem('_bc_test','1');
-    if(localStorage.getItem('_bc_test')!=='1')throw new Error('read-back failed');
     localStorage.removeItem('_bc_test');
   }catch(e){
-    dotEl.className='status-dot error';
-    statusEl.textContent='🚫 localStorage unavailable (private/incognito mode?) — data will NOT persist across refreshes.';
-    statusEl.style.color='var(--red)';
-    load();renderSummary();renderCards();
-  uiInitEvents();
-    return;
-  }
-
-  // 2. Load trades
-  load();
-  renderSummary();
-  renderCards();
-  uiInitEvents();
-
-  // 3. Show storage status
-  try{
-    const raw=localStorage.getItem(STORAGE_KEY);
-    if(!raw||raw==='null'){
-      dotEl.className='status-dot error';
-      statusEl.textContent='⚠ No saved data found — your trades are not persisting. Try: Settings → Clear site data, then re-import your CSV.';
-    }else{
-      const d=JSON.parse(raw);
-      const count=(d.trades||[]).length;
-      const when=d.savedAt?new Date(d.savedAt).toLocaleString('en-IN'):'unknown time';
-      dotEl.className='status-dot';
-      statusEl.textContent=`✓ ${count} trade${count!==1?'s':''} loaded from storage · last saved ${when} · fetch live prices to update charts`;
+    if(dotEl) dotEl.className='status-dot error';
+    if(statusEl) {
+      statusEl.textContent='🚫 Private mode detected — local backups disabled. Relying on cloud only.';
+      statusEl.style.color='var(--red)';
     }
-  }catch(e){
-    statusEl.textContent='Ready — fetch live prices or add a trade to get started.';
   }
 
-  // 4. Auto-refresh every 5 min silently, fetch immediately on load
+  // Await the cloud load BEFORE rendering the UI
+  await load();
+  uiInitEvents();
+
+  // Auto-refresh every 5 min silently, fetch immediately on load
   clearInterval(autoRefreshTimer);
   autoRefreshTimer=setInterval(()=>fetchAllPrices(),300000);
   fetchAllPrices();
