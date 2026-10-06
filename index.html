@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>BREAKOUTCHARTS — AI Trading Journal</title>
-<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+<script src="https://cdn.jsdelivr.net/npm/apexcharts@3.54.1"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;500;600;700;800&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
@@ -524,7 +524,7 @@ select option{background:var(--bg3);}
         <div style="width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--amber),#ff6b35);display:flex;align-items:center;justify-content:center;font-size:13px;">₹</div>
         <div>
           <div style="font-size:13px;font-weight:600;color:var(--text);">Capital Gains Tax Calculator</div>
-          <div style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:1px;">STCG · LTCG · STT · Net Take-Home · FY 2024-25</div>
+          <div style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:1px;">STCG · LTCG · STT · Net Take-Home · FY 2026-27</div>
         </div>
       </div>
       <!-- Tax Rate Inputs -->
@@ -830,7 +830,11 @@ select option{background:var(--bg3);}
 
 <script>
 const STORAGE_KEY='nexus_trade_v1';
-const PROXY='https://corsproxy.io/?url=';
+const PROXIES=[
+  u=>'https://corsproxy.io/?url='+encodeURIComponent(u),
+  u=>'https://api.allorigins.win/raw?url='+encodeURIComponent(u),
+  u=>'https://api.codetabs.com/v1/proxy?quest='+encodeURIComponent(u)
+];
 let trades=[],currentFilter='active',editingId=null,detailId=null;
 let autoRefreshTimer=null,progressTimer=null,progressStart=null,progressDuration=0;
 let chartInstances={},anChartInstances={};
@@ -839,20 +843,14 @@ let chartInstances={},anChartInstances={};
 function chartTheme(){return document.documentElement.classList.contains('light')?'light':'dark';}
 
 function save(){
-  // Keep a compact close-only cache for alpha chart (tiny vs full OHLC)
-  const slim=trades.map(({dailyData,livePrice,...t})=>{
-    // Save just date+close for each candle (saves ~80% space vs full OHLC)
-    const compactData=(dailyData||[]).map(d=>({time:d.time,close:d.close,high:d.high,low:d.low,open:d.open}));
-    return{...t,dailyData:compactData.length?compactData:undefined};
+  const build=withCandles=>JSON.stringify({
+    trades:trades.map(({dailyData,livePrice,...t})=>withCandles&&dailyData&&dailyData.length?{...t,dailyData}:t),
+    savedAt:new Date().toISOString()
   });
-  const payload=JSON.stringify({trades:slim,savedAt:new Date().toISOString()});
-  try{
-    localStorage.removeItem(STORAGE_KEY);
-    localStorage.setItem(STORAGE_KEY,payload);
-    if(!localStorage.getItem(STORAGE_KEY))throw new Error('verify');
-  }catch(e){
-    console.error('localStorage save failed:',e);
-    showToast('WARNING: Save failed — storage full. Export CSV now!','error');
+  try{ localStorage.setItem(STORAGE_KEY,build(true)); }
+  catch(e){
+    try{ localStorage.setItem(STORAGE_KEY,build(false)); showToast('Storage full — saved without chart data','info'); }
+    catch(e2){ console.error('save failed',e2); showToast('Save failed — export a backup now!','error'); }
   }
 }
 function load(){
@@ -1092,15 +1090,30 @@ function tradeScore(t){
 function scoreGrade(s){if(s>=80)return{g:'A+',cls:'a-grade'};if(s>=65)return{g:'A',cls:'a-grade'};if(s>=50)return{g:'B',cls:'b-grade'};if(s>=35)return{g:'C',cls:'c-grade'};return{g:'D',cls:'d-grade'};}
 
 async function fetchPrice(ticker, range='90d'){
-  const url=`https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?interval=1d&range=${range}`;
-  const res=await fetch(PROXY+encodeURIComponent(url),{headers:{'x-requested-with':'XMLHttpRequest'}});
-  const data=await res.json();
-  const result=data?.chart?.result?.[0];if(!result)throw new Error('No data');
-  const meta=result.meta,ts=result.timestamp||[];
-  const o=result.indicators?.quote?.[0]?.open||[],h=result.indicators?.quote?.[0]?.high||[],l=result.indicators?.quote?.[0]?.low||[],c=result.indicators?.quote?.[0]?.close||[],v=result.indicators?.quote?.[0]?.volume||[];
-  let dailyData=[];let seenDates=new Set();
-  for(let i=0;i<ts.length;i++){if(c[i]!=null&&o[i]!=null){const dateStr=new Date(ts[i]*1000).toISOString().split('T')[0];if(!seenDates.has(dateStr)){seenDates.add(dateStr);dailyData.push({time:dateStr,open:+o[i].toFixed(2),high:+h[i].toFixed(2),low:+l[i].toFixed(2),close:+c[i].toFixed(2),volume:v[i]||0});}}}
-  return{price:meta.regularMarketPrice,prevClose:meta.chartPreviousClose||meta.previousClose,currency:meta.currency,marketState:meta.marketState,dailyData};
+  let lastErr;
+  for(const host of ['query1','query2']){
+    const url=`https://${host}.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?interval=1d&range=${range}`;
+    for(const mk of PROXIES){
+      try{
+        const res=await fetch(mk(url));
+        if(!res.ok)throw new Error('HTTP '+res.status);
+        const data=await res.json();
+        const result=data?.chart?.result?.[0];
+        if(!result)throw new Error('No data');
+        const meta=result.meta,ts=result.timestamp||[],q=result.indicators?.quote?.[0]||{};
+        const o=q.open||[],h=q.high||[],l=q.low||[],c=q.close||[],v=q.volume||[];
+        const dailyData=[],seen=new Set();
+        for(let i=0;i<ts.length;i++){
+          if(c[i]!=null&&o[i]!=null){
+            const d=new Date(ts[i]*1000).toISOString().split('T')[0];
+            if(!seen.has(d)){seen.add(d);dailyData.push({time:d,open:+o[i].toFixed(2),high:+h[i].toFixed(2),low:+l[i].toFixed(2),close:+c[i].toFixed(2),volume:v[i]||0});}
+          }
+        }
+        return{price:meta.regularMarketPrice,prevClose:meta.chartPreviousClose||meta.previousClose,currency:meta.currency,marketState:meta.marketState,dailyData};
+      }catch(e){lastErr=e;}
+    }
+  }
+  throw lastErr||new Error('All proxies failed');
 }
 
 async function fetchAllPrices(){
