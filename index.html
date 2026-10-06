@@ -336,6 +336,7 @@ select option{background:var(--bg3);}
       </label>
       <span class="theme-icon">☀️</span>
     </div>
+    <button class="btn" onclick="openSettings()" title="Price data settings">⚙ Data</button>
     <button class="btn btn-purple" onclick="openAnalytics()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>Analytics</button>
     <button class="btn btn-amber" onclick="openRisk()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Risk</button>
     <button class="btn btn-green" onclick="exportCSV()">↑ Backup</button>
@@ -661,6 +662,7 @@ select option{background:var(--bg3);}
     <div class="detail-grid" id="detailGrid"></div>
     <div class="notes-box" id="detailNotes"></div>
     <div class="detail-actions">
+      <button class="btn btn-cyan" style="flex:1;justify-content:center;" id="btnUpdateCmp" onclick="updateCmpFromDetail()">₹ CMP</button>
       <button class="btn" style="flex:1;justify-content:center;" onclick="editFromDetail()">✏ Edit</button>
       <button class="btn btn-amber" style="flex:1;justify-content:center;" id="btnPartialExit" onclick="partialExitFromDetail()">✂ Partial</button>
       <button class="btn btn-green" style="flex:1;justify-content:center;" id="btnCloseTrade" onclick="closeTradeFromDetail()">✓ Close</button>
@@ -825,6 +827,26 @@ select option{background:var(--bg3);}
   </div>
 </div>
 
+
+<!-- SETTINGS MODAL -->
+<div class="overlay" id="settingsOverlay" onclick="if(event.target.id==='settingsOverlay')closeSettings()">
+  <div class="modal" style="width:620px;">
+    <div class="modal-title">Price Data Settings<button class="modal-close" onclick="closeSettings()">✕</button></div>
+    <div style="font-family:var(--mono);font-size:11px;color:var(--text2);line-height:1.8;margin-bottom:14px;">
+      Free public proxies for Yahoo Finance are unreliable. For stable prices, deploy the free Cloudflare Worker (code provided separately) and paste its URL here.
+      Without it the app still works — it tries public proxies, and you can always set CMP by hand from any trade (₹ CMP button).
+    </div>
+    <div class="form-group">
+      <label>Cloudflare Worker URL</label>
+      <input id="setWorkerUrl" placeholder="https://journal-prices.yourname.workers.dev" />
+    </div>
+    <div id="setWorkerResult" style="font-family:var(--mono);font-size:11px;min-height:20px;margin-top:8px;"></div>
+    <div class="form-actions">
+      <button class="btn btn-cyan" onclick="testWorkerUrl()">Test connection</button>
+      <button class="btn btn-primary" onclick="saveSettings()">Save</button>
+    </div>
+  </div>
+</div>
 
 <div class="toast" id="toast"></div>
 
@@ -1089,55 +1111,84 @@ function tradeScore(t){
 }
 function scoreGrade(s){if(s>=80)return{g:'A+',cls:'a-grade'};if(s>=65)return{g:'A',cls:'a-grade'};if(s>=50)return{g:'B',cls:'b-grade'};if(s>=35)return{g:'C',cls:'c-grade'};return{g:'D',cls:'d-grade'};}
 
+function getSettings(){try{return JSON.parse(localStorage.getItem('bc_settings')||'{}');}catch(e){return{};}}
+const DEFAULT_WORKER_URL='https://noisy-smoke-b5cf.breakoutcharts18.workers.dev';
+function getWorkerUrl(){const u=getSettings().workerUrl;return (u===undefined?DEFAULT_WORKER_URL:u).trim().replace(/\/+$/,'');}
+
 async function fetchPrice(ticker, range='90d'){
+  const parse=data=>{
+    const result=data&&data.chart&&data.chart.result&&data.chart.result[0];
+    if(!result)throw new Error('No data');
+    const meta=result.meta,ts=result.timestamp||[],q=(result.indicators&&result.indicators.quote&&result.indicators.quote[0])||{};
+    const o=q.open||[],h=q.high||[],l=q.low||[],c=q.close||[],v=q.volume||[];
+    const dailyData=[],seen=new Set();
+    for(let i=0;i<ts.length;i++){
+      if(c[i]!=null&&o[i]!=null){
+        const d=new Date(ts[i]*1000).toISOString().split('T')[0];
+        if(!seen.has(d)){seen.add(d);dailyData.push({time:d,open:+o[i].toFixed(2),high:+h[i].toFixed(2),low:+l[i].toFixed(2),close:+c[i].toFixed(2),volume:v[i]||0});}
+      }
+    }
+    return{price:meta.regularMarketPrice,prevClose:meta.chartPreviousClose||meta.previousClose,currency:meta.currency,marketState:meta.marketState,dailyData};
+  };
+  const attempt=async(fullUrl)=>{
+    const ctrl=new AbortController();
+    const timer=setTimeout(()=>ctrl.abort(),8000);
+    try{
+      const res=await fetch(fullUrl,{signal:ctrl.signal});
+      if(!res.ok)throw new Error('HTTP '+res.status);
+      return parse(JSON.parse(await res.text()));
+    }finally{clearTimeout(timer);}
+  };
   let lastErr;
+  // 1) your own Cloudflare Worker (most reliable)
+  const w=getWorkerUrl();
+  if(w){
+    try{return await attempt(`${w}?symbol=${encodeURIComponent(ticker)}&range=${encodeURIComponent(range)}`);}
+    catch(e){lastErr=e;}
+  }
+  // 2) public CORS proxies, raced in parallel
   for(const host of ['query1','query2']){
     const url=`https://${host}.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?interval=1d&range=${range}`;
-    for(const mk of PROXIES){
-      try{
-        const res=await fetch(mk(url));
-        if(!res.ok)throw new Error('HTTP '+res.status);
-        const data=await res.json();
-        const result=data?.chart?.result?.[0];
-        if(!result)throw new Error('No data');
-        const meta=result.meta,ts=result.timestamp||[],q=result.indicators?.quote?.[0]||{};
-        const o=q.open||[],h=q.high||[],l=q.low||[],c=q.close||[],v=q.volume||[];
-        const dailyData=[],seen=new Set();
-        for(let i=0;i<ts.length;i++){
-          if(c[i]!=null&&o[i]!=null){
-            const d=new Date(ts[i]*1000).toISOString().split('T')[0];
-            if(!seen.has(d)){seen.add(d);dailyData.push({time:d,open:+o[i].toFixed(2),high:+h[i].toFixed(2),low:+l[i].toFixed(2),close:+c[i].toFixed(2),volume:v[i]||0});}
-          }
-        }
-        return{price:meta.regularMarketPrice,prevClose:meta.chartPreviousClose||meta.previousClose,currency:meta.currency,marketState:meta.marketState,dailyData};
-      }catch(e){lastErr=e;}
-    }
+    try{return await Promise.any(PROXIES.map(mk=>attempt(mk(url))));}
+    catch(e){lastErr=e;}
   }
-  throw lastErr||new Error('All proxies failed');
+  throw lastErr||new Error('All price sources failed');
 }
 
 async function fetchAllPrices(){
   const dot=document.getElementById('statusDot'),status=document.getElementById('liveStatus');
   const tickers=trades.filter(t=>t.ticker);
-  if(!tickers.length){status&&(status.textContent='No ticker symbols found — add tickers to your trades.');return;}
+  if(!tickers.length){if(status)status.textContent='No ticker symbols found — add tickers to your trades.';return;}
   if(dot)dot.className='status-dot fetching';
-  let success=0,failed=0;
-  for(const t of tickers){
+  const uniq=[...new Set(tickers.map(t=>t.ticker))];
+  const results={};let success=0,failed=0;
+  for(const tk of uniq){
     try{
-      if(status)status.textContent=`Fetching ${t.ticker}…`;
-      const r=await fetchPrice(t.ticker);
-      if(t.status==='active'){t.cmp=+r.price.toFixed(2);t.livePrice=t.cmp;t.liveChange=r.prevClose?((r.price-r.prevClose)/r.prevClose*100):null;}
-      t.lastFetched=new Date().toISOString();t.dailyData=r.dailyData;success++;
-    }catch(e){failed++;}
+      if(status)status.textContent=`Fetching ${tk}…`;
+      results[tk]=await fetchPrice(tk);success++;
+    }catch(e){
+      failed++;
+      if(!success&&failed>=2)break; // feed is down — stop early instead of waiting on every ticker
+    }
   }
-  save();
-  if(dot)dot.className=failed&&!success?'status-dot error':'status-dot';
-  if(status)status.textContent=`Updated ${success} ticker${success!==1?'s':''} ${failed?`· ${failed} failed`:''} · ${new Date().toLocaleTimeString('en-IN')}`;
+  tickers.forEach(t=>{
+    const r=results[t.ticker];if(!r)return;
+    if(t.status==='active'){t.cmp=+r.price.toFixed(2);t.livePrice=t.cmp;t.liveChange=r.prevClose?((r.price-r.prevClose)/r.prevClose*100):null;}
+    t.lastFetched=new Date().toISOString();t.dailyData=r.dailyData;
+  });
+  if(success)save();
+  const feedDown=!success;
+  if(dot)dot.className=feedDown?'status-dot error':'status-dot';
+  if(status){
+    status.textContent=feedDown
+      ?'⚠ Price feed unreachable — open ⚙ Data to connect a Cloudflare Worker, or update CMP manually from a trade.'
+      :`Updated ${success} ticker${success!==1?'s':''}${failed?` · ${failed} failed`:''} · ${new Date().toLocaleTimeString('en-IN')}`;
+  }
   const ft=document.getElementById('lastFetchTime');
-  if(ft)ft.textContent='Last: '+new Date().toLocaleTimeString('en-IN');
+  if(ft&&success)ft.textContent='Last: '+new Date().toLocaleTimeString('en-IN');
   renderSummary();renderCards();
-  if(success)showToast(`Live prices updated ✓`,'success');
-  if(failed)showToast(`${failed} ticker(s) failed — check ticker symbols`,'error');
+  if(success)showToast('Live prices updated ✓','success');
+  else showToast('Price feed unreachable — see ⚙ Data','error');
 }
 
 async function testTicker(){
@@ -1151,7 +1202,7 @@ async function testTicker(){
     res.style.color='var(--green)';document.getElementById('fCmp').value=r.price.toFixed(2);
     if(!document.getElementById('sizerCapital').value){const s=computeSummary();if(s.invested>0)document.getElementById('sizerCapital').value=Math.round(s.invested);}
     calcRR();
-  }catch(e){res.textContent=`✗ Not found. Try finance.yahoo.com to verify.`;res.style.color='var(--red)';}
+  }catch(e){res.textContent='✗ Could not reach price feed (or ticker invalid). Open ⚙ Data to set up a Worker — you can still type CMP manually.';res.style.color='var(--red)';}
 }
 
 function calcRR(){
@@ -1480,6 +1531,7 @@ function openDetail(id){
   document.getElementById('detailNotes').textContent=t.notes||'No notes recorded for this trade.';
   document.getElementById('btnCloseTrade').style.display=isActive?'flex':'none';
   document.getElementById('btnPartialExit').style.display=isActive?'flex':'none';
+  document.getElementById('btnUpdateCmp').style.display=isActive?'flex':'none';
 
   const chartWrap=document.getElementById('detailChart');
   chartWrap.innerHTML='<div id="detailChartInner" style="width:100%;height:320px;"></div>';
@@ -2081,6 +2133,40 @@ function uiInitEvents(){
 
 // Also keep the mapping panel's "Preview Trades" wired to preview
 function uiBuildPreview(){uiRenderPreview([...new Set(uiParsedResults.map(r=>r.profile.name))].join(', '));}
+
+function openSettings(){
+  document.getElementById('setWorkerUrl').value=getWorkerUrl();
+  document.getElementById('setWorkerResult').textContent='';
+  document.getElementById('settingsOverlay').classList.add('open');
+}
+function closeSettings(){document.getElementById('settingsOverlay').classList.remove('open');}
+function saveSettings(){
+  const url=document.getElementById('setWorkerUrl').value.trim().replace(/\/+$/,'');
+  if(url&&!/^https:\/\//i.test(url)){showToast('URL must start with https://','error');return;}
+  try{localStorage.setItem('bc_settings',JSON.stringify({...getSettings(),workerUrl:url}));}catch(e){}
+  closeSettings();showToast(url?'Worker saved ✓ — fetching prices…':'Worker cleared','success');
+  fetchAllPrices();
+}
+async function testWorkerUrl(){
+  const out=document.getElementById('setWorkerResult');
+  const url=document.getElementById('setWorkerUrl').value.trim().replace(/\/+$/,'');
+  if(!url){out.textContent='Enter the Worker URL first.';out.style.color='var(--amber)';return;}
+  out.textContent='Testing…';out.style.color='var(--amber)';
+  try{
+    const ctrl=new AbortController();const timer=setTimeout(()=>ctrl.abort(),9000);
+    const res=await fetch(`${url}?symbol=RELIANCE.NS&range=5d`,{signal:ctrl.signal});clearTimeout(timer);
+    if(!res.ok)throw new Error('HTTP '+res.status);
+    const d=await res.json();const m=d&&d.chart&&d.chart.result&&d.chart.result[0]&&d.chart.result[0].meta;
+    if(!m)throw new Error('Unexpected response');
+    out.textContent=`✓ Working — RELIANCE.NS ₹${m.regularMarketPrice}`;out.style.color='var(--green)';
+  }catch(e){out.textContent='✗ Failed: '+e.message+' — check the URL and that the Worker is deployed.';out.style.color='var(--red)';}
+}
+function updateCmpFromDetail(){
+  const t=trades.find(x=>x.id===detailId);if(!t||t.status!=='active')return;
+  const v=prompt(`Current price for ${t.name}?`,t.cmp);if(v===null)return;
+  const p=parseFloat(v);if(isNaN(p)||p<=0){showToast('Invalid price','error');return;}
+  t.cmp=+p.toFixed(2);save();renderSummary();renderCards();openDetail(t.id);showToast('CMP updated ✓','success');
+}
 
 let toastTimer;
 function showToast(msg,type='info'){
