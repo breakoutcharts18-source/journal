@@ -653,6 +653,11 @@ select option{background:var(--bg3);}
         <div id="detailTicker" style="font-size:10px;color:var(--text3);font-family:var(--mono);margin-top:3px;letter-spacing:0.12em;"></div>
       </div>
       <div style="display:flex;align-items:center;gap:10px;">
+        <div style="display:flex;align-items:center;gap:4px;margin-right:6px;">
+          <button class="btn" id="detailPrevBtn" onclick="navDetail(-1)" title="Previous trade (←)" style="padding:5px 11px;font-size:15px;line-height:1;">‹</button>
+          <span id="detailNavPos" style="font-family:var(--mono);font-size:10px;color:var(--text3);min-width:44px;text-align:center;"></span>
+          <button class="btn" id="detailNextBtn" onclick="navDetail(1)" title="Next trade (→)" style="padding:5px 11px;font-size:15px;line-height:1;">›</button>
+        </div>
         <div id="detailPnlBadge" style="font-family:var(--mono);font-size:22px;font-weight:700;"></div>
         <button class="modal-close" onclick="closeDetail()">✕</button>
       </div>
@@ -1385,6 +1390,7 @@ function renderCards(){
   else if(sort==='name')finalCards.sort((a,b)=>a.primary.name.localeCompare(b.primary.name));
   else finalCards.sort((a,b)=>new Date(b.primary.date)-new Date(a.primary.date));
 
+  visibleOrder=finalCards.map(c=>({id:c.primary.id,key:groupKeyOf(c.primary)}));
   if(!finalCards.length){grid.innerHTML=`<div class="empty-state"><div class="empty-icon">⬡</div><div class="empty-title">No trades here</div><div class="empty-sub">Add your first trade or adjust filters</div></div>`;return;}
   grid.innerHTML='';
 
@@ -1453,6 +1459,7 @@ function renderCards(){
 function openDetail(id){
   const t=trades.find(x=>x.id===id);if(!t)return;
   detailId=id;
+  updateDetailNav(t);
   const isActive=t.status==='active';
 
   // ── Find all sibling trades (same ticker + entry date) ──
@@ -1542,6 +1549,33 @@ function openDetail(id){
   const tradeForChart={...t,allExits:allExits.length?allExits:undefined};
   setTimeout(()=>drawCandleChart('detailChartInner',tradeForChart,true),80);
 }
+let visibleOrder=[];
+function groupKeyOf(t){return `${(t.ticker||t.name).toUpperCase().trim()}_${t.date}`;}
+function updateDetailNav(t){
+  const pos=document.getElementById('detailNavPos'),p=document.getElementById('detailPrevBtn'),n=document.getElementById('detailNextBtn');
+  if(!pos)return;
+  const i=visibleOrder.findIndex(v=>v.key===groupKeyOf(t));
+  const total=visibleOrder.length;
+  pos.textContent=i>=0?`${i+1} / ${total}`:'';
+  const off=i<0||total<=1;
+  [p,n].forEach(b=>{b.disabled=off;});
+}
+function navDetail(dir){
+  const cur=trades.find(x=>x.id===detailId);if(!cur||visibleOrder.length<2)return;
+  const i=visibleOrder.findIndex(v=>v.key===groupKeyOf(cur));if(i<0)return;
+  const next=visibleOrder[(i+dir+visibleOrder.length)%visibleOrder.length];
+  const panel=document.querySelector('.detail-panel');if(panel)panel.scrollTop=0;
+  openDetail(next.id);
+}
+document.addEventListener('keydown',e=>{
+  const open=document.getElementById('detailOverlay').classList.contains('open');
+  if(!open)return;
+  const tag=(document.activeElement&&document.activeElement.tagName)||'';
+  if(/INPUT|TEXTAREA|SELECT/.test(tag))return;
+  if(e.key==='ArrowRight'){e.preventDefault();navDetail(1);}
+  else if(e.key==='ArrowLeft'){e.preventDefault();navDetail(-1);}
+  else if(e.key==='Escape'){closeDetail();}
+});
 function closeDetail(){document.getElementById('detailOverlay').classList.remove('open');detailId=null;}
 function closeDetailBackdrop(e){if(e.target.id==='detailOverlay')closeDetail();}
 function editFromDetail(){const id=detailId;closeDetail();openEditModal(id);}
